@@ -41,14 +41,14 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
             IUniswapV2Factory(factory).createPair(tokenA, tokenB);
         }
         (uint reserveA, uint reserveB) = UniswapV2Library.getReserves(factory, tokenA, tokenB);
-        if (reserveA == 0 && reserveB == 0) {
+        if (reserveA == 0 && reserveB == 0) { // i.e. no liquidity, amount to be deposited is exactly equal to specified amounts
             (amountA, amountB) = (amountADesired, amountBDesired);
-        } else {
+        } else { // there is liquidity
             uint amountBOptimal = UniswapV2Library.quote(amountADesired, reserveA, reserveB);
-            if (amountBOptimal <= amountBDesired) {
+            if (amountBOptimal <= amountBDesired) { // token B more valueable to than investor thinks, so provide less
                 require(amountBOptimal >= amountBMin, 'UniswapV2Router: INSUFFICIENT_B_AMOUNT');
                 (amountA, amountB) = (amountADesired, amountBOptimal);
-            } else {
+            } else { // token B less valueable than investor thinks (implying token A is more valueable), however amountBDesired is a max, so use Optimal for A since this will then necessary be less than amountADesired  
                 uint amountAOptimal = UniswapV2Library.quote(amountBDesired, reserveB, reserveA);
                 assert(amountAOptimal <= amountADesired);
                 require(amountAOptimal >= amountAMin, 'UniswapV2Router: INSUFFICIENT_A_AMOUNT');

@@ -42,7 +42,7 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
         emit Transfer(address(0), to, value);
     }
 
-    function _burn(address from, uint256 value) internal {
+    function _burn(address from, uint256 value) internal { // no real need to update balance of zero address since burning here is not in traditional sense
         uint256 accountBalance = balanceOf[from];
         require(accountBalance >= value, 'ERC20: burn amount exceeds balance');
 
