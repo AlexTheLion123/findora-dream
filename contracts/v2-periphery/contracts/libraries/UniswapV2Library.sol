@@ -17,7 +17,7 @@ library UniswapV2Library {
     // calculates the CREATE2 address for a pair without making any external calls
     function pairFor(address factory, address tokenA, address tokenB) internal pure returns (address pair) {
         (address token0, address token1) = sortTokens(tokenA, tokenB);
-        pair = address(uint160(uint256(keccak256(abi.encodePacked(
+        pair = address(uint160(uint256(keccak256(abi.encodePacked( // TODO just use salt?
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
@@ -36,16 +36,16 @@ library UniswapV2Library {
     function quote(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {
         require(amountA > 0, 'UniswapV2Library: INSUFFICIENT_AMOUNT');
         require(reserveA > 0 && reserveB > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
-        amountB = amountA.mul(reserveB) / reserveA;
+        amountB = amountA * (reserveB) / reserveA;
     }
 
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
-        uint amountInWithFee = amountIn.mul(997);
-        uint numerator = amountInWithFee.mul(reserveOut);
-        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
+        uint amountInWithFee = amountIn * (997);
+        uint numerator = amountInWithFee * (reserveOut);
+        uint denominator = reserveIn * (1000) + (amountInWithFee);
         amountOut = numerator / denominator;
     }
 
@@ -53,9 +53,9 @@ library UniswapV2Library {
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
-        uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(997);
-        amountIn = (numerator / denominator).add(1);
+        uint numerator = reserveIn * (amountOut) * (1000);
+        uint denominator = reserveOut - (amountOut) * (997);
+        amountIn = (numerator / denominator) + (1);
     }
 
     // performs chained getAmountOut calculations on any number of pairs
