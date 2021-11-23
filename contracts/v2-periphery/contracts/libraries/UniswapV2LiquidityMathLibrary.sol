@@ -1,17 +1,17 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.5.0;
 
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
-import '@uniswap/lib/contracts/libraries/Babylonian.sol';
-import '@uniswap/lib/contracts/libraries/FullMath.sol';
+import '../../../v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import '../../../v2-core/contracts/interfaces/IUniswapV2Factory.sol';
+import '../../../solidity-lib/contracts/libraries/Babylonian.sol';
+import '../../../solidity-lib/contracts/libraries/FullMath.sol';
 
-import './SafeMath.sol';
 import './UniswapV2Library.sol';
 
 // library containing some math for dealing with the liquidity shares of a pair, e.g. computing their exact value
 // in terms of the underlying tokens
 library UniswapV2LiquidityMathLibrary {
-    using SafeMath for uint256;
 
     // computes the direction and magnitude of the profit-maximizing trade
     function computeProfitMaximizingTrade(
@@ -22,21 +22,21 @@ library UniswapV2LiquidityMathLibrary {
     ) pure internal returns (bool aToB, uint256 amountIn) {
         aToB = FullMath.mulDiv(reserveA, truePriceTokenB, reserveB) < truePriceTokenA;
 
-        uint256 invariant = reserveA.mul(reserveB);
+        uint256 invariant = reserveA * (reserveB);
 
         uint256 leftSide = Babylonian.sqrt(
             FullMath.mulDiv(
-                invariant.mul(1000),
+                invariant * (1000),
                 aToB ? truePriceTokenA : truePriceTokenB,
-                (aToB ? truePriceTokenB : truePriceTokenA).mul(997)
+                (aToB ? truePriceTokenB : truePriceTokenA) * (997)
             )
         );
-        uint256 rightSide = (aToB ? reserveA.mul(1000) : reserveB.mul(1000)) / 997;
+        uint256 rightSide = (aToB ? reserveA * (1000) : reserveB * (1000)) / 997;
 
         if (leftSide < rightSide) return (false, 0);
 
         // compute the amount that must be sent to move the price to the profit-maximizing price
-        amountIn = leftSide.sub(rightSide);
+        amountIn = leftSide - (rightSide);
     }
 
     // gets the reserves after an arbitrage moves the price to the profit-maximizing ratio given an externally observed true price
@@ -81,17 +81,17 @@ library UniswapV2LiquidityMathLibrary {
         uint kLast
     ) internal pure returns (uint256 tokenAAmount, uint256 tokenBAmount) {
         if (feeOn && kLast > 0) {
-            uint rootK = Babylonian.sqrt(reservesA.mul(reservesB));
+            uint rootK = Babylonian.sqrt(reservesA * (reservesB));
             uint rootKLast = Babylonian.sqrt(kLast);
             if (rootK > rootKLast) {
                 uint numerator1 = totalSupply;
-                uint numerator2 = rootK.sub(rootKLast);
-                uint denominator = rootK.mul(5).add(rootKLast);
+                uint numerator2 = rootK - (rootKLast);
+                uint denominator = rootK * (5) + (rootKLast);
                 uint feeLiquidity = FullMath.mulDiv(numerator1, numerator2, denominator);
-                totalSupply = totalSupply.add(feeLiquidity);
+                totalSupply = totalSupply + (feeLiquidity);
             }
         }
-        return (reservesA.mul(liquidityAmount) / totalSupply, reservesB.mul(liquidityAmount) / totalSupply);
+        return (reservesA * (liquidityAmount) / totalSupply, reservesB * (liquidityAmount) / totalSupply);
     }
 
     // get all current parameters from the pair and compute value of a liquidity amount
