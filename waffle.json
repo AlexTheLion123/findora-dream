@@ -7,7 +7,7 @@
             "runs": 20000
         }
     },
-    "sourceDirectory": "./contracts",
+    "sourceDirectory": "./lib",
     "outputDirectory": "./build",
     "typechainEnabled": true
 }

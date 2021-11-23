@@ -3,5 +3,15 @@
 /* eslint-disable */
 export { Erc20Factory } from "./Erc20Factory";
 export type { Erc20 } from "./Erc20";
+export { FixedPointFactory } from "./FixedPointFactory";
+export type { FixedPoint } from "./FixedPoint";
 export { MyTokenFactory } from "./MyTokenFactory";
 export type { MyToken } from "./MyToken";
+export { UniswapV2Erc20Factory } from "./UniswapV2Erc20Factory";
+export type { UniswapV2Erc20 } from "./UniswapV2Erc20";
+export { UniswapV2FactoryFactory } from "./UniswapV2FactoryFactory";
+export type { UniswapV2Factory } from "./UniswapV2Factory";
+export { UniswapV2PairFactory } from "./UniswapV2PairFactory";
+export type { UniswapV2Pair } from "./UniswapV2Pair";
+export { UniswapV2Router02Factory } from "./UniswapV2Router02Factory";
+export type { UniswapV2Router02 } from "./UniswapV2Router02";
