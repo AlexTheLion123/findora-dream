@@ -9,118 +9,136 @@
 </script>
 
 <script lang="ts">
-	import { onMount, update_await_block_branch } from 'svelte/internal';
+	// TODO use @metamask/detect-provider to detect mobile as well
 
-	import { isConnected } from '../stores';
-	import { currentAccount } from '../stores';
-	import { chainId } from '../stores';
+	import { onMount } from 'svelte/internal';
+	import { isConnected } from '$lib/stores';
+	import { currentAccount } from '$lib/stores';
+	import { chainId } from '$lib/stores';
+	import MetaMaskOnboarding from '@metamask/onboarding';
 
-	const INSTALL_MSG = "Click here to install metmask"
+	let isInit = false;
+	let button: HTMLButtonElement; // html selector
+	let btnText = 'Connect';
+	let accounts: string[] = [];
 
-	let btnText;
-	let chainId;
-	let isChainRight = true;
+	let onboarding: MetaMaskOnboarding;
 
-	async function initialize() {
-		if ($isConnected) {
-			// do nothing if already connected
-			alert('Already connected'); // TODO remove
+	function initialize() {
+		onboarding = new MetaMaskOnboarding();
+		updateButton();
+
+		if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+			ethereum.on('chainChanged', (_chainId) => {
+				handleChainChanged(_chainId)
+				updateButton();
+				
+			}); // listen to chain changes
+
+			ethereum.on('accountsChanged', (newAccounts) => {
+				accounts = newAccounts;
+				updateButton();
+			});
+		}
+	}
+
+	async function updateButton() {
+		if (!checkNetwork($chainId)) {
+			// If wrong chain, prevent connection attempt
+			setButtonText('Wrong network', true);
 			return;
 		}
 
-		if (typeof window.ethereum !== 'undefined') {
-			if (!ethereum.isMetaMask) {
-				alert('You will now be redirected to metamask installation');
-				onboard();
-				return;
-			}
+		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+			// Metamask is not installed
 
-			// Handle chain (network) and chainChanged
-			await ethereum
-				.request({ method: 'eth_chainId' })
-				.then((_chainId) => {
-					handleChainChanged(_chainId);
-				})
-				.catch(console.log);
-				ethereum.on('chainChanged', handleChainChanged);
+			setButtonText('Click here to install metmask', false);
 
-			if (isChainRight === false) {
-				return;
-			}
-
-			// get current account and set connected to true
-			await ethereum
-				.request({ method: 'eth_requestAccounts' })
-				.then((accounts) => handleAccountsChanged(accounts))
-				.catch(console.log);
-			ethereum.on('accountsChanged', handleAccountsChanged); // TODO this event is emmitted on page load, change logic to allow instant connection
+			button.onclick = () => {
+				btnText = 'Onboarding in progress';
+				button.disabled = true;
+				onboarding.startOnboarding();
+			};
 		} else {
-			alert("You will now be redirected to install metamask");
-			onboard();
+			// Metamask is installed, and therefore ethereum exists
+
+			if (accounts && accounts.length > 0) {
+				// accounts have been retrieved
+
+				setButtonText(accounts[0], true);
+
+				onboarding.stopOnboarding();
+			} else {
+				// no accounts retrieved yet
+
+				if (!isInit) {
+					// If first time getting here, set chainId store
+					$chainId = await getChain();
+					isInit = true;
+				}
+
+				setButtonText('Connect', false);
+				button.onclick = onClickConnect;
+			}
 		}
+		accounts[0] ? updateStores(accounts[0]) : updateStores(null);
 	}
 
-	function onboard() {
-		alert("onboard them!")
+	function onClickConnect() {
+		ethereum.request({ method: 'eth_requestAccounts' }).then((_accounts) => {
+			accounts = _accounts;
+			updateButton();
+		});
 	}
 
-	function updateMeta(_curAccount) {
+	async function getChain() {
+		return ethereum.request({ method: 'eth_chainId' }).catch(console.log);
+	}
+
+	function updateStores(_curAccount: string | undefined) {
 		if (_curAccount) {
 			$isConnected = true;
 			$currentAccount = _curAccount;
-			btnText = $currentAccount;
 		} else {
 			$isConnected = false;
 			$currentAccount = null;
-
-			if(window.ethereum) {
-				btnText = ethereum.isMetaMask ? "Connect wallet" : "Please install Metamask"
-			} else {
-				btnText = "Connect wallet"
-			}
 		}
 	}
 
-	function handleChainChanged(_chainId) {
+	function handleChainChanged(_chainId: string) {
+		$chainId = _chainId;
+		return checkNetwork(_chainId);
+	}
+
+	function checkNetwork(_chainId) {
 		if (_chainId !== '0x1') {
-			// make sure it's ethereum
+			// is not ethereum mainnet
+			// not ethereum
 			alert('We only support ethereum mainnet, please change the network');
-			updateMeta(null);
-			isChainRight = false;
-		} else {
-			isChainRight = true;
+			btnText = 'Wrong network';
+			button.disabled = true;
+
+			return false;
 		}
+
+		// is ethereum
+		changeSymbol(); // TODO change symbol to the valid network
+		return true;
 	}
 
-	function handleAccountsChanged(accounts: String[]) {
-		if (accounts.length === 0) {
-			// Metamask is (or has been) locked or the user has not connected (or disconnected) any accounts
-			alert('Please connect to metamask');
-			updateMeta(false);
-		} else if (accounts[0] !== $currentAccount) {
-			// user simply changed account
-			updateMeta(accounts[0]);
-		}
+	function changeSymbol() {
+		// TODO change symbol
 	}
 
-	// change button text according to connection status
-	
-	
-	// $: if ($currentAccount) {
-	// 	btnText = $currentAccount;
-	// } else {
-	// 	if(window.ethereum) {
+	function setButtonText(text: string, isDisabled: boolean) {
+		btnText = text;
+		button.disabled = isDisabled;
+	}
 
-	// 	}
-	// 	btnText = ethereum.isMetaMask ? 'Connect Wallet' : 'Click here to install metamask';
-	// }
-
-	onMount(() => {
-		updateMeta(null)	
-	})
+	onMount(initialize);
 </script>
 
-<div id="connect" on:click={initialize}>{btnText}</div>
+<button id="connect" bind:this={button} on:click={() => updateButton()}>{btnText}</button>
 
 <style lang="scss">
 	$btn-color: grey;
