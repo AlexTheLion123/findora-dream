@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-	// TODO use @metamask/detect-provider to detect mobile as well
+	// TODO use @metamask/detect-provider to detect mobile properly as well
 
 	import { onMount } from 'svelte/internal';
 	import { isConnected } from '$lib/stores';
@@ -135,7 +135,7 @@
 		button.disabled = isDisabled;
 	}
 
-	onMount(initialize);
+	//onMount(initialize); TODO uncomment
 </script>
 
 <button id="connect" bind:this={button} on:click={() => updateButton()}>{btnText}</button>
