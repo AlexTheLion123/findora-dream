@@ -28,11 +28,11 @@
 		onboarding = new MetaMaskOnboarding();
 		updateButton();
 
+		// listen to relevant events
 		if (MetaMaskOnboarding.isMetaMaskInstalled()) {
 			ethereum.on('chainChanged', (_chainId) => {
-				handleChainChanged(_chainId)
+				handleChainChanged(_chainId);
 				updateButton();
-				
 			}); // listen to chain changes
 
 			ethereum.on('accountsChanged', (newAccounts) => {
@@ -42,13 +42,12 @@
 		}
 	}
 
-	async function updateButton() {
-		if (!checkNetwork($chainId)) {
-			// If wrong chain, prevent connection attempt
-			setButtonText('Wrong network', true);
-			return;
-		}
+	function isMetaMaskInstalled(): boolean {
+		const { ethereum } = window;
+		return ethereum && ethereum.isMetaMask;
+	}
 
+	async function updateButton() {
 		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
 			// Metamask is not installed
 
@@ -62,6 +61,18 @@
 		} else {
 			// Metamask is installed, and therefore ethereum exists
 
+			if (!isInit) {
+				// If first time getting here, set chainId store
+				$chainId = await getChain();
+				isInit = true;
+			}
+
+			if (!checkNetwork($chainId)) {
+				// If wrong chain, prevent connection attempt
+				setButtonText('Wrong network', true);
+				return;
+			}
+
 			if (accounts && accounts.length > 0) {
 				// accounts have been retrieved
 
@@ -71,12 +82,6 @@
 			} else {
 				// no accounts retrieved yet
 
-				if (!isInit) {
-					// If first time getting here, set chainId store
-					$chainId = await getChain();
-					isInit = true;
-				}
-
 				setButtonText('Connect', false);
 				button.onclick = onClickConnect;
 			}
@@ -84,8 +89,8 @@
 		accounts[0] ? updateStores(accounts[0]) : updateStores(null);
 	}
 
-	function onClickConnect() {
-		ethereum.request({ method: 'eth_requestAccounts' }).then((_accounts) => {
+	async function onClickConnect() {
+		await ethereum.request({ method: 'eth_requestAccounts' }).then((_accounts) => {
 			accounts = _accounts;
 			updateButton();
 		});
@@ -135,7 +140,7 @@
 		button.disabled = isDisabled;
 	}
 
-	//onMount(initialize); TODO uncomment
+	onMount(initialize); // TODO uncomment
 </script>
 
 <button id="connect" bind:this={button} on:click={() => updateButton()}>{btnText}</button>
