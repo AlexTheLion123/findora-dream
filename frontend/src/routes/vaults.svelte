@@ -2,7 +2,7 @@
 </script>
 
 <div class="box">
-    STAKING
+    VAULTS
 </div>
 
 
@@ -11,3 +11,9 @@
         color: white;
     }
 </style>
+
+
+
+
+
+

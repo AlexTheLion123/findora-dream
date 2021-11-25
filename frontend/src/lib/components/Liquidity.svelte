@@ -7,7 +7,7 @@
 </script>
 
 <div class="box">
-    <div class="title">Title</div>
+    <div class="title">Liquidity</div>
     <div id="token1">
         <TokenBox {name}/>
     </div>
@@ -46,6 +46,7 @@
 
         .title {
             grid-area: title;
+            align-self: center;
         }
         #token1 {
             grid-area: token1;

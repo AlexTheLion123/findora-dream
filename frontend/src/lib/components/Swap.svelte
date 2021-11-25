@@ -53,8 +53,7 @@
 		.title {
 			grid-area: title;
 
-			display: flex;
-			align-items: center;
+			align-self: center;
 		}
 
 		#token1 {

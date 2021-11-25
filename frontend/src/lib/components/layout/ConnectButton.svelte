@@ -151,7 +151,7 @@
 	#connect {
 		background: $btn-color;
 
-		padding: 30px;
+		padding: 15px 40px;
 		margin: 0 50px;
 		border-radius: 10px;
 
