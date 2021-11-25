@@ -146,7 +146,7 @@
 <button id="connect" bind:this={button} on:click={() => updateButton()}>{btnText}</button>
 
 <style lang="scss">
-	$btn-color: grey;
+	$btn-color: rgba(105, 105, 206, 0.5);
 
 	#connect {
 		background: $btn-color;

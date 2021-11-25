@@ -14,17 +14,16 @@
 </svelte:head>
 
 <div class="all">
-	<header>
-		<Header />
-	</header>
-
 	<div class="container">
 		<div class="nav"><Nav /></div>
+		<header><Header /></header>
 		<main><slot /></main>
 	</div>
 </div>
 
 <style lang="scss">
+	$global-background: linear-gradient(to right top, #080b1aff, rgb(62, 109, 226));
+	$container-blur: 50px;
 	:root {
 		font-family: 'Inter', sans-serif;
 		font-weight: 500;
@@ -65,36 +64,41 @@
 	.all {
 		min-height: 100vh;
 		min-width: 100vh;
-		background: linear-gradient(to right top, #080b1aff, #061437ff);
+		background: $global-background;
 	}
 
 	header {
-		height: 100px;
-		width: 100%;
+		height: 70px;
+		grid-area: header;
 	}
 
 	.container {
 		margin: auto;
 		width: 100%;
-		max-width: 2000px;
+		max-width: 1500px;
 		height: 100vh;
 
-		display: flex;
+		backdrop-filter: blur($container-blur);
+
+		display: grid;
+
+		grid-template: 
+		"nav header" 1fr
+		"nav content" 5fr
+		/ minmax(200px, 300px) 3fr;
+
+		
 	}
 
 	.nav {
 		height: 100%;
-
-		flex: 1 1 20%;
-		min-width: 200px;
-		max-width: 300px;
+		grid-area: nav;
 	}
 
 	main {
 		height: 100%;
-
-		flex: 3 1 80%;
-
+		width: 100%;
 		display: grid;
+		grid-area: content;
 	}
 </style>

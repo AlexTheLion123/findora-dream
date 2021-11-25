@@ -21,24 +21,36 @@
 		class="item"
 		href="http://dev-chainbridge.s3-website-us-west-2.amazonaws.com/transfer"
 		target="_blank"
-		>Bridge
+		>Bridge ext
+	</a>
+	<a
+		class="item"
+		href="http://dev-chainbridge.s3-website-us-west-2.amazonaws.com/transfer"
+		target="_blank"
+		>Dashboard ext
 	</a>
 </nav>
 
 <style lang="scss">
 	$nav-background: none; // TODO remove
-	$btn-color: none;
+	$nav-border-right: 1px solid rgba(105, 105, 206, 0.5);
 
-	$a-radius: 30px;
-	$a-hover-border: 3px solid rgba(240, 240, 240, 0.3);
-	$a-selected-border: 2px solid rgba(240, 240, 240, 0.7);
+	$a-radius: 15px;
+	$a-hover-border: 3px solid rgba(255, 255, 255, 0.3);
+	
+	$a-selected-border: none;
+	$a-selected-background: rgba(88, 111, 139, 0.555);
 
 	.selected {
+		background: $a-selected-background;
 		border: $a-selected-border;
 		border-radius: $a-radius;
 	}
 
 	nav {
+		border-right: $nav-border-right;
+		height: 100%;
+		padding: 0 20px;
 		a {
 			color: inherit;
 			&:hover {
@@ -52,7 +64,6 @@
 
 		.item,
 		.top-item {
-			background: $btn-color;
 			width: 100%;
 			padding: 20px 0 20px 40px;
 
@@ -61,8 +72,6 @@
 		}
 
 		.item-box {
-			border: 1px solid rgba(105, 105, 206, 0.5); // TODO remove
-
 			ul {
 				margin-left: 50px;
 				list-style: none;
