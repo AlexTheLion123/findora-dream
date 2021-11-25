@@ -46,6 +46,7 @@
 
 <style lang="scss">
 	$btn-color: lightblue;
+	$border: 1px solid black;
 
 	:root {
 		font-family: 'Inter', sans-serif;
@@ -123,7 +124,7 @@
 			background: lightblue;
 			width: 100%;
 			padding: 20px 0 20px 40px;
-			border-bottom: 1px solid black;
+			border-bottom: $border;
 
 			text-decoration: none;
 			display: block;
@@ -136,7 +137,7 @@
 
 		.item-box {
 			background: lightblue;
-			border-bottom: none;
+			border-bottom: $border;
 
 			.top-item {
 				border-bottom: none;
@@ -147,12 +148,12 @@
 				list-style: none;
 
 				li {
-					border-left: 1px solid black;
+					border-left: $border;
 					padding: 10px;
 				}
 
 				li:not(:last-child) {
-					border-bottom: 1px solid black;
+					border-bottom: $border;
 				}
 			}
 		}
