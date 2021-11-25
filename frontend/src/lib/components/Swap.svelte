@@ -1,43 +1,38 @@
 <script>
-    
+    // TODO change percent boxes to slider
+	import TokenBox from './sub/TokenBox.svelte'
+	import TradeButton from './sub/TradeButton.svelte'
+
+	let name = "eth"
 </script>
 
 <div class="box">
 	<div class="title">Swap</div>
-	<div class="token-box btn" id="token1">
-		<div class="token-left" id="token1-left">
-			<span class="token-amount">0.00</span>
-			<span class="dollar-amount">12489</span>
-		</div>
-		<div class="token-right" id="token1-right">
-            <span class="symbol">sym</span>
-            <span class="balance">0987</span>
-        </div>
-	</div>
-	<div class="token-box btn" id="token2">
-		<div class="token-left" id="token2-left">
-			<span class="token-amount">0.00</span>
-			<span class="dollar-amount">12489</span>
-		</div>
-		<div class="token-right" id="token2-right">
-            <span class="symbol">sym</span>
-            <span class="balance">0987</span>
-        </div>
 
+	<div id="token1">
+		<TokenBox {name}/>
 	</div>
+
+	<div id="token2">
+		<TokenBox {name}/>
+	</div>
+	
 	<div class="pbox">
-		<div class="btn pbtn" id="p1">25%</div> // TODO change to slider
-		<div class="btn pbtn" id="p2">50%</div>
-		<div class="btn pbtn" id="p3">75%</div>
-		<div class="btn pbtn" id="p4">100%</div>
+		<button class="pbtn" id="p1">25%</button> 
+		<button class="pbtn" id="p2">50%</button>
+		<button class="pbtn" id="p3">75%</button>
+		<button class="pbtn" id="p4">100%</button>
 	</div>
-	<div class="swap-btn btn">Swap</div>
+
+	<div class="swap-button">
+		<TradeButton text="Swap"/>
+	</div>
+
 </div>
 
 <style lang="scss">
 	$radius: 10px;
 	$pbtn-color: aliceblue;
-	$swap-btn-color: orange;
 
 	.box {
 		height: 500px;
@@ -63,12 +58,10 @@
 		}
 
 		#token1 {
-			background: rgb(75, 71, 71);
 			grid-area: token1;
 		}
 
 		#token2 {
-			background: grey;
 			grid-area: token2;
 		}
 
@@ -80,25 +73,12 @@
 			align-items: center;
 		}
 
-		.swap-btn {
+		.swap-button {
 			grid-area: btn;
-			background: $swap-btn-color;
-			margin: 0 0 20px 0;
-
-			display: grid;
-			place-items: center;
-
-			&:hover {
-				background: lighten($swap-btn-color, 10%);
-				cursor: pointer;
-			}
-		}
-
-		.btn {
-			border-radius: $radius;
 		}
 		.pbtn {
 			border: 1px solid black;
+			border-radius: $radius;
 			padding: 10px;
 			background: $pbtn-color;
 

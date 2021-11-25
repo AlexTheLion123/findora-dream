@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WalletBtn from '$lib/components/WalletBtn.svelte';
+	import ConnectButton from '$lib/components/sub/ConnectButton.svelte';
 </script>
 
 <svelte:head>
@@ -14,31 +14,34 @@
 
 <header>
 	<div class="header-wrapper">
-		<WalletBtn />
+		<ConnectButton />
 	</div>
 </header>
 
 <div class="container">
 	<nav>
-		<a class="item" href="swap">Swap</a>
-		<a class="item" href="liquidity">Liquidity</a>
-		<a class="item" href="farms">Farms</a>
-		<a class="item" href="stake">Stake</a>
-		<div class="item-box" href="lending">
+		<a class="item" href="/">Dashboard</a>
+		<a class="item" href="/swap">Swap</a>
+		<a class="item" href="/liquidity">Liquidity</a>
+		<a class="item" href="/farms">Farms</a>
+		<a class="item" href="/staking">Staking</a>
+		<div class="item-box" href="/lending">
 			<div class="top-item">Lending</div>
 			<ul>
 				<li>Deposit</li>
 				<li>Borrow</li>
 			</ul>
 		</div>
+		<a class="item" href="/fire">Fire & Ice</a>
 		<a
 			class="item"
 			href="http://dev-chainbridge.s3-website-us-west-2.amazonaws.com/transfer"
 			target="_blank">Bridge</a
 		>
 	</nav>
-
-	<slot />
+	<main>
+		<slot />
+	</main>
 </div>
 
 <style lang="scss">
@@ -67,6 +70,18 @@
 
 	:global(#svelte) {
 		height: 100%;
+	}
+
+	:global(button),
+	:global(input[type='submit']),
+	:global(input[type='reset']) {
+		background: none;
+		color: inherit;
+		border: none;
+		padding: 0;
+		font: inherit;
+		cursor: pointer;
+		outline: inherit;
 	}
 
 	header {
@@ -98,11 +113,13 @@
 		height: 100%;
 
 		flex: 1 1 20%;
+		min-width: 200px;
 		max-width: 300px;
 
 		background: grey;
 
-		.item, .top-item {
+		.item,
+		.top-item {
 			background: lightblue;
 			width: 100%;
 			padding: 20px 0 20px 40px;
@@ -128,7 +145,7 @@
 			ul {
 				margin-left: 50px;
 				list-style: none;
-				
+
 				li {
 					border-left: 1px solid black;
 					padding: 10px;
@@ -137,7 +154,6 @@
 				li:not(:last-child) {
 					border-bottom: 1px solid black;
 				}
-
 			}
 		}
 	}
@@ -147,7 +163,7 @@
 
 		flex: 3 1 80%;
 
-		background: aliceblue;
+		background: black;
 
 		display: grid;
 	}

@@ -11,7 +11,6 @@
 <style lang="scss">
     .container {
         width: 100%;
-        background: black;
 
         .wrapper {
             display: grid;
