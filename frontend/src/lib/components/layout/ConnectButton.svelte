@@ -19,8 +19,9 @@
 
 	let isInit = false;
 	let button: HTMLButtonElement; // html selector
-	let btnText = 'Connect';
+	let btnText = 'Connect Wallet';
 	let accounts: string[] = [];
+	let isWrongNetwork = false;
 
 	let onboarding: MetaMaskOnboarding;
 
@@ -82,7 +83,7 @@
 			} else {
 				// no accounts retrieved yet
 
-				setButtonText('Connect', false);
+				setButtonText('Connect Wallet', false);
 				button.onclick = onClickConnect;
 			}
 		}
@@ -120,13 +121,13 @@
 			// is not ethereum mainnet
 			// not ethereum
 			alert('We only support ethereum mainnet, please change the network');
-			btnText = 'Wrong network';
-			button.disabled = true;
-
+			setButtonText('Wrong network', true);
+			isWrongNetwork = true;
 			return false;
 		}
 
 		// is ethereum
+		isWrongNetwork = false;
 		changeSymbol(); // TODO change symbol to the valid network
 		return true;
 	}
@@ -143,21 +144,27 @@
 	onMount(initialize); // TODO uncomment
 </script>
 
-<button id="connect" bind:this={button} on:click={() => updateButton()}>{btnText}</button>
+<button id="connect" bind:this={button} class:wrongNetwork={isWrongNetwork === true} on:click={() => updateButton()}>{btnText}</button>
 
 <style lang="scss">
-	$btn-color: rgba(105, 105, 206, 0.5);
-
+	$btn-color: rgba(105, 105, 206, 0.3);
+	$wrong-network-btn-color: rgba(255, 0, 0, 0.3);
 	#connect {
 		background: $btn-color;
-
+		overflow: hidden;
+		width: 200px;
 		padding: 15px 40px;
 		margin: 0 50px;
 		border-radius: 10px;
+		border: 1px solid rgba(255,255,255,0.2);
 
 		&:hover {
 			background: lighten($btn-color, 10%);
 			cursor: pointer;
 		}
+	}
+
+	.wrongNetwork {
+		background: $wrong-network-btn-color !important;
 	}
 </style>
