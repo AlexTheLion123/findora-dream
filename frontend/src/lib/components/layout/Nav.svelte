@@ -1,10 +1,14 @@
+<script>
+	import { page } from '$app/stores';
+</script>
+
 <nav>
-	<a class="item" href="/">Dashboard</a>
-	<a class="item" href="/swap">Swap</a>
-	<a class="item" href="/liquidity">Liquidity</a>
-	<a class="item" href="/farms">Farms</a>
-	<a class="item" href="/staking">Staking</a>
-	<a class="item" href="/vaults">Vaults</a>
+	<a class="item" href="/" class:selected={$page.path == '/'}>Dashboard</a>
+	<a class="item" href="/swap" class:selected={$page.path == '/swap'}>Swap</a>
+	<a class="item" href="/liquidity" class:selected={$page.path == '/liquidity'}>Liquidity</a>
+	<a class="item" href="/farms" class:selected={$page.path == '/farms'}>Farms</a>
+	<a class="item" href="/staking" class:selected={$page.path == '/staking'}>Staking</a>
+	<a class="item" href="/vaults" class:selected={$page.path == '/vaults'}>Vaults</a>
 	<div class="item-box" href="/lending">
 		<div class="top-item">Lending</div>
 		<ul>
@@ -16,18 +20,34 @@
 	<a
 		class="item"
 		href="http://dev-chainbridge.s3-website-us-west-2.amazonaws.com/transfer"
-		target="_blank">Bridge</a
-	>
+		target="_blank"
+		>Bridge
+	</a>
 </nav>
 
 <style lang="scss">
-	$nav-background: none;
+	$nav-background: none; // TODO remove
 	$btn-color: none;
-	$item-border: none;
+
+	$a-radius: 30px;
+	$a-hover-border: 3px solid rgba(240, 240, 240, 0.3);
+	$a-selected-border: 2px solid rgba(240, 240, 240, 0.7);
+
+	.selected {
+		border: $a-selected-border;
+		border-radius: $a-radius;
+	}
 
 	nav {
 		a {
 			color: inherit;
+			&:hover {
+				// background: lighten($btn-color, 10%);
+				cursor: pointer;
+
+				border-radius: $a-radius;
+				border: $a-hover-border;
+			}
 		}
 
 		.item,
@@ -35,33 +55,23 @@
 			background: $btn-color;
 			width: 100%;
 			padding: 20px 0 20px 40px;
-			border-bottom: $item-border;
 
 			text-decoration: none;
 			display: block;
-
-			&:hover {
-				// background: lighten($btn-color, 10%);
-				cursor: pointer;
-			}
 		}
 
 		.item-box {
-			border: 1px solid rgba(105, 105, 206, 0.5);
+			border: 1px solid rgba(105, 105, 206, 0.5); // TODO remove
 
 			ul {
 				margin-left: 50px;
 				list-style: none;
 
 				a {
-					border-left: $item-border;
 					padding: 10px;
 					display: block;
 				}
-
-				a:not(:last-child) {
-					border-bottom: $item-border;
-				}
+				
 			}
 		}
 	}

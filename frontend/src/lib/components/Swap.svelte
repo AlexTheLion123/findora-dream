@@ -2,6 +2,7 @@
     // TODO change percent boxes to slider
 	import TokenBox from './sub/TokenBox.svelte'
 	import TradeButton from './sub/TradeButton.svelte'
+	import PercentButton from './sub/PercentButton.svelte'
 
 	let name = "eth"
 </script>
@@ -18,10 +19,10 @@
 	</div>
 	
 	<div class="pbox">
-		<button class="pbtn" id="p1">25%</button> 
-		<button class="pbtn" id="p2">50%</button>
-		<button class="pbtn" id="p3">75%</button>
-		<button class="pbtn" id="p4">100%</button>
+		<PercentButton text="25%"/>
+		<PercentButton text="50%"/>
+		<PercentButton text="75%"/>
+		<PercentButton text="100%"/>
 	</div>
 
 	<div class="swap-button">
@@ -31,15 +32,14 @@
 </div>
 
 <style lang="scss">
-	$radius: 10px;
-	$pbtn-color: aliceblue;
+	$box-radius: 20px;
 
 	.box {
 		height: 500px;
 		width: 500px;
 		background: rgb(61, 61, 61);
 
-		border-radius: 20px;
+		border-radius: $box-radius;
 
 		display: grid;
 		grid-template:
@@ -75,18 +75,7 @@
 		.swap-button {
 			grid-area: btn;
 		}
-		.pbtn {
-			border: 1px solid black;
-			border-radius: $radius;
-			padding: 10px;
-			background: $pbtn-color;
-
-			&:hover {
-				background: lighten($pbtn-color, 10%);
-				cursor: pointer;
-			}
-		}
-
+		
 		.token-box {
 			display: flex;
             align-items: center;
