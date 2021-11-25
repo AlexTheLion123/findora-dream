@@ -29,6 +29,7 @@
   },
   "type": "module",
   "dependencies": {
-    "node-sass": "^6.0.1"
+    "node-sass": "^6.0.1",
+    "svelte-range-slider-pips": "^2.0.0"
   }
 }

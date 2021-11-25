@@ -24,6 +24,8 @@
 <style lang="scss">
 	$global-background: linear-gradient(to right top, #080b1aff, rgb(62, 109, 226));
 	$container-blur: 50px;
+	$nav-border-right: 1px solid rgba(105, 105, 206, 0.5);
+
 	:root {
 		font-family: 'Inter', sans-serif;
 		font-weight: 500;
@@ -93,6 +95,8 @@
 	.nav {
 		height: 100%;
 		grid-area: nav;
+		border-right: $nav-border-right;
+
 	}
 
 	main {

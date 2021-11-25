@@ -1,40 +1,54 @@
 <script>
-    export let name; // abbreviation
-    
+	export let name; // abbreviation
+	export let balance;
+	export let dollars;
+	export let value;
 </script>
 
-
 <div class="box">
-    <div class="box-left">
-        <button class="symbol">sym</button>
-        <span class="balance">0987</span>
-    </div>
-    <div class="box-right">
-        <span class="token-amount">0.00</span>
-        <span class="dollar-amount">12489</span>
-        
-    </div>
+	<div class="box-left">
+		<button class="symbol">sym</button>
+		<p class="balance">{balance}</p>
+	</div>
+	<div class="box-right">
+		<input type="number" bind:value placeholder="0.00" />
+		<p class="dollars">{dollars}</p>
+	</div>
 </div>
 
-
 <style lang="scss">
-    $background: rgb(109, 109, 109);
-    $radius: 10px;
+	$background: none;
+	$radius: 10px;
+	$border: 1px solid rgba(255, 255, 255, 0.1);
 
-    .box {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+	.box {
+		background: $background;
+		width: 100%;
+		height: 100%;
+		border: $border;
 
-        background: $background;
-        width: 100%;
-        height: 100%;
+		border-radius: $radius;
 
-        border-radius: $radius;
-        border: 1px solid black;
-    }
+		display: flex;
+	}
+	input {
+		all: unset;
+		font-size: 30px;
+		color: white;
+		text-align: right;
+		overflow: hidden;
+	}
 
-    span {
-        display: block;
-    }
+	p.dollars {
+		text-align: right;
+	}
+
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+        all: unset;
+	}
+
+	input[type='number'] {
+		-moz-appearance: textfield; /* Firefox */
+	}
 </style>

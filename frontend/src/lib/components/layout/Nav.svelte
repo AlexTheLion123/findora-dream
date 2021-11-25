@@ -70,7 +70,6 @@
 
 <style lang="scss">
 	$nav-background: none; // TODO remove
-	$nav-border-right: 1px solid rgba(105, 105, 206, 0.5);
 
 	$a-radius: 5px;
 	$a-hover-border: 3px solid rgba(255, 255, 255, 0.3);
@@ -93,7 +92,6 @@
 	}
 
 	nav {
-		border-right: $nav-border-right;
 		height: 100%;
 		padding: 0 30px;
 

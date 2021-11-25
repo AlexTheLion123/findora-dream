@@ -142,9 +142,17 @@
 	}
 
 	onMount(initialize); // TODO uncomment
+
 </script>
 
-<button id="connect" bind:this={button} class:wrongNetwork={isWrongNetwork === true} on:click={() => updateButton()}>{btnText}</button>
+<button
+	id="connect"
+	bind:this={button}
+	class:wrongNetwork={isWrongNetwork === true}
+	on:click={() => updateButton()}
+>
+	{btnText}
+</button>
 
 <style lang="scss">
 	$btn-color: rgba(105, 105, 206, 0.3);
@@ -155,8 +163,8 @@
 		width: 200px;
 		padding: 15px 40px;
 		margin: 0 50px;
-		border-radius: 10px;
-		border: 1px solid rgba(255,255,255,0.2);
+		border-radius: 7px;
+		border: 1px solid rgba(255, 255, 255, 0.2);
 
 		&:hover {
 			background: lighten($btn-color, 10%);

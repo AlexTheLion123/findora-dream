@@ -4,6 +4,8 @@
     import PoolInfo from '$lib/components/sub/PoolInfo.svelte'
 
     let name = "bsc";
+
+    
 </script>
 
 <div class="box">
@@ -23,8 +25,9 @@
 </div>
 
 <style lang="scss">
-	$box-radius: 20px;
-	$box-background: rgb(61, 61, 61);
+	$box-radius: 10px;
+	$box-background: rgba(172, 172, 172, 0.1);
+	$box-box-shadow: 0 25px 45px rgba(0,0,0,0.1);
 
 	.box {
 		height: 500px;
@@ -32,6 +35,7 @@
 		background: $box-background;
 
 		border-radius: $box-radius;
+		box-shadow: $box-box-shadow;
 
 		display: grid;
 		grid-template:

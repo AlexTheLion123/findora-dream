@@ -1,22 +1,21 @@
 <script>
 	export let text;
+
 </script>
 
 <button>{text}</button>
 
 <style lang="scss">
-	$button-border: 1px solid black;
-    $button-color: rgb(171, 171, 224);
-    $radius: 10px;
+    $button-background: rgba(171, 171, 224, 0.2);
+    $radius: 5px;
 
 	button {
-		border: $button-border;
 		border-radius: $radius;
 		padding: 10px;
-		background: $button-color;
+		background: $button-background;
 
 		&:hover {
-			background: lighten($button-color, 10%);
+			background: lighten($button-background, 10%);
 			cursor: pointer;
 		}
 	}
