@@ -1,12 +1,14 @@
 <script>
-    import Swap from '$lib/components/Swap.svelte'
+    import Liquidity from '$lib/components/Liquidity.svelte'
 </script>
+
 
 <div class="container">
     <div class="wrapper">
-        <Swap/>
+        <Liquidity/>
     </div>
 </div>
+
 
 <style lang="scss">
     .container {
@@ -19,4 +21,6 @@
             padding: 100px 0;
         }
     }
+
+
 </style>

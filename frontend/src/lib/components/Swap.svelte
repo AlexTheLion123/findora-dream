@@ -26,7 +26,7 @@
 
 	</div>
 	<div class="pbox">
-		<div class="btn pbtn" id="p1">25%</div>
+		<div class="btn pbtn" id="p1">25%</div> // TODO change to slider
 		<div class="btn pbtn" id="p2">50%</div>
 		<div class="btn pbtn" id="p3">75%</div>
 		<div class="btn pbtn" id="p4">100%</div>

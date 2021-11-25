@@ -20,20 +20,34 @@
 
 <div class="container">
 	<nav>
-		<div class="item">Swap</div>
-		<div class="item">Liquidity</div>
-		<div class="item">Farms</div>
-		<div class="item">Pools</div>
-		<div class="item">Bridge</div>
+		<a class="item" href="swap">Swap</a>
+		<a class="item" href="liquidity">Liquidity</a>
+		<a class="item" href="farms">Farms</a>
+		<a class="item" href="stake">Stake</a>
+		<div class="item-box" href="lending">
+			<div class="top-item">Lending</div>
+			<ul>
+				<li>Deposit</li>
+				<li>Borrow</li>
+			</ul>
+		</div>
+		<a
+			class="item"
+			href="http://dev-chainbridge.s3-website-us-west-2.amazonaws.com/transfer"
+			target="_blank">Bridge</a
+		>
 	</nav>
 
-	<main>
-		<slot />
-	</main>
+	<slot />
 </div>
 
 <style lang="scss">
 	$btn-color: lightblue;
+
+	:root {
+		font-family: 'Inter', sans-serif;
+		font-weight: 500;
+	}
 
 	:global(*) {
 		margin: 0;
@@ -43,8 +57,6 @@
 
 	:global(html) {
 		height: 100%;
-		font-family: 'Inter', sans-serif;
-        font-weight: 500;
 	}
 
 	:global(body) {
@@ -90,15 +102,42 @@
 
 		background: grey;
 
-		.item {
+		.item, .top-item {
 			background: lightblue;
 			width: 100%;
 			padding: 20px 0 20px 40px;
 			border-bottom: 1px solid black;
 
+			text-decoration: none;
+			display: block;
+
 			&:hover {
 				background: lighten($btn-color, 10%);
 				cursor: pointer;
+			}
+		}
+
+		.item-box {
+			background: lightblue;
+			border-bottom: none;
+
+			.top-item {
+				border-bottom: none;
+			}
+
+			ul {
+				margin-left: 50px;
+				list-style: none;
+				
+				li {
+					border-left: 1px solid black;
+					padding: 10px;
+				}
+
+				li:not(:last-child) {
+					border-bottom: 1px solid black;
+				}
+
 			}
 		}
 	}
