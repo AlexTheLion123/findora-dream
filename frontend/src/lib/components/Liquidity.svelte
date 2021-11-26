@@ -3,18 +3,26 @@
     import TradeButton from '$lib/components/sub/TradeButton.svelte'
     import PoolInfo from '$lib/components/sub/PoolInfo.svelte'
 
-    let name = "bsc";
-
-    
+    let name1 = 'eth';
+	let name2 = 'bsc';
+	let balance1 = 100;
+	let balance2 = 50;
+	let dollars1 = '~ $4000';
+	let dollars2 = '~ $3000';
+	// exchange rate for tokens 1 and 2
+	let value1 = 1;
+	let value2 = 2;
 </script>
 
 <div class="box">
-    <div class="title">Liquidity</div>
+    <p class="title">Liquidity</p>
     <div id="token1">
-        <TokenBox {name}/>
+        <TokenBox name={name1} bind:value={value1} balance={balance1} dollars={dollars1}/>
+
     </div>
     <div id="token2">
-        <TokenBox {name}/>
+        <TokenBox name={name2} bind:value={value2} balance={balance2} dollars={dollars2}/>
+
     </div>
     <div class="pool-info">
         <PoolInfo/>
@@ -27,7 +35,11 @@
 <style lang="scss">
 	$box-radius: 10px;
 	$box-background: rgba(172, 172, 172, 0.1);
-	$box-box-shadow: 0 25px 45px rgba(0,0,0,0.1);
+	$box-border: 1px solid rgba(255, 255, 255, 0.2);
+
+    p {
+		font-size: 25px;
+	}
 
 	.box {
 		height: 500px;
@@ -35,7 +47,7 @@
 		background: $box-background;
 
 		border-radius: $box-radius;
-		box-shadow: $box-box-shadow;
+        border: $box-border;
 
 		display: grid;
 		grid-template:

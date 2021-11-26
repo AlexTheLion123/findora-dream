@@ -7,7 +7,7 @@
 
 <div class="box">
 	<div class="box-left">
-		<button class="symbol">sym</button>
+		<button class="symbol">{name}</button>
 		<p class="balance">{balance}</p>
 	</div>
 	<div class="box-right">
@@ -30,6 +30,8 @@
 		border-radius: $radius;
 
 		display: flex;
+		align-items: center;
+		justify-content: space-between;
 	}
 	input {
 		all: unset;
@@ -37,10 +39,12 @@
 		color: white;
 		text-align: right;
 		overflow: hidden;
+		max-width: 70%;
 	}
 
 	p.dollars {
 		text-align: right;
+		max-width: 70%;
 	}
 
 	input::-webkit-outer-spin-button,

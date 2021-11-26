@@ -1,49 +1,52 @@
 <script>
-    // TODO change percent boxes to slider
-	import TokenBox from './sub/TokenBox.svelte'
-	import TradeButton from './sub/TradeButton.svelte'
-    import RangeSlider from 'svelte-range-slider-pips';
+	// TODO change percent boxes to slider
+	import TokenBox from './sub/TokenBox.svelte';
+	import TradeButton from './sub/TradeButton.svelte';
+	import RangeSlider from 'svelte-range-slider-pips';
 
-	let name = "eth";
 	let hue = [100];
-
 	$: lightColor = `hsl(${Math.round(hue[0]) - 10}, 65%, 70%)`;
-    $: color = `hsl(${Math.round(hue[0])}, 63%, 54%)`;
+	$: color = `hsl(${Math.round(hue[0])}, 63%, 54%)`;
 
-	let value1;
+	
+	let name1 = 'eth';
+	let name2 = 'bsc';
+	let balance1 = 100;
+	let balance2 = 50;
+	let dollars1 = '~ $4000';
+	let dollars2 = '~ $3000';
+	// exchange rate for tokens 1 and 2
+	let value1 = 1;
+	let value2 = 2;
 </script>
 
 <form>
 	<p class="title">Swap</p>
 
 	<div id="token1">
-		<TokenBox {name} bind:value={value1}/>
+		<TokenBox name={name1} bind:value={value1} balance={balance1} dollars={dollars1} />
 	</div>
 
 	<div id="token2">
-		<TokenBox {name}/>
+		<TokenBox name={name2} bind:value={value2} balance={balance2} dollars={dollars2} />
 	</div>
-	
+
 	<div class="slider-box" style="--range-handle-focus: {color}; --range-range: {lightColor}">
-		<RangeSlider id="color-pips" bind:values={hue} 
-      range="min" float
-    />
+		<RangeSlider id="color-pips" bind:values={hue} range="min" float />
 	</div>
 
 	<div class="swap-button">
-		<TradeButton text="Swap" bind:color={color}/>
+		<TradeButton text="Swap" bind:color />
 	</div>
-
 </form>
 
 <style lang="scss">
 	$box-radius: 10px;
 	$box-background: rgba(172, 172, 172, 0.1);
-	$box-box-shadow: 0 25px 45px rgba(0,0,0,0.1);
+	$box-border: 1px solid rgba(255, 255, 255, 0.2);
 
 	p {
 		font-size: 25px;
-		letter-spacing: 3px;
 	}
 	form {
 		height: 500px;
@@ -51,8 +54,7 @@
 		background: $box-background;
 
 		border-radius: $box-radius;
-		box-shadow: $box-box-shadow;
-		border: 1px solid rgba(255,255,255,0.2);
+		border: $box-border;
 
 		display: grid;
 		grid-template:
@@ -87,10 +89,10 @@
 		.swap-button {
 			grid-area: btn;
 		}
-		
+
 		.token-box {
 			display: flex;
-            align-items: center;
+			align-items: center;
 			justify-content: space-between;
 		}
 

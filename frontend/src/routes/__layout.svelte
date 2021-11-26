@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Nav from '$lib/components/layout/Nav.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
+
 </script>
 
 <svelte:head>
@@ -13,16 +14,14 @@
 	<script src="https://kit.fontawesome.com/30f595e84f.js" crossorigin="anonymous"></script>
 </svelte:head>
 
-<div class="all">
-	<div class="container">
-		<div class="nav"><Nav /></div>
-		<header><Header /></header>
-		<main><slot /></main>
-	</div>
+<div class="container">
+	<div class="nav"><Nav /></div>
+	<header><Header /></header>
+	<main><slot /></main>
 </div>
 
 <style lang="scss">
-	$global-background: linear-gradient(to right top, #080b1aff, rgb(62, 109, 226));
+	$global-background: rgb(37, 53, 94);
 	$container-blur: 50px;
 	$nav-border-right: 1px solid rgba(105, 105, 206, 0.5);
 
@@ -38,18 +37,17 @@
 		box-sizing: border-box;
 	}
 
-	:global(html) {
+	:global(html),
+	:global(body) {
+		min-height: 100%;
 		height: 100%;
 	}
 
 	:global(body) {
-		/* font: 16px/1.6em -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"; */
-		height: 100%;
+		background: $global-background;
 	}
 
-	:global(#svelte) {
-		height: 100%;
-	}
+	
 
 	:global(button),
 	:global(input[type='submit']),
@@ -61,12 +59,6 @@
 		font: inherit;
 		cursor: pointer;
 		outline: inherit;
-	}
-
-	.all {
-		min-height: 100vh;
-		min-width: 100vh;
-		background: $global-background;
 	}
 
 	header {
@@ -84,19 +76,16 @@
 
 		display: grid;
 
-		grid-template: 
-		"nav header" 1fr
-		"nav content" 5fr
-		/ minmax(200px, 300px) 3fr;
-
-		
+		grid-template:
+			'nav header' 1fr
+			'nav content' 5fr
+			/ minmax(200px, 300px) 3fr;
 	}
 
 	.nav {
 		height: 100%;
 		grid-area: nav;
 		border-right: $nav-border-right;
-
 	}
 
 	main {
