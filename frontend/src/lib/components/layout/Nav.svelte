@@ -42,7 +42,7 @@
 	</section>
 	<section id="Prediction">
 		<h4>Prediction</h4>
-		<a class="item" href="/fire">
+		<a class="item" href="/fireAndIce">
 			<i class="fab fa-instagram-square" />
 			Fire & Ice
 		</a>
