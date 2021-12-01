@@ -4,9 +4,9 @@
 	import TradeButton from './sub/TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	let hue = [100];
-	$: lightColor = `hsl(${Math.round(hue[0]) - 10}, 65%, 70%)`;
-	$: color = `hsl(${Math.round(hue[0])}, 63%, 54%)`;
+	let hue = [0];
+	$: lightColor = `hsl(${Math.round(hue[0])-50}, 100%, 70%)`;
+	$: color = `hsl(${Math.round(hue[0])}, 100%, 54%)`;
 
 	
 	let name1 = 'eth';
@@ -31,12 +31,12 @@
 		<TokenBox name={name2} bind:value={value2} balance={balance2} dollars={dollars2} />
 	</div>
 
-	<div class="slider-box" style="--range-handle-focus: {color}; --range-range: {lightColor}">
-		<RangeSlider id="color-pips" bind:values={hue} range="min" float />
+	<div class="slider-box">
+		<RangeSlider id="color-pips" range="min" float pips step={5}/>
 	</div>
 
 	<div class="swap-button">
-		<TradeButton text="Swap" bind:color />
+		<TradeButton text="Swap"/>
 	</div>
 </form>
 

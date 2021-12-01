@@ -92,7 +92,6 @@
 	}
 
 	nav {
-		height: 100%;
 		padding: 0 30px;
 
 		h4 {

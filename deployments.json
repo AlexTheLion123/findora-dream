@@ -3,6 +3,70 @@
     "myToken": {
       "txHash": "0xb09e2bf5468644a808acd3d7caddcc7db9399afd4d40d16588eca080a2f47fce",
       "address": "0x0648AD5bB2f8b1Af7ab048A67d3fB791C0C3E2Bd"
+    },
+    "AddressStringUtil": {
+      "txHash": "0x1854b6b8297e128bd602d673e48015d2a1406240d51d5558b59e65603f02d91d",
+      "address": "0x91820655cEa1e7c0C50DfC95146FBD570e4AD8d5"
+    },
+    "Babylonian": {
+      "txHash": "0x79153493736512460a1578b6647c9df4beb30969bea42cd2eb90d91ec9eb1afe",
+      "address": "0x4Ac9165B4E9D9c67b062A68B300202DA22BA2698"
+    },
+    "BitMath": {
+      "txHash": "0x2df218bf2510c5a2d9dcae54eead95f0a8d99d312101d984d7ed0fe33723a956",
+      "address": "0x2dA6732d6643C243A6187d2155E6b28214D59Be1"
+    },
+    "FixedPoint": {
+      "txHash": "0x43bc234120eb151db8828eff8f030052f956e126659fe6f6170b4bc0f2628e48",
+      "address": "0x2EACb567D922337F3922e4EdE8546FFD9cA8D63a"
+    },
+    "FullMath": {
+      "txHash": "0x53f4992d62ae99b206fc5e48587025d755b94a802be79aaf5012dd8a8b3bb511",
+      "address": "0x3E58AEB8E8e7D649F158D579547076EaB5c1765f"
+    },
+    "Math": {
+      "txHash": "0x53f81b83558cbea2ae34c9affe36a029569f643ba648218e591e373c9d05101b",
+      "address": "0x8BbA8034639e6e3D0ea1f33dEEeB822BAc7e47e9"
+    },
+    "SafeERC20Namer": {
+      "txHash": "0x392a6b4272a9095fb5697d2a4b4e8f4fda6d82dd05d659c0b89852d24aad5837",
+      "address": "0x56A2aB72fEC27a75D75e0721b47C89ff5Dd127f2"
+    },
+    "TransferHelper": {
+      "txHash": "0x3a84216003a34c6e12c33591a166b52d35ca3c2bda33d7bf7651523414ca35bf",
+      "address": "0xF3E6a025a0a38D3efe3Ca6325e6D53223B6a9Cea"
+    },
+    "UniswapV2ERC20": {
+      "txHash": "0xf55a4f06489ac2de7cb6ac2bc32f97a82e6c36f707901d0c990dbaf911b12191",
+      "address": "0x7a8CbDB1b1B56068Ff52d2DaBbDa22A04613de09"
+    },
+    "UniswapV2Factory": {
+      "txHash": "0x142b763a59e538d70d17eb5cbaf2ca5c0895759cc01b9cc8de094212ca1a784e",
+      "address": "0xFf38f7AC1D964E7bbb2ccc35a247D9A4f3DE4992"
+    },
+    "UniswapV2Library": {
+      "txHash": "0x6a15d525aacd46c0966388a45246be2365cea7d5019bb329cc98ec510f668192",
+      "address": "0x4621F4533C4190E363b64614371c4914681F8BeC"
+    },
+    "UniswapV2LiquidityMathLibrary": {
+      "txHash": "0x161be1397ddc5c2c6f245d68f79fd72bae0a9a32d10a97cd043a232444be4200",
+      "address": "0xbc5Cab1C524Cc33069E88eC15760f3f7E83e72dE"
+    },
+    "UniswapV2OracleLibrary": {
+      "txHash": "0x8ee34bd67517977a5a6bd0c724030a396a435ac5ca164ffa792fb43b746ab02f",
+      "address": "0xc063a2E31FC5AD4C7fdd783D456dBed8Dcc58f31"
+    },
+    "UniswapV2Pair": {
+      "txHash": "0x4aab8e319aa9079ee3058478f6c6c4d0790413a337f0a8461eb861396fa3d924",
+      "address": "0x95a50a6D2660EA2a15F6F93F84bac68B63c9571c"
+    },
+    "UniswapV2Router02": {
+      "txHash": "0x22f2130481cafe116386011489453296e86d2af42afd8fd573a8591e8acffbee",
+      "address": "0x5252085F859f2C466b8Bfca1D1e0059615dFd5fB"
+    },
+    "UQ112x112": {
+      "txHash": "0x21d873246cdb0f13845003cb3f5e79c25e971115589614c16f2bfd779dbab43e",
+      "address": "0x90dE97021E7b3D33fd2c9AFf5977b30ADC5B5877"
     }
   }
 }

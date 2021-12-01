@@ -82,11 +82,12 @@ contract UniswapV2Pair is IUniswapV2Pair {
         uint112 _reserve0,
         uint112 _reserve1
     ) private {
+        require(balance0 <= type(uint112).max && balance1 <= type(uint112).max, 'UniswapV2: OVERFLOW');
         uint32 blockTimestamp = uint32(block.timestamp);
 
         uint32 timeElapsed;
         unchecked {
-            timeElapsed = blockTimestamp - blockTimestampLast; // overflow is desired
+            timeElapsed = blockTimestamp - blockTimestampLast; // overflow is desired, because distance preserved even in case of overflow
         }
 
         if (timeElapsed > 0 && _reserve0 != 0 && _reserve1 != 0) {

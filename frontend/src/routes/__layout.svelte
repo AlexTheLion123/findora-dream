@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Nav from '$lib/components/layout/Nav.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
-
+	import Background from '$lib/components/layout/Background.svelte';
 </script>
 
 <svelte:head>
@@ -15,14 +15,15 @@
 </svelte:head>
 
 <div class="container">
-	<div class="nav"><Nav /></div>
-	<header><Header /></header>
-	<main><slot /></main>
+	<Background/>
+	<div class="nav"><Nav/></div>
+	<header><Header/></header>
+	<main><slot/></main>
 </div>
 
 <style lang="scss">
-	$global-background: rgb(37, 53, 94);
-	$container-blur: 50px;
+	$global-background: none;
+	$container-blur: 250px;
 	$nav-border-right: 1px solid rgba(105, 105, 206, 0.5);
 
 	:root {
@@ -93,5 +94,6 @@
 		width: 100%;
 		display: grid;
 		grid-area: content;
+
 	}
 </style>

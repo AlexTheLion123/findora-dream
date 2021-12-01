@@ -1,14 +1,13 @@
 <script>
 	export let text;
-	export let color = "orange";
 </script>
 
-<button type="submit" style="background: {color}">
+<button type="submit" >
 	{text}
 </button>
 
 <style lang="scss">
-	$background: orange;
+	$background: linear-gradient(to right, rgb(251, 255, 0), rgb(255, 102, 0), rgb(255, 0, 255));
 
 	button {
 		display: grid;
@@ -22,7 +21,6 @@
 
 		&:hover {
 			cursor: pointer;
-			background: lighten($background, 10%);
 		}
 	}
 </style>
