@@ -1,4 +1,13 @@
 <script lang="ts" context="module">
+	import MetaMaskOnboarding from '@metamask/onboarding';
+
+	let isInit = false;
+	let button: HTMLButtonElement; // html selector
+	let accounts: string[] = [];
+	let isWrongNetwork = false;
+
+	let onboarding: MetaMaskOnboarding;
+
 	declare global {
 		interface Window {
 			ethereum: any;
@@ -15,15 +24,7 @@
 	import { isConnected } from '$lib/stores';
 	import { currentAccount } from '$lib/stores';
 	import { chainId } from '$lib/stores';
-	import MetaMaskOnboarding from '@metamask/onboarding';
-
-	let isInit = false;
-	let button: HTMLButtonElement; // html selector
-	let btnText = 'Connect Wallet';
-	let accounts: string[] = [];
-	let isWrongNetwork = false;
-
-	let onboarding: MetaMaskOnboarding;
+	import { buttonText } from '$lib/stores';
 
 	function initialize() {
 		onboarding = new MetaMaskOnboarding();
@@ -51,29 +52,28 @@
 	async function updateButton() {
 		if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
 			// Metamask is not installed
-
+			
 			setButtonText('Click here to install metmask', false);
-
+			
 			button.onclick = () => {
-				btnText = 'Onboarding in progress';
-				button.disabled = true;
+				setButtonText('Onboarding in progress', true);
 				onboarding.startOnboarding();
 			};
 		} else {
 			// Metamask is installed, and therefore ethereum exists
-
+			
 			if (!isInit) {
 				// If first time getting here, set chainId store
 				$chainId = await getChain();
 				isInit = true;
 			}
-
+			
 			if (!checkNetwork($chainId)) {
 				// If wrong chain, prevent connection attempt
 				setButtonText('Wrong network', true);
 				return;
 			}
-
+			
 			if (accounts && accounts.length > 0) {
 				// accounts have been retrieved
 
@@ -137,12 +137,11 @@
 	}
 
 	function setButtonText(text: string, isDisabled: boolean) {
-		btnText = text;
+		$buttonText = text;
 		button.disabled = isDisabled;
 	}
 
-	onMount(initialize); // TODO uncomment
-
+	onMount(initialize);
 </script>
 
 <button
@@ -151,7 +150,7 @@
 	class:wrongNetwork={isWrongNetwork === true}
 	on:click={() => updateButton()}
 >
-	{btnText}
+	{$buttonText}
 </button>
 
 <style lang="scss">

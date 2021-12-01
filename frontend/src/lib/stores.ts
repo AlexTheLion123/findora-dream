@@ -4,6 +4,7 @@ import { writable } from 'svelte/store'
 export const isConnected = writable(false);
 export const currentAccount = writable(null);
 export const chainId = writable(null);
+export const buttonText = writable("Connect Wallet");
 
 // grid or list layout
 export const isGrid = writable(false);

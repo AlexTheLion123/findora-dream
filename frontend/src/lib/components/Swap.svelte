@@ -3,6 +3,7 @@
 	import TokenBox from './sub/TokenBox.svelte';
 	import TradeButton from './sub/TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
+	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
 
 	let hue = [0];
 	$: lightColor = `hsl(${Math.round(hue[0])-50}, 100%, 70%)`;
@@ -18,6 +19,8 @@
 	// exchange rate for tokens 1 and 2
 	let value1 = 1;
 	let value2 = 2;
+
+	
 </script>
 
 <form>

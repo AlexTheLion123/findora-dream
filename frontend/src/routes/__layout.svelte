@@ -1,7 +1,30 @@
+<script context="module" lang="ts">
+	import { ethers } from 'ethers';
+	import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
+
+	let provider: Web3Provider;
+	let signer: JsonRpcSigner;
+</script>
+
 <script lang="ts">
+	import { isConnected } from '$lib/stores';
+	import { onMount } from 'svelte';
+
 	import Nav from '$lib/components/layout/Nav.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
 	import Background from '$lib/components/layout/Background.svelte';
+
+	onMount(() => {
+		if ($isConnected) {
+			if (window.ethereum) {
+				provider = new ethers.providers.Web3Provider(window.ethereum);
+				signer = provider.getSigner();
+
+				console.log(provider);
+				console.log(signer);
+			}
+		}
+	});
 </script>
 
 <svelte:head>
@@ -15,10 +38,10 @@
 </svelte:head>
 
 <div class="container">
-	<Background/>
-	<div class="nav"><Nav/></div>
-	<header><Header/></header>
-	<main><slot/></main>
+	<Background />
+	<div class="nav"><Nav /></div>
+	<header><Header /></header>
+	<main><slot /></main>
 </div>
 
 <style lang="scss">
@@ -47,8 +70,6 @@
 	:global(body) {
 		background: $global-background;
 	}
-
-	
 
 	:global(button),
 	:global(input[type='submit']),
@@ -94,6 +115,5 @@
 		width: 100%;
 		display: grid;
 		grid-area: content;
-
 	}
 </style>
