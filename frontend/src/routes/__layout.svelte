@@ -1,29 +1,35 @@
 <script context="module" lang="ts">
-	import { ethers } from 'ethers';
-	import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
+	import { Contract, ethers, providers } from 'ethers';
+	import UniswapV2Router02 from '$lib/abis/UniswapV2Router02.json';
 
-	let provider: Web3Provider;
-	let signer: JsonRpcSigner;
+	
 </script>
 
 <script lang="ts">
-	import { isConnected } from '$lib/stores';
-	import { onMount } from 'svelte';
+	import { isConnected, provider, signer, isProvided, router } from '$lib/stores';
+	import { onMount, setContext } from 'svelte';
+	import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
 
 	import Nav from '$lib/components/layout/Nav.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
 	import Background from '$lib/components/layout/Background.svelte';
 
 	onMount(() => {
-		if ($isConnected) {
-			if (window.ethereum) {
-				provider = new ethers.providers.Web3Provider(window.ethereum);
-				signer = provider.getSigner();
-
-				console.log(provider);
-				console.log(signer);
+		isConnected.subscribe((value) => {
+			if (value) {
+				// connected
+				$provider = new ethers.providers.Web3Provider(window.ethereum);
+				$signer = $provider.getSigner();
+				$isProvided = true;
+				$router = new ethers.Contract("0x5252085F859f2C466b8Bfca1D1e0059615dFd5fB", UniswapV2Router02.abi, $signer)
+				
+			} else {
+				$provider = null;
+				$signer = null;
+				$isProvided = false;
+				$router = null;
 			}
-		}
+		});
 	});
 </script>
 

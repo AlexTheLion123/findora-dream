@@ -1,15 +1,16 @@
+<script context="module" lang="ts">
+	import { ethers, providers } from 'ethers';
+</script>
+
 <script>
 	// TODO change percent boxes to slider
 	import TokenBox from './sub/TokenBox.svelte';
 	import TradeButton from './sub/TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
+	import { getContext, onMount } from 'svelte';
+	import { provider, signer, isProvided } from '$lib/stores';
 	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
 
-	let hue = [0];
-	$: lightColor = `hsl(${Math.round(hue[0])-50}, 100%, 70%)`;
-	$: color = `hsl(${Math.round(hue[0])}, 100%, 54%)`;
-
-	
 	let name1 = 'eth';
 	let name2 = 'bsc';
 	let balance1 = 100;
@@ -20,7 +21,11 @@
 	let value1 = 1;
 	let value2 = 2;
 
-	
+	onMount(() => {
+		isProvided.subscribe((value) => {
+			
+		});
+	});
 </script>
 
 <form>
@@ -35,11 +40,11 @@
 	</div>
 
 	<div class="slider-box">
-		<RangeSlider id="color-pips" range="min" float pips step={5}/>
+		<RangeSlider id="color-pips" range="min" float pips step={5} />
 	</div>
 
 	<div class="swap-button">
-		<TradeButton text="Swap"/>
+		<TradeButton text="Swap" />
 	</div>
 </form>
 
