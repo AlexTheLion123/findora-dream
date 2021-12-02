@@ -12,16 +12,18 @@
 	// exchange rate for tokens 1 and 2
 	let value1 = 1;
 	let value2 = 2;
+    let logoSrc1 = "src/lib/assets/token-logos/eth_logo.svg";
+	let logoSrc2 = "src/lib/assets/token-logos/bnb_logo.svg";
 </script>
 
 <div class="box">
     <p class="title">Liquidity</p>
     <div id="token1">
-        <TokenBox name={name1} bind:value={value1} balance={balance1} dollars={dollars1}/>
+        <TokenBox name={name1} bind:value={value1} balance={balance1} dollars={dollars1} logoSrc={logoSrc1}/>
 
     </div>
     <div id="token2">
-        <TokenBox name={name2} bind:value={value2} balance={balance2} dollars={dollars2}/>
+        <TokenBox name={name2} bind:value={value2} balance={balance2} dollars={dollars2} logoSrc={logoSrc2}/>
 
     </div>
     <div class="pool-info">

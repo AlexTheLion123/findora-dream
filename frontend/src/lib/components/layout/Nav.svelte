@@ -44,13 +44,13 @@
 			Vaults
 		</a>
 	</section>
-	<!-- <section id="Prediction">
+	<section id="Prediction">
 		<h4>Prediction</h4>
 		<a class="item" href="/fireAndIce">
 			<i class="fab fa-instagram-square" />
 			Fire & Ice
 		</a>
-	</section> -->
+	</section>
 	<section id="Lending">
 		<h4>Lending</h4>
 		<a class="item" href="/fireAndIce">
