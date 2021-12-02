@@ -1,5 +1,6 @@
 import { writable} from 'svelte/store'
 import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
+import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
 
 
 // metamask
@@ -14,7 +15,7 @@ export const buttonText = writable("Connect Wallet");
 export const provider  = writable(null as Web3Provider) 
 export const signer = writable(null as JsonRpcSigner) 
 export const isProvided = writable(false);
-export const router = writable(null);
+export const router = writable(null as UniswapV2Router02);
 
 // grid or list layout
 export const isGrid = writable(false);

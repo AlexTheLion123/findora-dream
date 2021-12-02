@@ -3,13 +3,14 @@
 </script>
 
 <script>
-	// TODO change percent boxes to slider
+	import { isProvided, router } from '$lib/stores';
+	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
+
 	import TokenBox from './sub/TokenBox.svelte';
 	import TradeButton from './sub/TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
-	import { getContext, onMount } from 'svelte';
-	import { provider, signer, isProvided } from '$lib/stores';
-	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
+
+
 
 	let name1 = 'eth';
 	let name2 = 'bsc';
@@ -21,10 +22,12 @@
 	let value1 = 1;
 	let value2 = 2;
 
-	onMount(() => {
-		isProvided.subscribe((value) => {
+	isProvided.subscribe((value) => {
+		if (value) {
+			// isProvided = true, then signed router contract exists
 			
-		});
+			
+		}
 	});
 </script>
 

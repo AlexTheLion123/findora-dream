@@ -1,34 +1,34 @@
 <script context="module" lang="ts">
 	import { Contract, ethers, providers } from 'ethers';
 	import UniswapV2Router02 from '$lib/abis/UniswapV2Router02.json';
-
-	
+	import type { UniswapV2Router02 as RouterType} from '$lib/types/UniswapV2Router02';
 </script>
 
 <script lang="ts">
 	import { isConnected, provider, signer, isProvided, router } from '$lib/stores';
-	import { onMount } from 'svelte';
 
 	import Nav from '$lib/components/layout/Nav.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
 	import Background from '$lib/components/layout/Background.svelte';
 
-	onMount(() => {
-		isConnected.subscribe((value) => {
-			if (value) {
-				// connected
-				$provider = new ethers.providers.Web3Provider(window.ethereum);
-				$signer = $provider.getSigner();
-				$isProvided = true;
-				$router = new ethers.Contract("0x5252085F859f2C466b8Bfca1D1e0059615dFd5fB", UniswapV2Router02.abi, $signer)
-				
-			} else {
-				$provider = null;
-				$signer = null;
-				$isProvided = false;
-				$router = null;
-			}
-		});
+	isConnected.subscribe((value) => {
+		if (value) {
+			// connected
+			$provider = new ethers.providers.Web3Provider(window.ethereum);
+			$signer = $provider.getSigner();
+			$router = new ethers.Contract(
+				'0x5252085F859f2C466b8Bfca1D1e0059615dFd5fB',
+				UniswapV2Router02.abi,
+				$signer
+			) as RouterType;
+			$isProvided = true;
+			console.log('hello');
+		} else {
+			$provider = null;
+			$signer = null;
+			$isProvided = false;
+			$router = null;
+		}
 	});
 </script>
 
