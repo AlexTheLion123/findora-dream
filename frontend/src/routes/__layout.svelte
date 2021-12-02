@@ -7,8 +7,7 @@
 
 <script lang="ts">
 	import { isConnected, provider, signer, isProvided, router } from '$lib/stores';
-	import { onMount, setContext } from 'svelte';
-	import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
+	import { onMount } from 'svelte';
 
 	import Nav from '$lib/components/layout/Nav.svelte';
 	import Header from '$lib/components/layout/Header.svelte';

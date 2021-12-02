@@ -97,15 +97,5 @@
 		.swap-button {
 			grid-area: btn;
 		}
-
-		.token-box {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-		}
-
-		span {
-			display: block;
-		}
 	}
 </style>
