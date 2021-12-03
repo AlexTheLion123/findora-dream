@@ -2,15 +2,19 @@
 	import { ethers, providers } from 'ethers';
 </script>
 
-<script>
+<script lang="ts">
 	import { isProvided, router } from '$lib/stores';
 	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
 	import TokenBox from './TokenBox.svelte';
 	import TradeButton from './TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
+	let token1Address; // address
+	let token2Address; // address
 	let numTokens1;
 	let numTokens2;
+
+	let rate;
 
 	isProvided.subscribe((value) => {
 		if (value) {
@@ -20,16 +24,71 @@
 		}
 	});
 
+
+	$: if(numTokens1) {
+		// will be updated every time numTokens1 updated
+
+		if(token1Address && token2Address) {
+			if(numTokens2) {
+				getExactSwapData(token1Address, token2Address);
+			} else {
+				getSwapRate(token1Address, token2Address);
+			}
+		}
+	}
+
+	$: if(numTokens2) {
+		// will be updated every time numTokens2 updated
+
+		if(token2Address && token1Address) {
+			if(numTokens2) {
+				getExactSwapData(token1Address, token2Address);
+			} else {
+				getSwapRate(token1Address, token2Address);
+			}
+		}
+	}
+
+
 	function handleSelection1(e) {
-		if(numTokens1) {
-		} else {
-			
+		token1Address = e.detail.address;
+		
+		if(token2Address) {
+			// if other not selected, do nothing - since we only care about price within pool
+			if(numTokens1 && numTokens2) {
+				getExactSwapData(token1Address, token2Address)
+				
+			} else {
+				getSwapRate(token1Address, token2Address);
+			}
 		}
 	}
 	function handleSelection2(e) {
-		if(numTokens2) {
-		} else {
+		token2Address = e.detail.address;
+
+		if(token1Address) {
+			if(numTokens1 && numTokens2) {
+				getExactSwapData(token1Address, token2Address);
+			} else {
+				getSwapRate(token1Address, token2Address);
+			}
 		}
+	}
+
+	async function getExactSwapData(token1Address, token2Address) {
+		let exists = await checkPairExists(token1Address, token2Address);
+
+		if(exists) {
+			// swap
+		} else {
+			// create pair
+		}
+	}
+	async function checkPairExists(token1Address, token2Address){
+		return true; // query blockchain
+	}
+	function getSwapRate(token1Address, token2Address) {
+
 	}
 </script>
 
