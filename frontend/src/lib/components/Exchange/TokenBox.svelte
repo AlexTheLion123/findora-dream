@@ -1,17 +1,47 @@
-<script>
+<script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import TokenSelector from "./TokenSelector.svelte";
 
-	export let name; // abbreviation
-	export let balance;
-	export let dollars;
-	export let value;
-	export let logoSrc;
+	export let numTokens;
+	let balance = 0.00;
+	let dollars = 0.00;
+	let dollarRate;
+	
+	$: if(numTokens && dollarRate) {
+		dollars = numTokens * dollarRate;
+	}
+
+	const dispatch = createEventDispatcher();
+	function handleSelection(e) {
+		updateBox(e.detail.address);
+		dispatch('tokenSelected', e);
+	}
+
+	// TODO fix all these functions, currently mocks
+	function updateBox(address: string) {
+		balance = getBalance(address);
+		dollars = getDollarValue(numTokens, address);
+	}
+
+	function getBalance(address: string) {
+		console.log("get data", address)
+		return 100;
+	}
+
+	function getDollarValue(_numTokens: number, _address: string) {
+		dollarRate = getDollarExchangeRate(_address);
+		return _numTokens * dollarRate;
+	}
+
+	function getDollarExchangeRate(_address: string) {
+		return 20;
+	}
 </script>
 
 <div class="box">
-		<div class="selector"><TokenSelector {name} {logoSrc}/></div>
+		<div class="selector"><TokenSelector on:tokenSelected={handleSelection}/></div>
 		<p class="balance">Balance: {balance}</p>
-		<input type="number" bind:value placeholder="0.00" />
+		<input type="number" bind:value={numTokens} placeholder="0.00" />
 		<p class="dollars">{dollars}</p>
 	</div>
 

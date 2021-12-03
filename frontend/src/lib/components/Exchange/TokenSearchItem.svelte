@@ -1,26 +1,24 @@
-<script context="module">
-	import { writable } from "svelte/store";
-    const current = writable();
-</script>
+<script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 
-<script>
 	export let src = 'src/lib/assets/tokens/logos/eth_logo.svg';
 	export let name;
+    export let symbol;
+    export let address;
 
-	let item;
-
-	async function select() {
-		$current = item;
-	}
+	const dispatch = createEventDispatcher();
+	function dispatchEvent() {
+        dispatch('tokenSelected', {
+            element: this,
+            src: src, 
+            symbol: symbol,
+            address: address
+        })
+    }
 </script>
 
-<div
-	bind:this={item}
-	class="container"
-	on:click={select}
-	class:selected={item===$current}
->
-	<img {src} class="symbol" width="35" height="35" alt="" />
+<div class="container" on:click={dispatchEvent}>
+	<img {src} class="logo" width="35" height="35" alt="" />
 	<p>{name}</p>
 </div>
 
@@ -36,10 +34,6 @@
 
 	.container:hover {
 		cursor: pointer;
-		background: rgb(255, 255, 255, 0.3);
-	}
-
-	.selected {
 		background: rgb(255, 255, 255, 0.3);
 	}
 </style>

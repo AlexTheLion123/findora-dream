@@ -10,19 +10,8 @@
 	import TradeButton from './TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-
-
-	let name1 = 'eth';
-	let name2 = 'bnb';
-	let balance1 = 100;
-	let balance2 = 50;
-	let dollars1 = '~ $4000';
-	let dollars2 = '~ $3000';
-	// exchange rate for tokens 1 and 2
-	let value1 = 1;
-	let value2 = 2;
-	let logoSrc1 = "src/lib/assets/tokens/logos/eth_logo.svg";
-	let logoSrc2 = "src/lib/assets/tokens/logos/bnb_logo.svg";
+	let numTokens1;
+	let numTokens2;
 
 	isProvided.subscribe((value) => {
 		if (value) {
@@ -37,11 +26,11 @@
 	<p class="title">Swap</p>
 
 	<div id="token1">
-		<TokenBox name={name1} bind:value={value1} balance={balance1} dollars={dollars1} logoSrc={logoSrc1}/>
+		<TokenBox bind:numTokens={numTokens1}/>
 	</div>
 
 	<div id="token2">
-		<TokenBox name={name2} bind:value={value2} balance={balance2} dollars={dollars2} logoSrc={logoSrc2}/>
+		<TokenBox bind:numTokens={numTokens2}/>
 	</div>
 
 	<div class="slider-box">

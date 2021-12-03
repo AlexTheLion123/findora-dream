@@ -1,7 +1,22 @@
 <script lang="ts">
-	export let isShown = false;
-	import tokens from '$lib/assets/tokens/src/tokens.json';
+	import { createEventDispatcher } from 'svelte';
+    import tokens from '$lib/assets/tokens/src/tokens.json';
 	import TokenSearchItem from '$lib/components/Exchange/TokenSearchItem.svelte';
+    
+	export let isShown = false;
+	let current;
+
+	const dispatch = createEventDispatcher();
+	function handleSelection(e) {
+		if (current) {
+			// if another element has already been selected
+			current.style.background = 'none';
+		}
+		current = e.detail.element; // update current
+        current.style.background = "rgb(255, 255, 255, 0.3)";
+
+        dispatch("tokenSelected", e.detail);
+	}
 </script>
 
 {#if isShown}
@@ -12,7 +27,12 @@
 		</header>
 		<main>
 			{#each tokens as token}
-				<TokenSearchItem name={token.symbol} />
+				<TokenSearchItem
+					name={token.name}
+					address={token.address}
+					symbol={token.symbol}
+					on:tokenSelected={handleSelection}
+				/>
 			{/each}
 		</main>
 	</div>
