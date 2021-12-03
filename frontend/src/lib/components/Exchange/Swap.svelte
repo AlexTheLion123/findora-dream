@@ -22,18 +22,13 @@
 
 	function handleSelection1(e) {
 		if(numTokens1) {
-			console.log('hello1')
 		} else {
-			console.log("bye2");
 			
 		}
 	}
 	function handleSelection2(e) {
 		if(numTokens2) {
-			console.log('hello1')
 		} else {
-			console.log("bye2");
-			
 		}
 	}
 </script>

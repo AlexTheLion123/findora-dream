@@ -36,13 +36,19 @@
 	function getDollarExchangeRate(_address: string) {
 		return Math.random()*20;
 	}
+
+	function formatNumber(num: number, decimals: number) {
+		const formated = Math.round(num*(10**decimals))/(10**decimals)
+		console.log("formated", formated)
+		return formated
+	}
 </script>
 
 <div class="box">
 		<div class="selector"><TokenSelector on:tokenSelected={handleSelection}/></div>
-		<p class="balance">Balance: {Math.round(balance*10000)/10000}</p>
+		<p class="balance">Balance: {formatNumber(balance, 4)}</p>
 		<input type="number" bind:value={numTokens} placeholder="0.00" />
-		<p class="dollars">~$ {Math.round(dollars*100)/100}</p>
+		<p class="dollars">~$ {formatNumber(dollars,2)}</p>
 	</div>
 
 <style lang="scss">
