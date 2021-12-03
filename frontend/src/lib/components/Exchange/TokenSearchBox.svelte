@@ -1,36 +1,50 @@
 <script lang="ts">
 	export let isShown = false;
-
 	import tokens from '$lib/assets/tokens/src/tokens.json';
+	import TokenSearchItem from '$lib/components/Exchange/TokenSearchItem.svelte';
 </script>
 
 {#if isShown}
 	<div class="box">
-		<div class="wrapper">
-			<header>
-				<input type="text" />
-				<i class="fas fa-times" on:click={() => (isShown = false)} />
-			</header>
-			<main>
-                
-            </main>
-		</div>
+		<header>
+			<input type="text" />
+			<i class="fas fa-times" on:click={() => (isShown = false)} />
+		</header>
+		<main>
+			{#each tokens as token}
+				<TokenSearchItem name={token.symbol} />
+			{/each}
+		</main>
 	</div>
 {/if}
 
 <style lang="scss">
 	.box {
 		height: 70vh;
-		width: 500px;
+		width: 450px;
 		background: black;
+		padding: 20px;
+		border-radius: 5px;
 
-		border-radius: 20px;
-
-		.wrapper {
-			padding: 20px;
-		}
+		display: flex;
+		flex-direction: column;
 	}
 
+	::-webkit-scrollbar {
+		width: 10px;
+		background: rgb(15, 15, 15);
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: rgb(7, 187, 178);
+		border-radius: 5px;
+	}
+
+	main {
+		margin-top: 20px;
+		overflow-y: scroll;
+		height: 100%;
+	}
 	header {
 		display: grid;
 		grid-template-columns: 1fr 4fr 1fr;
