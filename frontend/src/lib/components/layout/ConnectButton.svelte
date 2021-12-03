@@ -117,7 +117,7 @@
 	}
 
 	function checkNetwork(_chainId) {
-		if (_chainId !== '0x1') {
+		if (_chainId !== '0x1' && _chainId !== '0x539') { // TODO remove dev chainId
 			// is not ethereum mainnet
 			// not ethereum
 			alert('We only support ethereum mainnet, please change the network');

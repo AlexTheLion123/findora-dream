@@ -24,7 +24,7 @@
 			<i class="fab fa-instagram-square" />
 			Liquidity
 		</a>
-		<a class="item" href="/liquidity" class:selected={$page.path == '/liquidity'}>
+		<a class="item" href="/liquidity" class:selected={$page.path == '/leverage'}>
 			<i class="fab fa-instagram-square" />
 			Leverage
 		</a>
