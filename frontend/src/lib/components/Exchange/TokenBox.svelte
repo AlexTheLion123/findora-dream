@@ -12,9 +12,9 @@
 	}
 
 	const dispatch = createEventDispatcher();
-	function handleSelection(e) {
+	function handleSelection(e) { 
 		updateBox(e.detail.address);
-		dispatch('tokenSelected', e);
+		dispatch('tokenSelected', e.detail);
 	}
 
 	// TODO fix all these functions, currently mocks
@@ -25,7 +25,7 @@
 
 	function getBalance(address: string) {
 		console.log("get data", address)
-		return 100;
+		return Math.random()*100;
 	}
 
 	function getDollarValue(_numTokens: number, _address: string) {
@@ -34,15 +34,15 @@
 	}
 
 	function getDollarExchangeRate(_address: string) {
-		return 20;
+		return Math.random()*20;
 	}
 </script>
 
 <div class="box">
 		<div class="selector"><TokenSelector on:tokenSelected={handleSelection}/></div>
-		<p class="balance">Balance: {balance}</p>
+		<p class="balance">Balance: {Math.round(balance*10000)/10000}</p>
 		<input type="number" bind:value={numTokens} placeholder="0.00" />
-		<p class="dollars">{dollars}</p>
+		<p class="dollars">~$ {Math.round(dollars*100)/100}</p>
 	</div>
 
 <style lang="scss">

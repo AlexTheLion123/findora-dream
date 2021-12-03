@@ -11,7 +11,7 @@
 		logoSrc = e.detail.src;
 		symbol = e.detail.symbol;
 
-		dispatch('tokenSelected', e);
+		dispatch('tokenSelected', e.detail);
 	}
 </script>
 

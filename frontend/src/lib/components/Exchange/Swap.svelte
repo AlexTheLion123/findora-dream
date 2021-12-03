@@ -5,7 +5,6 @@
 <script>
 	import { isProvided, router } from '$lib/stores';
 	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
-
 	import TokenBox from './TokenBox.svelte';
 	import TradeButton from './TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
@@ -20,17 +19,34 @@
 			
 		}
 	});
+
+	function handleSelection1(e) {
+		if(numTokens1) {
+			console.log('hello1')
+		} else {
+			console.log("bye2");
+			
+		}
+	}
+	function handleSelection2(e) {
+		if(numTokens2) {
+			console.log('hello1')
+		} else {
+			console.log("bye2");
+			
+		}
+	}
 </script>
 
 <form>
 	<p class="title">Swap</p>
 
 	<div id="token1">
-		<TokenBox bind:numTokens={numTokens1}/>
+		<TokenBox bind:numTokens={numTokens1} on:tokenSelected={handleSelection1}/>
 	</div>
 
 	<div id="token2">
-		<TokenBox bind:numTokens={numTokens2}/>
+		<TokenBox bind:numTokens={numTokens2} on:tokenSelected={handleSelection2}/>
 	</div>
 
 	<div class="slider-box">
