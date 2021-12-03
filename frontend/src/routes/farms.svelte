@@ -1,6 +1,6 @@
 <script>
-    import Farm from '$lib/components/Farm.svelte';
-    import FarmHeader from '$lib/components/sub/FarmHeader.svelte';
+    import Farm from '$lib/components/Yield/Farm.svelte';
+    import FarmHeader from '$lib/components/Yield/FarmHeader.svelte';
 
     let numFarms = 50;
 </script>

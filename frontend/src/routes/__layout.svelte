@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { Contract, ethers, providers } from 'ethers';
+	import { ethers } from 'ethers';
 	import UniswapV2Router02 from '$lib/abis/UniswapV2Router02.json';
 	import type { UniswapV2Router02 as RouterType} from '$lib/types/UniswapV2Router02';
 </script>

@@ -1,5 +1,5 @@
 <script>
-    import Swap from '$lib/components/Swap.svelte'
+    import Swap from '$lib/components/Exchange/Swap.svelte'
 </script>
 
 <div class="container">

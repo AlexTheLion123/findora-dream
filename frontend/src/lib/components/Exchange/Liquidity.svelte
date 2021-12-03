@@ -1,7 +1,7 @@
 <script>
-    import TokenBox from '$lib/components/sub/TokenBox.svelte'
-    import TradeButton from '$lib/components/sub/TradeButton.svelte'
-    import PoolInfo from '$lib/components/sub/PoolInfo.svelte'
+    import TokenBox from './TokenBox.svelte'
+    import TradeButton from './TradeButton.svelte'
+    import PoolInfo from './PoolInfo.svelte'
 
     let name1 = 'eth';
 	let name2 = 'bsc';
@@ -12,8 +12,8 @@
 	// exchange rate for tokens 1 and 2
 	let value1 = 1;
 	let value2 = 2;
-    let logoSrc1 = "src/lib/assets/token-logos/eth_logo.svg";
-	let logoSrc2 = "src/lib/assets/token-logos/bnb_logo.svg";
+    let logoSrc1 = "src/lib/assets/tokens/logos/eth_logo.svg";
+	let logoSrc2 = "src/lib/assets/tokens/logos/bnb_logo.svg";
 </script>
 
 <div class="box">

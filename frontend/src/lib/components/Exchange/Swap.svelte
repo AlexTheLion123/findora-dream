@@ -6,8 +6,8 @@
 	import { isProvided, router } from '$lib/stores';
 	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
 
-	import TokenBox from './sub/TokenBox.svelte';
-	import TradeButton from './sub/TradeButton.svelte';
+	import TokenBox from './TokenBox.svelte';
+	import TradeButton from './TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
 
@@ -21,8 +21,8 @@
 	// exchange rate for tokens 1 and 2
 	let value1 = 1;
 	let value2 = 2;
-	let logoSrc1 = "src/lib/assets/token-logos/eth_logo.svg";
-	let logoSrc2 = "src/lib/assets/token-logos/bnb_logo.svg";
+	let logoSrc1 = "src/lib/assets/tokens/logos/eth_logo.svg";
+	let logoSrc2 = "src/lib/assets/tokens/logos/bnb_logo.svg";
 
 	isProvided.subscribe((value) => {
 		if (value) {
