@@ -3,10 +3,12 @@ import * as Mars from "ethereum-mars";
 const AddressStringUtil__JSON = require("./AddressStringUtil.json");
 const Babylonian__JSON = require("./Babylonian.json");
 const BitMath__JSON = require("./BitMath.json");
+const ERC20__JSON = require("./ERC20.json");
 const FixedPoint__JSON = require("./FixedPoint.json");
 const FullMath__JSON = require("./FullMath.json");
 const Math__JSON = require("./Math.json");
 const SafeERC20Namer__JSON = require("./SafeERC20Namer.json");
+const TokenFactory__JSON = require("./TokenFactory.json");
 const TransferHelper__JSON = require("./TransferHelper.json");
 const UQ112x112__JSON = require("./UQ112x112.json");
 const UniswapV2ERC20__JSON = require("./UniswapV2ERC20.json");
@@ -29,6 +31,21 @@ export const BitMath = Mars.createArtifact<{
   new(): void;
 }>("BitMath", BitMath__JSON);
 
+export const ERC20 = Mars.createArtifact<{
+  new(name_: Mars.StringLike, symbol_: Mars.StringLike): void;
+  allowance(owner: Mars.AddressLike, spender: Mars.AddressLike): Mars.FutureNumber;
+  approve(spender: Mars.AddressLike, amount: Mars.NumberLike, options?: Mars.TransactionOverrides): Mars.Transaction;
+  balanceOf(account: Mars.AddressLike): Mars.FutureNumber;
+  decimals(): Mars.FutureNumber;
+  decreaseAllowance(spender: Mars.AddressLike, subtractedValue: Mars.NumberLike, options?: Mars.TransactionOverrides): Mars.Transaction;
+  increaseAllowance(spender: Mars.AddressLike, addedValue: Mars.NumberLike, options?: Mars.TransactionOverrides): Mars.Transaction;
+  name(): Mars.Future<string>;
+  symbol(): Mars.Future<string>;
+  totalSupply(): Mars.FutureNumber;
+  transfer(recipient: Mars.AddressLike, amount: Mars.NumberLike, options?: Mars.TransactionOverrides): Mars.Transaction;
+  transferFrom(sender: Mars.AddressLike, recipient: Mars.AddressLike, amount: Mars.NumberLike, options?: Mars.TransactionOverrides): Mars.Transaction;
+}>("ERC20", ERC20__JSON);
+
 export const FixedPoint = Mars.createArtifact<{
   new(): void;
   Q112(): Mars.FutureNumber;
@@ -46,6 +63,13 @@ export const Math = Mars.createArtifact<{
 export const SafeERC20Namer = Mars.createArtifact<{
   new(): void;
 }>("SafeERC20Namer", SafeERC20Namer__JSON);
+
+export const TokenFactory = Mars.createArtifact<{
+  new(): void;
+  arr(_: Mars.NumberLike): Mars.Future<string>;
+  createNewToken(_name: Mars.StringLike, _symbol: Mars.StringLike, options?: Mars.TransactionOverrides): Mars.Transaction;
+  getArr(): Mars.Future<Mars.Future<string>[]>;
+}>("TokenFactory", TokenFactory__JSON);
 
 export const TransferHelper = Mars.createArtifact<{
   new(): void;

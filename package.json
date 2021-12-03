@@ -4,9 +4,10 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "waffle && mars",
+    "clean": "rimraf build",
+    "build": "yarn clean && waffle && mars",
     "test": "mocha",
-    "deploy": "ts-node src/deploy.ts"
+    "deploy": "rimraf frontend/src/lib/assets/tokens/tokens.json && rimraf src/deployments.json && ts-node src/deploy.ts"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.3.3",
@@ -18,6 +19,7 @@
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.1",
     "mocha": "^9.1.3",
+    "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
   }

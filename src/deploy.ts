@@ -1,36 +1,65 @@
-import { deploy, contract } from 'ethereum-mars';
-// import { MyToken } from '../build/artifacts';
-
-import * as dotenv from "dotenv";
+import { Provider } from '@ethersproject/providers';
+import { ethers, Wallet } from 'ethers';
 import {
-    AddressStringUtil, Babylonian, BitMath, FixedPoint, FullMath,
-    Math, SafeERC20Namer, TransferHelper, UniswapV2ERC20, UniswapV2Factory, UniswapV2Library,
-    UniswapV2LiquidityMathLibrary, UniswapV2OracleLibrary, UniswapV2Pair, UniswapV2Router02, UQ112x112,
-} from '../build/artifacts';
+    TokenFactory, TokenFactoryFactory, FixedPoint, FixedPointFactory, UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory
+} from '../build/types';
 
-dotenv.config();
 
-const privateKey = process.env.TEST_PK as string;
-console.log(privateKey)
-deploy({ network: 'http://localhost:8545', privateKey }, () => {
-    // contract('myToken', MyToken);
-    contract('AddressStringUtil', AddressStringUtil)
-    contract('Babylonian', Babylonian)
-    contract('BitMath', BitMath)
-    contract('FixedPoint', FixedPoint)
-    contract('FullMath', FullMath)
-    contract('Math', Math);
-    contract('SafeERC20Namer', SafeERC20Namer)
-    contract('TransferHelper', TransferHelper)
-    contract('UniswapV2ERC20', UniswapV2ERC20)
-    // use current address in ganache
-    contract('UniswapV2Factory', UniswapV2Factory, ['0xd8fbe0E6876C70784253af76e5CC6422C8c28f9c'])
-    contract('UniswapV2Library', UniswapV2Library)
-    contract('UniswapV2LiquidityMathLibrary', UniswapV2LiquidityMathLibrary)
-    contract('UniswapV2OracleLibrary', UniswapV2OracleLibrary)
-    contract('UniswapV2Pair', UniswapV2Pair)
+const fs = require('fs');
 
-    // get factory address from deployments.json, second address is supposed to be WETH
-    contract('UniswapV2Router02', UniswapV2Router02, ['0xFf38f7AC1D964E7bbb2ccc35a247D9A4f3DE4992','0xFf38f7AC1D964E7bbb2ccc35a247D9A4f3DE4992']);
-    contract('UQ112x112', UQ112x112)
-});
+let provider: Provider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
+const PRIVATE_KEY = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
+const wallet = new Wallet(PRIVATE_KEY).connect(provider);
+let tokenFactory: TokenFactory;
+
+deploy();
+
+async function deploy() {
+    const msgSender = await wallet.getAddress();
+
+    const uniswapV2Factory = await new UniswapV2FactoryFactory(wallet).deploy(msgSender);
+    const uniswapV2Router02 = await new UniswapV2Router02Factory(wallet).deploy(uniswapV2Factory.address, msgSender); // 2nd argument is meant to be address of WETH
+
+    writeToJson([{contract:"UniswapV2Factory",address:uniswapV2Factory.address}, {contract:"UniswapV2Router02",address:uniswapV2Router02.address}], "./src/deployments.json")
+
+    tokenFactory = await new TokenFactoryFactory(wallet).deploy();
+    await deployTokensAndWrite();
+    
+}
+
+async function deployTokensAndWrite() {
+    for (let i = 0; i <= 3; i++) {
+        let txn = await tokenFactory.createNewToken(`Token${i}`, `TK${i}`)
+        await txn.wait();
+    }
+
+    let addresses = await tokenFactory.getArr();
+
+    writeToJson((populate(addresses)), "./frontend/src/lib/assets/tokens/tokens.json")
+    
+}
+
+
+function populate(arr: string[]) {
+    return arr.map((item, i) => {
+        return { "address": item, "name": `Token${i}`, "symbol": `TK${i}` }
+    })
+}
+
+function writeToJson(info: any , path: string) {
+    const jsonContent = JSON.stringify(info);
+
+    fs.writeFile(path, jsonContent, 'utf8', (err: any) => {
+        if (err) {
+            return console.log(err);
+        }
+        console.log(info)
+        console.log("The file was saved");
+    })
+}
+
+interface ITokens { // TODO remove
+    address: string,
+    name: string,
+    symbol: string
+}

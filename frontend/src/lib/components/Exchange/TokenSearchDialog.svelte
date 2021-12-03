@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-    import tokens from '$lib/assets/tokens/src/tokens.json';
+    import tokens from '$lib/assets/tokens/tokens.json';
 	import TokenSearchItem from '$lib/components/Exchange/TokenSearchItem.svelte';
     
 	export let isShown = false;
