@@ -88,6 +88,19 @@
 		outline: inherit;
 	}
 
+	:global(.popup-modal-wrapper) {
+        z-index: 999;
+        position: absolute;
+        top: 0;
+        right:0;
+        bottom:0;
+        left:0;
+        background: rgba(0,0,0,0.3);
+
+		display: grid;
+		place-items: center;
+	}
+
 	header {
 		height: 70px;
 		grid-area: header;

@@ -1,17 +1,23 @@
-<script context="module" lang="ts">
-
-</script>
-
 <script>
+    import TokenSearchBox from "./TokenSearchBox.svelte";
+
     export let name;
     export let logoSrc;
+
+    let showSearch = false
 </script>
 
-<button>
+<button on:click|preventDefault={()=>showSearch=true}>
     <img src={logoSrc} class="symbol" width="35" height="35" alt=""/>
     <p>{name.toUpperCase()}</p>       
     <i class="fas fa-chevron-down"></i>
 </button>
+
+{#if showSearch}
+    <div class="popup-modal-wrapper">
+        <TokenSearchBox bind:isShown={showSearch}/>
+    </div>
+{/if}
 
 <style>
     button {
@@ -36,4 +42,6 @@
         box-sizing: content-box;
         padding: 5px;
     }
+
+    
 </style>
