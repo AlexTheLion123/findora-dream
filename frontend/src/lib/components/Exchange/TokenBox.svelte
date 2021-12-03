@@ -38,9 +38,7 @@
 	}
 
 	function formatNumber(num: number, decimals: number) {
-		const formated = Math.round(num*(10**decimals))/(10**decimals)
-		console.log("formated", formated)
-		return formated
+		return Math.round(num*(10**decimals))/(10**decimals)
 	}
 </script>
 
