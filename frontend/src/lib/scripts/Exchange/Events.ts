@@ -9,9 +9,9 @@ import type { Address } from 'soltypes';
  * @returns an object representing the correct state of the global variables for the UI. some may be undefined
  */
 export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2P: number | undefined, addr1P: Address, addr2P: Address | undefined, isCurrent: boolean) {
-    let routeP
-    let dollars1P
-    let dollars2P
+    let routeP: Address[] | undefined
+    let dollars1P: number | undefined
+    let dollars2P: number | undefined
 
     if (numTk1P) {
         // current box fully filled out
@@ -20,19 +20,13 @@ export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2
 
         if (addr2P && isCurrent) {
             // other token selected as well
-            routeP = await getRoute(addr1P, addr2P);
-            numTk2P = await getOtherNumTokens(addr1P, addr2P, numTk1P, routeP);
-            dollars2P = await getDollarValue(addr2P, numTk2P)
-        } else if(addr2P && !isCurrent) {
-            routeP = await getRoute(addr2P, addr1P);
-            numTk1P = await getOtherNumTokens(addr2P, addr1P, numTk2P, routeP)
-            dollars1P = await getDollarValue(addr1P, numTk1P)
+            assignVars(await getExactSwapData(addr1P, addr2P, numTk1P), false)
+
+        } else if (addr2P && !isCurrent) {
+            assignVars(await getExactSwapData(addr2P, addr1P, numTk2P), true)
         }
     } else if (addr2P && numTk2P) {
-        routeP = await getRoute(addr1P, addr2P);
-        numTk1P = await getOtherNumTokens(addr2P, addr1P, numTk2P, routeP);
-        dollars1P = await getDollarValue(addr1P, numTk1P)
-
+        assignVars(await getExactSwapData(addr2P, addr1P, numTk2P), true)
     }
 
     return {
@@ -41,6 +35,30 @@ export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2
         routeR: routeP,
         numTk1R: numTk1P,
         numTk2R: numTk2P
+    }
+
+    function assignVars({route, numTk1 , dollars1}: {route: Address[], numTk1:number, dollars1: number}, swapVals) {
+        console.log(route, numTk1, dollars1)
+        routeP = route;
+        if(!swapVals) {
+            numTk2P = numTk1;
+            dollars2P = dollars1;
+        } else {
+            numTk1P = numTk1;
+            dollars1P = dollars1;
+        }
+    }
+
+}
+
+async function getExactSwapData(addr1: Address, addr2: Address, numTk1: number) {
+    const route = await getRoute(addr1, addr2);
+    const numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route);
+    const dollars2 = await getDollarValue(addr2, numTk2)
+    return {
+        route: route,
+        numTk1: numTk2,
+        dollars1: dollars2
     }
 }
 

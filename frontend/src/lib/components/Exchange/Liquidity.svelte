@@ -3,17 +3,6 @@
     import TradeButton from './TradeButton.svelte'
     import PoolInfo from './PoolInfo.svelte'
 
-    let name1 = 'eth';
-	let name2 = 'bsc';
-	let balance1 = 100;
-	let balance2 = 50;
-	let dollars1 = '~ $4000';
-	let dollars2 = '~ $3000';
-	// exchange rate for tokens 1 and 2
-	let value1 = 1;
-	let value2 = 2;
-    let logoSrc1 = "src/lib/assets/tokens/logos/eth_logo.svg";
-	let logoSrc2 = "src/lib/assets/tokens/logos/bnb_logo.svg";
 </script>
 
 <div class="box">

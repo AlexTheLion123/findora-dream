@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { handleSelectionGeneric, handleInputGeneric } from '$lib/scripts/Exchange/Events';
 	import type { Address } from 'soltypes';
-	import type { ICallbackReturn } from '$lib/types-frontend/Types';
+	import type { ICallbackReturn } from '$lib/typesFrontend/Types';
 	import TokenBox from './TokenBox.svelte';
 	import { currentInputElement } from './TokenBox.svelte';
 
