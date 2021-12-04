@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { handleSelectionGeneric, handleInputGeneric } from '$lib/scripts/Exchange/Events';
-	import { getExactSwapData, getDollarValue, getRoute } from '$lib/scripts/Exchange/Swap';
-	import { router } from '$lib/stores';
-	import type { Bytes32, Uint256, Uint32, Address } from 'soltypes';
+	import type { Address } from 'soltypes';
 	import TokenBox from './TokenBox.svelte';
 
 	let token1Address: Address; // address
@@ -30,7 +28,9 @@
 			numTokens1,
 			token1Address,
 			numTokens2,
-			token2Address
+			token2Address,
+            dollars1,
+            dollars2
 		);
 
 		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, false);
@@ -57,7 +57,9 @@
 			numTokens2,
 			token2Address,
 			numTokens1,
-			token1Address
+			token1Address,
+            dollars2,
+            dollars1
 		);
 
 		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, true);
@@ -71,9 +73,11 @@
 			numTokens1,
 			token1Address,
 			numTokens2,
-			token2Address
+			token2Address,
+            dollars1,
+            dollars2
 		);
-
+        console.log(numTk1R)
 		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, false);
 	}
 
@@ -85,7 +89,9 @@
 			numTokens2,
 			token2Address,
 			numTokens1,
-			token1Address
+			token1Address,
+            dollars2,
+            dollars1
 		);
 
 		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, true);
