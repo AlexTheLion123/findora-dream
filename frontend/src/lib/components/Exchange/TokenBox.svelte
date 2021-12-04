@@ -1,5 +1,5 @@
-<script context="module">
-	export let currentInputElement; // is used, not sure why showing problem
+<script context="module" lang="ts">
+	export let currentInputElement: HTMLInputElement; // is used, not sure why showing problem
 </script>
 
 <script lang="ts">

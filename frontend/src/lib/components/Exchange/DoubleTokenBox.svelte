@@ -3,7 +3,7 @@
 	import type { Address } from 'soltypes';
 	import type { ICallbackReturn } from '$lib/types-frontend/Types';
 	import TokenBox from './TokenBox.svelte';
-	import { current } from './';
+	import { currentInputElement } from './TokenBox.svelte';
 
 	let token1Address: Address; // address
 	let token2Address: Address; // address
@@ -22,18 +22,22 @@
 	 *
 	 */
 
-	function checkCurrent() {
-
+	function checkCurrent(element: HTMLElement) {
+		if(currentInputElement) {
+			return currentInputElement.parentElement === element.parentElement.parentElement.parentElement.parentElement.parentElement // TODO find better way to do this
+		}
+		return false;
 	}
 
 	async function handleSelection1(e) {
 		token1Address = e.detail.address;
-		assignToGlobalVars(await handleSelectionGeneric(numTokens1, numTokens2, token1Address, token2Address), false)
+		console.log(e)
+		assignToGlobalVars(await handleSelectionGeneric(numTokens1, numTokens2, token1Address, token2Address, checkCurrent(e.detail.element)), false)
 	}
 
 	async function handleSelection2(e) {
 		token2Address = e.detail.address;
-		assignToGlobalVars(await handleSelectionGeneric(numTokens2, numTokens1, token2Address, token1Address), true)
+		assignToGlobalVars(await handleSelectionGeneric(numTokens2, numTokens1, token2Address, token1Address, checkCurrent(e.detail.element)), true)
 	}
 
 	async function handleInput1(e) {
@@ -64,6 +68,7 @@
 
 		if (routeR) {
 			// swap is ready to be performed
+			console.log("swap is ready")
 		}
 	}
 </script>
