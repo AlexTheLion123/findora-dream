@@ -2,20 +2,15 @@
 	import { createEventDispatcher } from 'svelte';
 	import TokenSelector from './TokenSelector.svelte';
 
-	let numTokens;
+	export let dollars;
+	export let numTokens;
 	let balance = 0.0;
-	let dollars = 0.0;
-	let dollarRate;
 	let inputEventDispatchBuffer = 2000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
-
-	$: if (numTokens && dollarRate) {
-		dollars = numTokens * dollarRate;
-	}
 
 	// events
 	const dispatch = createEventDispatcher();
 	function handleSelection(e) {
-		updateBox(e.detail.address);
+		balance = getBalance(e.detail.address) // TODO remove, balance will be gotten from a descendant
 		dispatch('tokenSelected', e.detail);
 	}
 	/**
@@ -49,25 +44,25 @@
 		};
 	})();
 
-	// TODO fix all these functions, currently mocks
-	function updateBox(address: string) {
-		balance = getBalance(address);
-		dollars = getDollarValue(numTokens, address);
-	}
+	// TODO delete these, since all data handled in parent
+	// function updateBox(address: string) {
+	// 	balance = getBalance(address);
+	// 	dollars = getDollarValue(numTokens, address);
+	// }
 
 	function getBalance(address: string) {
 		console.log('get data', address);
 		return Math.random() * 100;
 	}
 
-	function getDollarValue(_numTokens: number, _address: string) {
-		dollarRate = getDollarExchangeRate(_address);
-		return _numTokens * dollarRate;
-	}
+	// function getDollarValue(_numTokens: number, _address: string) {
+	// 	dollarRate = getDollarExchangeRate(_address);
+	// 	return _numTokens * dollarRate;
+	// }
 
-	function getDollarExchangeRate(_address: string) {
-		return Math.random() * 20;
-	}
+	// function getDollarExchangeRate(_address: string) {
+	// 	return Math.random() * 20;
+	// }
 
 	function formatNumber(num: number, decimals: number) {
 		return Math.round(num * 10 ** decimals) / 10 ** decimals;

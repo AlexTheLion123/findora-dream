@@ -7,8 +7,13 @@ export async function getExactSwapData(
         numTk2: number,
         route: Array<Address>
     ) {
-        
-
+        if(numTk2===0) {
+            return Math.random()*100;
+        }
+        if(numTk1===0){
+            return Math.random()*100;
+        }
+        throw new Error("Can only calculate output with respect to 1 token");
     };
 
 export async function getDollarValue(addr: Address, numTk: number) { // TODO fix

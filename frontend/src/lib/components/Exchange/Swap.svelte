@@ -13,66 +13,95 @@
 
 	let token1Address: Address; // address
 	let token2Address: Address; // address
-	let numTokens1;
-	let numTokens2;
+	let numTokens1: number;
+	let numTokens2: number;
+	let dollars1 = 0.0;
+	let dollars2 = 0.0;
 
-	// Event handlers
+	/**
+	 * Event handlers
+	 * There are four events:
+	 * 1. Token 1 selected
+	 * 2. Token 2 selected
+	 * 3. Token 1 input
+	 * 4. Token 2 input
+	 *
+	 */
 
-	function handleSelection1(e) {
+	async function handleSelection1(e) {
 		token1Address = e.detail.address;
+		console.log(token1Address);
 
-		if (token2Address) {
-			// if other not selected, do nothing - since we only care about price within pool
-			if (numTokens1 && numTokens2) {
-				getExactSwapData(token1Address, token2Address);
-			} else {
-				getSwapRate(token1Address, token2Address);
+		if (numTokens1) {
+			// need to work out dolars again since different token
+			dollars1 = await getDollarValue(token1Address, numTokens1); // TODO remove await, can handle async
+
+			if (token2Address) {
+				// no need to work out dollars again for token 2 since would have been calculated already and nothing changed
+				const route = await getRoute(token1Address, token2Address);
+				numTokens2 = await getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
 			}
+		} else if (token2Address && numTokens2) {
+			// no point in getting route separately if no inputs but both selected
+			const route = await getRoute(token1Address, token2Address);
+			numTokens1 = await getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
 		}
 	}
-	function handleSelection2(e) {
+
+	async function handleSelection2(e) {
 		token2Address = e.detail.address;
+		console.log(token2Address);
+
+		if (numTokens2) {
+			// need to work out dolars again since different token
+			dollars2 = await getDollarValue(token2Address, numTokens2); // TODO remove await, can handle async
+
+			if (token1Address) {
+				// no need to work out dollars again for token 2 since would have been calculated already and nothing changed
+				const route = await getRoute(token1Address, token2Address);
+				numTokens1 = await getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
+			}
+		} else if (token1Address && numTokens1) {
+			// no point in getting route separately if no inputs but both selected
+			const route = await getRoute(token1Address, token2Address);
+			numTokens2 = await getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
+		}
+	}
+
+	async function handleInput1(e) {
+		numTokens1 = e.detail.numTokens;
+		console.log(numTokens1);
 
 		if (token1Address) {
-			if (numTokens1 && numTokens2) {
-				getExactSwapData(token1Address, token2Address);
-			} else {
-				getSwapRate(token1Address, token2Address);
+			// token 1 selected
+			dollars1 = await getDollarValue(token1Address, numTokens1);
+
+			if (token2Address) {
+				// token 2 also selected, then we can go ahead and get all data
+				const route = await getRoute(token1Address, token2Address);
+				numTokens2 = await getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
+				dollars2 = await getDollarValue(token2Address, numTokens2);
 			}
 		}
+
+		// we don't care if only token2 is selected this is handled by token2 selection event
+		// And of course, we also don't care if neither are selected.
 	}
 
-	function handleInput1(e) {
-		console.log(e.detail.numTokens);
-		// if (token1Address) {
-		// 	// token 1 selected
-		// 	getDollarValue(token1Address, numTokens1);
+	async function handleInput2(e) {
+		numTokens2 = e.detail.numTokens;
+		console.log(numTokens2);
 
-		// 	if (token2Address) {
-		// 		// token 2 also selected
-		// 		const route = getRoute(token1Address, token2Address);
-		// 		numTokens2 = getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
-		// 		getDollarValue(token2Address, numTokens2);
-		// 	}
-		// }
-	}
+		if (token2Address) {
+			// token 2 selected, otherwise can't do anything
+			dollars2 = await getDollarValue(token2Address, numTokens2);
 
-	function handleInput2(e) {
-		console.log(e.detail.numTokens);
-		// if (numTokens2) {
-		// 	// will be updated every time numTokens2 updated
-
-		// 	if (token2Address) {
-		// 		// token 2 selected
-		// 		getDollarValue(token2Address, numTokens2);
-
-		// 		if (token1Address) {
-		// 			const route = getRoute(token1Address, token2Address);
-		// 			numTokens1 = getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
-		// 			getDollarValue(token1Address, numTokens1);
-		// 		}
-		// 	}
-		// }
+			if (token1Address) {
+				const route = await getRoute(token1Address, token2Address);
+				numTokens1 = await getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
+				dollars1 = await getDollarValue(token1Address, numTokens1);
+			}
+		}
 	}
 
 	isProvided.subscribe((value) => {
@@ -86,11 +115,21 @@
 	<p class="title">Swap</p>
 
 	<div id="token1">
-		<TokenBox on:tokenSelected={handleSelection1} on:tokenNumInput={handleInput1} />
+		<TokenBox
+			on:tokenSelected={handleSelection1}
+			on:tokenNumInput={handleInput1}
+			dollars={dollars1}
+			numTokens={numTokens1}
+		/>
 	</div>
 
 	<div id="token2">
-		<TokenBox on:tokenSelected={handleSelection2} on:tokenNumInput={handleInput2} />
+		<TokenBox
+			on:tokenSelected={handleSelection2}
+			on:tokenNumInput={handleInput2}
+			dollars={dollars2}
+			numTokens={numTokens2}
+		/>
 	</div>
 
 	<div class="slider-box">
