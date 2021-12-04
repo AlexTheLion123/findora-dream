@@ -1,5 +1,5 @@
 <script>
-    import TokenBox from './TokenBox.svelte'
+    import DoubleTokenBox from './DoubleTokenBox.svelte';
     import TradeButton from './TradeButton.svelte'
     import PoolInfo from './PoolInfo.svelte'
 
@@ -18,14 +18,11 @@
 
 <div class="box">
     <p class="title">Liquidity</p>
-    <div id="token1">
-        <TokenBox name={name1} bind:value={value1} balance={balance1} dollars={dollars1} logoSrc={logoSrc1}/>
 
+    <div class="double-token-box">
+        <DoubleTokenBox/>
     </div>
-    <div id="token2">
-        <TokenBox name={name2} bind:value={value2} balance={balance2} dollars={dollars2} logoSrc={logoSrc2}/>
 
-    </div>
     <div class="pool-info">
         <PoolInfo/>
     </div>
@@ -54,8 +51,8 @@
 		display: grid;
 		grid-template:
 			'. title  ...... ...... ...... .' 1fr
-			'. token1 token1 token1 token1 .' 3fr
-			'. token2 token2 token2 token2 .' 3fr
+			'. tokens tokens tokens tokens .' 3fr
+			'. tokens tokens tokens tokens .' 3fr
 			'. ...... ...... ...... ...... .' 0.5fr
 			'. info   info   info   info   .' 3fr
 			'. ...... ...... ...... ...... .' 0.5fr
@@ -66,11 +63,8 @@
             grid-area: title;
             align-self: center;
         }
-        #token1 {
-            grid-area: token1;
-        }
-        #token2 {
-            grid-area: token2;
+        .double-token-box {
+            grid-area: tokens;
         }
         .pool-info {
             grid-area: info;
