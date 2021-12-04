@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { handleSelectionGeneric, handleInputGeneric } from '$lib/scripts/Exchange/Events';
 	import type { Address } from 'soltypes';
+	import type { ICallbackReturn } from '$lib/types-frontend/Types';
 	import TokenBox from './TokenBox.svelte';
+	import { current } from './';
 
 	let token1Address: Address; // address
 	let token2Address: Address; // address
@@ -20,117 +22,49 @@
 	 *
 	 */
 
-	async function handleSelection1(e) {
-		token1Address = e.detail.address;
-		console.log(token1Address);
+	function checkCurrent() {
 
-		globalGenericEventHandler(
-			numTokens1,
-			token1Address,
-			numTokens2,
-			token2Address,
-			dollars1,
-			dollars2,
-			false
-		);
 	}
 
-	/**
-	 * @dev function to generically handle both selection cases
-	 * trailing P stands for parameter, trailing R stands for return value
-	 */
+	async function handleSelection1(e) {
+		token1Address = e.detail.address;
+		assignToGlobalVars(await handleSelectionGeneric(numTokens1, numTokens2, token1Address, token2Address), false)
+	}
 
 	async function handleSelection2(e) {
 		token2Address = e.detail.address;
-		console.log(token2Address);
-
-		globalGenericEventHandler(
-			numTokens2,
-			token2Address,
-			numTokens1,
-			token1Address,
-			dollars2,
-			dollars1,
-			true
-		);
+		assignToGlobalVars(await handleSelectionGeneric(numTokens2, numTokens1, token2Address, token1Address), true)
 	}
 
 	async function handleInput1(e) {
 		numTokens1 = e.detail.numTokens;
-		console.log(numTokens1);
-
-		globalGenericEventHandler(
-			numTokens1,
-			token1Address,
-			numTokens2,
-			token2Address,
-			dollars1,
-			dollars2,
-			false
-		);
+		assignToGlobalVars(await handleInputGeneric(numTokens1, token1Address, token2Address), false)
 	}
 
 	async function handleInput2(e) {
 		numTokens2 = e.detail.numTokens;
-		console.log(numTokens2);
-
-		globalGenericEventHandler(
-			numTokens2,
-			token2Address,
-			numTokens1,
-			token1Address,
-			dollars2,
-			dollars1,
-			true
-		);
-	}
-
-	async function globalGenericEventHandler(
-		numTokens1P: number,
-		token1AddressP: Address,
-		numTokens2P: number,
-		token2AddressP: Address,
-		dollars1P: number,
-		dollars2P: number,
-		swapVals: boolean
-	) {
-		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleInputGeneric(
-			numTokens1P,
-			token1AddressP,
-			numTokens2P,
-			token2AddressP,
-			dollars1P,
-			dollars2P
-		);
-		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, swapVals);
+		assignToGlobalVars(await handleInputGeneric(numTokens2, token2Address, token1Address), true)
 	}
 
 	function assignToGlobalVars(
-		{ dollars1R, dollars2R, routeR, numTk1R, numTk2R }: IDoubleBox,
+		{ dollars1R, dollars2R, routeR, numTk1R, numTk2R }: ICallbackReturn,
 		swapVals: boolean = false
 	) {
 		if (!swapVals) {
-			if (dollars1R) dollars1 = dollars1R;
-			if (dollars2R) dollars2 = dollars2R;
-			if (numTk1R) numTokens1 = numTk1R;
-			if (numTk1R) numTokens2 = numTk2R;
+			dollars1 = dollars1R || dollars1;
+			dollars2 = dollars2R || dollars2;
+			numTokens1 = numTk1R || numTokens1;
+			numTokens2 = numTk2R || numTokens2;
 		} else {
-			if (dollars1R) dollars2 = dollars1R;
-			if (dollars2R) dollars1 = dollars2R;
-			if (numTk1R) numTokens2 = numTk1R;
-			if (numTk1R) numTokens1 = numTk2R;
+			dollars2 = dollars1R || dollars2;
+			dollars1 = dollars2R || dollars1;
+			numTokens2 = numTk1R || numTokens2;
+			numTokens1 = numTk2R || numTokens1;
 		}
 
 		if (routeR) {
 			// swap is ready to be performed
 		}
-	}
-	interface IDoubleBox {
-		dollars1R: number;
-		dollars2R: number;
-		routeR: Array<Address>;
-		numTk1R: number;
-		numTk2R: number;
 	}
 </script>
 

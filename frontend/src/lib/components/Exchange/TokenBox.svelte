@@ -1,7 +1,12 @@
+<script context="module">
+	export let currentInputElement; // is used, not sure why showing problem
+</script>
+
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import TokenSelector from './TokenSelector.svelte';
 
+	let inputElement: HTMLInputElement;
 	export let dollars;
 	export let numTokens;
 	let balance = 0.0;
@@ -10,7 +15,7 @@
 	// events
 	const dispatch = createEventDispatcher();
 	function handleSelection(e) {
-		balance = getBalance(e.detail.address) // TODO remove, balance will be gotten from a descendant
+		balance = getBalance(e.detail.address); // TODO remove, balance will be gotten from a descendant
 		dispatch('tokenSelected', e.detail);
 	}
 	/**
@@ -18,18 +23,19 @@
 	 * Instead, only dispatch every 2 seconds.
 	 */
 	const handleInput = (function () {
-		let lastCall = Date.now();
 		let isTimeout = false;
 
 		return function (event) {
+			updateCurrentInputElement();
+
 			if (isTimeout == true) {
 				return;
 			}
+
 			/**
 			 * If called too soon after the last call, checks if there is an event waiting to be dispatched in settimeout
 			 * If not, settimeout is set and function is locked so nothing happens until settimeout dispatched
 			 * settimeout should be dispatched with latest value
-			 *
 			 */
 
 			isTimeout = true;
@@ -37,15 +43,17 @@
 				dispatch('tokenNumInput', { numTokens: numTokens });
 				isTimeout = false;
 			}, inputEventDispatchBuffer);
-
-			function checkTooSoon(lastCallTimeInMilli: number, buffer: number) { // TODO possibly remove
-				return Date.now() - lastCallTimeInMilli < buffer;
-			}
 		};
 	})();
 
+	function updateCurrentInputElement() {
+		if (currentInputElement && currentInputElement !== inputElement) {
+			currentInputElement.value = '';
+		}
+		currentInputElement = inputElement;
+	}
+
 	function getBalance(address: string) {
-		console.log('get data', address);
 		return Math.random() * 100;
 	}
 
@@ -57,7 +65,13 @@
 <div class="box">
 	<div class="selector"><TokenSelector on:tokenSelected={handleSelection} /></div>
 	<p class="balance">Balance: {formatNumber(balance, 4)}</p>
-	<input type="number" bind:value={numTokens} placeholder="0.00" on:input={handleInput} />
+	<input
+		type="number"
+		bind:value={numTokens}
+		bind:this={inputElement}
+		placeholder="0.00"
+		on:input={handleInput}
+	/>
 	<p class="dollars">~$ {formatNumber(dollars, 2)}</p>
 </div>
 

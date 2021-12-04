@@ -1,8 +1,4 @@
 <script lang="ts">
-	// TODO change this component to an inner box of the two tokens, so it will automatically work for
-	// liquidity as well;
-
-	
 	import { isProvided, router } from '$lib/stores';
 	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
 
@@ -15,6 +11,8 @@
 			// isProvided = true, then signed router contract exists
 		}
 	});
+
+
 </script>
 
 <form>

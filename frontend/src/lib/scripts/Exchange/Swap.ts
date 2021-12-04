@@ -1,6 +1,6 @@
 import type { Bytes32, Uint256, Uint32, Address } from 'soltypes';
 
-export async function getExactSwapData(
+export async function getOtherNumTokens(
         tk1Addr: Address,
         tk2Addr: Address,
         numTk1P: number,

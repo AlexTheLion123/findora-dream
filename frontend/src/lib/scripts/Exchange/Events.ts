@@ -1,48 +1,52 @@
 
-import { getExactSwapData, getDollarValue, getRoute } from '$lib/scripts/Exchange/Swap';
-import type { Bytes32, Uint256, Uint32, Address } from 'soltypes';
+import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchange/Swap';
+import type { Address } from 'soltypes';
+
 
 /**
  * 
  * @returns an object representing the correct state of the global variables for the UI. some may be undefined
  */
-export async function handleSelectionGeneric(numTk1P: number, addr1P: Address, numTk2P: number, addr2P: Address, dollars1P: number, dollars2P: number) {
+export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2P: number | undefined, addr1P: Address, addr2P: Address | undefined, isCurrent: boolean) {
+    console.log(numTk1P, addr1P, addr2P)
+
     let routeP
+    let dollars1P
+    let dollars2P
 
     if (numTk1P) {
+        // current box fully filled out
         // need to work out dollars again since different token
         dollars1P = await getDollarValue(addr1P, numTk1P); // TODO remove await, can handle async
-
+        alert("hello")
         if (addr2P) {
+            // other token selected as well
             routeP = await getRoute(addr1P, addr2P);
-            numTk2P = await getExactSwapData(addr1P, addr2P, numTk1P, routeP);
+            numTk2P = await getOtherNumTokens(addr1P, addr2P, numTk1P, routeP);
             dollars2P = await getDollarValue(addr2P, numTk2P)
         }
     } else if (addr2P && numTk2P) {
-        // no point in getting route separately if no inputs but both selected
         routeP = await getRoute(addr1P, addr2P);
-        numTk1P = await getExactSwapData(addr2P, addr1P, numTk2P, routeP);
+        numTk1P = await getOtherNumTokens(addr2P, addr1P, numTk2P, routeP);
         dollars1P = await getDollarValue(addr1P, numTk1P)
 
     }
 
-    
-
-    const obj =  {
+    return {
         dollars1R: dollars1P,
         dollars2R: dollars2P,
         routeR: routeP,
         numTk1R: numTk1P,
         numTk2R: numTk2P
     }
-    console.log(obj);
-    
-    return obj;
 }
 
 
-export async function handleInputGeneric(numTk1P: number, addr1P: Address, numTk2P: number, addr2P: Address, dollars1P: number, dollars2P: number) {
+export async function handleInputGeneric(numTk1P: number, addr1P: Address | undefined, addr2P: Address | undefined) {
     let routeP
+    let dollars1P
+    let numTk2P
+    let dollars2P
 
     if (addr1P) {
         // token 1 selected
@@ -51,7 +55,7 @@ export async function handleInputGeneric(numTk1P: number, addr1P: Address, numTk
         if (addr2P) {
             // token 2 also selected, then we can go ahead and get all data
             routeP = await getRoute(addr1P, addr2P);
-            numTk2P = await getExactSwapData(addr1P, addr2P, numTk1P, routeP);
+            numTk2P = await getOtherNumTokens(addr1P, addr2P, numTk1P, routeP);
             dollars2P = await getDollarValue(addr2P, numTk2P);
         }
     }
