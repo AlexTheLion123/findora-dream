@@ -1,63 +1,30 @@
-<script context="module" lang="ts">
-	import { ethers, providers } from 'ethers';
-</script>
-
 <script lang="ts">
+	// TODO change this component to an inner box of the two tokens, so it will automatically work for
+	// liquidity as well;
+
+	import { getExactSwapData, getDollarValue, getRoute } from '$lib/scripts/Exchange/Swap';
+
+	import type { Bytes32, Uint256, Uint32, Address } from 'soltypes';
 	import { isProvided, router } from '$lib/stores';
 	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
 	import TokenBox from './TokenBox.svelte';
 	import TradeButton from './TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	let token1Address; // address
-	let token2Address; // address
+	let token1Address: Address; // address
+	let token2Address: Address; // address
 	let numTokens1;
 	let numTokens2;
 
-	let rate;
-
-	isProvided.subscribe((value) => {
-		if (value) {
-			// isProvided = true, then signed router contract exists
-			
-			
-		}
-	});
-
-
-	$: if(numTokens1) {
-		// will be updated every time numTokens1 updated
-
-		if(token1Address && token2Address) {
-			if(numTokens2) {
-				getExactSwapData(token1Address, token2Address);
-			} else {
-				getSwapRate(token1Address, token2Address);
-			}
-		}
-	}
-
-	$: if(numTokens2) {
-		// will be updated every time numTokens2 updated
-
-		if(token2Address && token1Address) {
-			if(numTokens2) {
-				getExactSwapData(token1Address, token2Address);
-			} else {
-				getSwapRate(token1Address, token2Address);
-			}
-		}
-	}
-
+	// Event handlers
 
 	function handleSelection1(e) {
 		token1Address = e.detail.address;
-		
-		if(token2Address) {
+
+		if (token2Address) {
 			// if other not selected, do nothing - since we only care about price within pool
-			if(numTokens1 && numTokens2) {
-				getExactSwapData(token1Address, token2Address)
-				
+			if (numTokens1 && numTokens2) {
+				getExactSwapData(token1Address, token2Address);
 			} else {
 				getSwapRate(token1Address, token2Address);
 			}
@@ -66,8 +33,8 @@
 	function handleSelection2(e) {
 		token2Address = e.detail.address;
 
-		if(token1Address) {
-			if(numTokens1 && numTokens2) {
+		if (token1Address) {
+			if (numTokens1 && numTokens2) {
 				getExactSwapData(token1Address, token2Address);
 			} else {
 				getSwapRate(token1Address, token2Address);
@@ -75,32 +42,55 @@
 		}
 	}
 
-	async function getExactSwapData(token1Address, token2Address) {
-		let exists = await checkPairExists(token1Address, token2Address);
+	function handleInput1(e) {
+		console.log(e.detail.numTokens);
+		// if (token1Address) {
+		// 	// token 1 selected
+		// 	getDollarValue(token1Address, numTokens1);
 
-		if(exists) {
-			// swap
-		} else {
-			// create pair
+		// 	if (token2Address) {
+		// 		// token 2 also selected
+		// 		const route = getRoute(token1Address, token2Address);
+		// 		numTokens2 = getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
+		// 		getDollarValue(token2Address, numTokens2);
+		// 	}
+		// }
+	}
+
+	function handleInput2(e) {
+		console.log(e);
+		// if (numTokens2) {
+		// 	// will be updated every time numTokens2 updated
+
+		// 	if (token2Address) {
+		// 		// token 2 selected
+		// 		getDollarValue(token2Address, numTokens2);
+
+		// 		if (token1Address) {
+		// 			const route = getRoute(token1Address, token2Address);
+		// 			numTokens1 = getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
+		// 			getDollarValue(token1Address, numTokens1);
+		// 		}
+		// 	}
+		// }
+	}
+
+	isProvided.subscribe((value) => {
+		if (value) {
+			// isProvided = true, then signed router contract exists
 		}
-	}
-	async function checkPairExists(token1Address, token2Address){
-		return true; // query blockchain
-	}
-	function getSwapRate(token1Address, token2Address) {
-
-	}
+	});
 </script>
 
 <form>
 	<p class="title">Swap</p>
 
 	<div id="token1">
-		<TokenBox bind:numTokens={numTokens1} on:tokenSelected={handleSelection1}/>
+		<TokenBox on:tokenSelected={handleSelection1} on:tokenNumInput={handleInput1} />
 	</div>
 
 	<div id="token2">
-		<TokenBox bind:numTokens={numTokens2} on:tokenSelected={handleSelection2}/>
+		<TokenBox on:tokenSelected={handleSelection2} on:tokenNumInput={handleInput2} />
 	</div>
 
 	<div class="slider-box">

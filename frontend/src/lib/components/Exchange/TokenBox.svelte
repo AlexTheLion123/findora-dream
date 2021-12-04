@@ -1,21 +1,59 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import TokenSelector from "./TokenSelector.svelte";
+	import TokenSelector from './TokenSelector.svelte';
 
-	export let numTokens;
-	let balance = 0.00;
-	let dollars = 0.00;
+	let numTokens;
+	let balance = 0.0;
+	let dollars = 0.0;
 	let dollarRate;
-	
-	$: if(numTokens && dollarRate) {
+	let inputEventDispatchBuffer = 2000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
+
+	$: if (numTokens && dollarRate) {
 		dollars = numTokens * dollarRate;
 	}
 
+	// events
 	const dispatch = createEventDispatcher();
-	function handleSelection(e) { 
+	function handleSelection(e) {
 		updateBox(e.detail.address);
 		dispatch('tokenSelected', e.detail);
 	}
+	/**
+	 * @dev input event is dispatched on every key stroke, which is far too often to be querying blockchain every time.
+	 * Instead, only dispatch every 2 seconds.
+	 */
+	const handleInput = (function () {
+		let lastCall = Date.now();
+		let isTimeout = false;
+
+		return function (event) {
+			if(isTimeout == true) {return}
+			if (checkTooSoon(lastCall, inputEventDispatchBuffer)) {
+				/**
+				 * If called too soon after the last call, checks if there is an event waiting to be dispatched in settimeout
+				 * If not, settimeout is set and function is locked so nothing happens until settimeout dispatched
+				 * settimeout should be dispatched with latest value
+				 * 
+				*/
+
+				isTimeout = true;
+				setTimeout(() => {
+					dispatch('tokenNumInput', { numTokens: numTokens });
+					isTimeout = false;
+				}, inputEventDispatchBuffer);
+			}
+			
+			// if not in timeout, and not too soon, then simply dispatch event
+
+			lastCall = Date.now();
+
+			dispatch('tokenNumInput', { numTokens: numTokens });
+
+			function checkTooSoon(lastCallTimeInMilli: number, buffer: number) {
+				return Date.now() - lastCallTimeInMilli < buffer;
+			}
+		};
+	})();
 
 	// TODO fix all these functions, currently mocks
 	function updateBox(address: string) {
@@ -24,8 +62,8 @@
 	}
 
 	function getBalance(address: string) {
-		console.log("get data", address)
-		return Math.random()*100;
+		console.log('get data', address);
+		return Math.random() * 100;
 	}
 
 	function getDollarValue(_numTokens: number, _address: string) {
@@ -34,20 +72,20 @@
 	}
 
 	function getDollarExchangeRate(_address: string) {
-		return Math.random()*20;
+		return Math.random() * 20;
 	}
 
 	function formatNumber(num: number, decimals: number) {
-		return Math.round(num*(10**decimals))/(10**decimals)
+		return Math.round(num * 10 ** decimals) / 10 ** decimals;
 	}
 </script>
 
 <div class="box">
-		<div class="selector"><TokenSelector on:tokenSelected={handleSelection}/></div>
-		<p class="balance">Balance: {formatNumber(balance, 4)}</p>
-		<input type="number" bind:value={numTokens} placeholder="0.00" />
-		<p class="dollars">~$ {formatNumber(dollars,2)}</p>
-	</div>
+	<div class="selector"><TokenSelector on:tokenSelected={handleSelection} /></div>
+	<p class="balance">Balance: {formatNumber(balance, 4)}</p>
+	<input type="number" bind:value={numTokens} placeholder="0.00" on:input={handleInput} />
+	<p class="dollars">~$ {formatNumber(dollars, 2)}</p>
+</div>
 
 <style lang="scss">
 	$background: none;
@@ -64,8 +102,8 @@
 
 		display: grid;
 		grid-template:
-		"selector value" 1fr
-		"balance dollars" 1fr / 1fr 1fr;
+			'selector value' 1fr
+			'balance dollars' 1fr / 1fr 1fr;
 		align-items: center;
 	}
 
@@ -96,7 +134,7 @@
 
 	input::-webkit-outer-spin-button,
 	input::-webkit-inner-spin-button {
-        all: unset;
+		all: unset;
 	}
 
 	input[type='number'] {
