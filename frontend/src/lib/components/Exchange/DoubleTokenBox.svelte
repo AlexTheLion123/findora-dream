@@ -24,24 +24,15 @@
 		token1Address = e.detail.address;
 		console.log(token1Address);
 
-		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleSelectionGeneric(
+		globalGenericEventHandler(
 			numTokens1,
 			token1Address,
 			numTokens2,
 			token2Address,
-            dollars1,
-            dollars2
+			dollars1,
+			dollars2,
+			false
 		);
-
-		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, false);
-	}
-
-	interface IDoubleBox {
-		dollars1R: number;
-		dollars2R: number;
-		routeR: Array<Address>;
-		numTk1R: number;
-		numTk2R: number;
 	}
 
 	/**
@@ -53,48 +44,65 @@
 		token2Address = e.detail.address;
 		console.log(token2Address);
 
-		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleSelectionGeneric(
+		globalGenericEventHandler(
 			numTokens2,
 			token2Address,
 			numTokens1,
 			token1Address,
-            dollars2,
-            dollars1
+			dollars2,
+			dollars1,
+			true
 		);
-
-		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, true);
 	}
 
 	async function handleInput1(e) {
 		numTokens1 = e.detail.numTokens;
 		console.log(numTokens1);
 
-		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleInputGeneric(
+		globalGenericEventHandler(
 			numTokens1,
 			token1Address,
 			numTokens2,
 			token2Address,
-            dollars1,
-            dollars2
+			dollars1,
+			dollars2,
+			false
 		);
-        console.log(numTk1R)
-		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, false);
 	}
 
 	async function handleInput2(e) {
 		numTokens2 = e.detail.numTokens;
 		console.log(numTokens2);
 
-		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleInputGeneric(
+		globalGenericEventHandler(
 			numTokens2,
 			token2Address,
 			numTokens1,
 			token1Address,
-            dollars2,
-            dollars1
+			dollars2,
+			dollars1,
+			true
 		);
+	}
 
-		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, true);
+	async function globalGenericEventHandler(
+		numTokens1P: number,
+		token1AddressP: Address,
+		numTokens2P: number,
+		token2AddressP: Address,
+		dollars1P: number,
+		dollars2P: number,
+		swapVals: boolean
+	) {
+		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleInputGeneric(
+			numTokens1P,
+			token1AddressP,
+			numTokens2P,
+			token2AddressP,
+			dollars1P,
+			dollars2P
+		);
+		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, swapVals);
 	}
 
 	function assignToGlobalVars(
@@ -116,6 +124,13 @@
 		if (routeR) {
 			// swap is ready to be performed
 		}
+	}
+	interface IDoubleBox {
+		dollars1R: number;
+		dollars2R: number;
+		routeR: Array<Address>;
+		numTk1R: number;
+		numTk2R: number;
 	}
 </script>
 
