@@ -58,7 +58,7 @@
 	}
 
 	function handleInput2(e) {
-		console.log(e);
+		console.log(e.detail.numTokens);
 		// if (numTokens2) {
 		// 	// will be updated every time numTokens2 updated
 

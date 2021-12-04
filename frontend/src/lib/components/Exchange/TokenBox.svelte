@@ -27,29 +27,23 @@
 		let isTimeout = false;
 
 		return function (event) {
-			if(isTimeout == true) {return}
-			if (checkTooSoon(lastCall, inputEventDispatchBuffer)) {
-				/**
-				 * If called too soon after the last call, checks if there is an event waiting to be dispatched in settimeout
-				 * If not, settimeout is set and function is locked so nothing happens until settimeout dispatched
-				 * settimeout should be dispatched with latest value
-				 * 
-				*/
-
-				isTimeout = true;
-				setTimeout(() => {
-					dispatch('tokenNumInput', { numTokens: numTokens });
-					isTimeout = false;
-				}, inputEventDispatchBuffer);
+			if (isTimeout == true) {
+				return;
 			}
-			
-			// if not in timeout, and not too soon, then simply dispatch event
+			/**
+			 * If called too soon after the last call, checks if there is an event waiting to be dispatched in settimeout
+			 * If not, settimeout is set and function is locked so nothing happens until settimeout dispatched
+			 * settimeout should be dispatched with latest value
+			 *
+			 */
 
-			lastCall = Date.now();
+			isTimeout = true;
+			setTimeout(() => {
+				dispatch('tokenNumInput', { numTokens: numTokens });
+				isTimeout = false;
+			}, inputEventDispatchBuffer);
 
-			dispatch('tokenNumInput', { numTokens: numTokens });
-
-			function checkTooSoon(lastCallTimeInMilli: number, buffer: number) {
+			function checkTooSoon(lastCallTimeInMilli: number, buffer: number) { // TODO possibly remove
 				return Date.now() - lastCallTimeInMilli < buffer;
 			}
 		};
