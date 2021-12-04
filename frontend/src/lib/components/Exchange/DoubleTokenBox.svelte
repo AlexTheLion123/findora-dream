@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { handleSelectionGeneric, handleInputGeneric } from '$lib/scripts/Exchange/Events';
 	import { getExactSwapData, getDollarValue, getRoute } from '$lib/scripts/Exchange/Swap';
+	import { router } from '$lib/stores';
 	import type { Bytes32, Uint256, Uint32, Address } from 'soltypes';
 	import TokenBox from './TokenBox.svelte';
 
@@ -24,82 +26,91 @@
 		token1Address = e.detail.address;
 		console.log(token1Address);
 
-		if (numTokens1) {
-			// need to work out dolars again since different token
-			dollars1 = await getDollarValue(token1Address, numTokens1); // TODO remove await, can handle async
+		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleSelectionGeneric(
+			numTokens1,
+			token1Address,
+			numTokens2,
+			token2Address
+		);
 
-			if (token2Address) {
-				const route = await getRoute(token1Address, token2Address);
-				numTokens2 = await getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
-                dollars2 = await getDollarValue(token2Address, numTokens2)
-			}
-		} else if (token2Address && numTokens2) {
-			// no point in getting route separately if no inputs but both selected
-			const route = await getRoute(token1Address, token2Address);
-			numTokens1 = await getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
-            dollars1 = await getDollarValue(token1Address, numTokens1)
-
-		}
+		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, false);
 	}
+
+	interface IDoubleBox {
+		dollars1R: number;
+		dollars2R: number;
+		routeR: Array<Address>;
+		numTk1R: number;
+		numTk2R: number;
+	}
+
+	/**
+	 * @dev function to generically handle both selection cases
+	 * trailing P stands for parameter, trailing R stands for return value
+	 */
 
 	async function handleSelection2(e) {
 		token2Address = e.detail.address;
 		console.log(token2Address);
 
-		if (numTokens2) {
-			// need to work out dolars again since different token
-			dollars2 = await getDollarValue(token2Address, numTokens2); // TODO remove await, can handle async
+		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleSelectionGeneric(
+			numTokens2,
+			token2Address,
+			numTokens1,
+			token1Address
+		);
 
-			if (token1Address) {
-				const route = await getRoute(token1Address, token2Address);
-				numTokens1 = await getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
-                dollars1 = await getDollarValue(token1Address, numTokens1)
-			}
-		} else if (token1Address && numTokens1) {
-			// no point in getting route separately if no inputs but both selected
-			const route = await getRoute(token1Address, token2Address);
-			numTokens2 = await getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
-            dollars2 = await getDollarValue(token2Address, numTokens2)
-		}
+		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, true);
 	}
 
 	async function handleInput1(e) {
 		numTokens1 = e.detail.numTokens;
 		console.log(numTokens1);
 
-		if (token1Address) {
-			// token 1 selected
-			dollars1 = await getDollarValue(token1Address, numTokens1);
+		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleInputGeneric(
+			numTokens1,
+			token1Address,
+			numTokens2,
+			token2Address
+		);
 
-			if (token2Address) {
-				// token 2 also selected, then we can go ahead and get all data
-				const route = await getRoute(token1Address, token2Address);
-				numTokens2 = await getExactSwapData(token1Address, token2Address, numTokens1, 0, route);
-				dollars2 = await getDollarValue(token2Address, numTokens2);
-			}
-		}
-
-		// we don't care if only token2 is selected this is handled by token2 selection event
-		// And of course, we also don't care if neither are selected.
+		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, false);
 	}
 
 	async function handleInput2(e) {
 		numTokens2 = e.detail.numTokens;
 		console.log(numTokens2);
 
-		if (token2Address) {
-			// token 2 selected, otherwise can't do anything
-			dollars2 = await getDollarValue(token2Address, numTokens2);
+		const { dollars1R, dollars2R, routeR, numTk1R, numTk2R } = await handleInputGeneric(
+			numTokens2,
+			token2Address,
+			numTokens1,
+			token1Address
+		);
 
-			if (token1Address) {
-				const route = await getRoute(token1Address, token2Address);
-				numTokens1 = await getExactSwapData(token1Address, token2Address, 0, numTokens2, route);
-				dollars1 = await getDollarValue(token1Address, numTokens1);
-			}
-		}
+		assignToGlobalVars({ dollars1R, dollars2R, routeR, numTk1R, numTk2R }, true);
 	}
 
-	
+	function assignToGlobalVars(
+		{ dollars1R, dollars2R, routeR, numTk1R, numTk2R }: IDoubleBox,
+		swapVals: boolean = false
+	) {
+		if (!swapVals) {
+			if (dollars1R) dollars1 = dollars1R;
+			if (dollars2R) dollars2 = dollars2R;
+			if (numTk1R) numTokens1 = numTk1R;
+			if (numTk1R) numTokens2 = numTk2R;
+		} else {
+			if (dollars1R) dollars2 = dollars1R;
+			if (dollars2R) dollars1 = dollars2R;
+			if (numTk1R) numTokens2 = numTk1R;
+			if (numTk1R) numTokens1 = numTk2R;
+		}
+
+		if (routeR) {
+			// swap is ready to be performed
+		}
+	}
 </script>
 
 <div class="token-box">

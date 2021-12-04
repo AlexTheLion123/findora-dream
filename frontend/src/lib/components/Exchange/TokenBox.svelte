@@ -5,7 +5,7 @@
 	export let dollars;
 	export let numTokens;
 	let balance = 0.0;
-	let inputEventDispatchBuffer = 2000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
+	let inputEventDispatchBuffer = 1000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
 
 	// events
 	const dispatch = createEventDispatcher();
