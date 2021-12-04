@@ -44,25 +44,10 @@
 		};
 	})();
 
-	// TODO delete these, since all data handled in parent
-	// function updateBox(address: string) {
-	// 	balance = getBalance(address);
-	// 	dollars = getDollarValue(numTokens, address);
-	// }
-
 	function getBalance(address: string) {
 		console.log('get data', address);
 		return Math.random() * 100;
 	}
-
-	// function getDollarValue(_numTokens: number, _address: string) {
-	// 	dollarRate = getDollarExchangeRate(_address);
-	// 	return _numTokens * dollarRate;
-	// }
-
-	// function getDollarExchangeRate(_address: string) {
-	// 	return Math.random() * 20;
-	// }
 
 	function formatNumber(num: number, decimals: number) {
 		return Math.round(num * 10 ** decimals) / 10 ** decimals;
@@ -91,8 +76,8 @@
 
 		display: grid;
 		grid-template:
-			'selector value' 1fr
-			'balance dollars' 1fr / 1fr 1fr;
+			'selector input' 1fr
+			'balance dollars' 1fr / 1fr 2fr;
 		align-items: center;
 	}
 
@@ -110,9 +95,8 @@
 		color: white;
 		text-align: right;
 		overflow: hidden;
-		max-width: 70%;
-
-		grid-area: value;
+		max-width: 95%;
+		grid-area: input;
 		justify-self: end;
 	}
 
