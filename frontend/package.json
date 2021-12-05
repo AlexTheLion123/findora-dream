@@ -11,7 +11,7 @@
     "lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
     "format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. .",
     "deploy": "cd .. && yarn deploy && cd frontend && npm run dev",
-    "commit": "cd .. && git add . && git commit -m $M && cd frontend"
+    "commit": "cd .. && git add . && git commit -m $M && cd frontend && npm run dev"
   },
   "devDependencies": {
     "@metamask/onboarding": "^1.0.1",
