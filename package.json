@@ -5,12 +5,11 @@
   "license": "MIT",
   "scripts": {
     "clean": "rimraf build",
-    "build": "yarn clean && waffle && mars",
+    "build": "yarn clean && waffle",
     "test": "mocha",
     "deploy": "rimraf frontend/src/lib/assets/tokens/tokens.json && rimraf frontend/src/lib/assets/deployments.json && ts-node src/deploy.ts"
   },
   "devDependencies": {
-    "@openzeppelin/contracts": "^4.3.3",
     "@types/chai": "^4.2.22",
     "@types/mocha": "^9.0.0",
     "chai": "^4.3.4",
@@ -22,5 +21,8 @@
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.4.0"
   }
 }

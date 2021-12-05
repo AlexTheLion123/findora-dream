@@ -5,6 +5,8 @@ export { Erc20Factory } from "./Erc20Factory";
 export type { Erc20 } from "./Erc20";
 export { FixedPointFactory } from "./FixedPointFactory";
 export type { FixedPoint } from "./FixedPoint";
+export { MyTokenFactory } from "./MyTokenFactory";
+export type { MyToken } from "./MyToken";
 export { TokenFactoryFactory } from "./TokenFactoryFactory";
 export type { TokenFactory } from "./TokenFactory";
 export { UniswapV2Erc20Factory } from "./UniswapV2Erc20Factory";

@@ -2,16 +2,20 @@ import { Provider } from '@ethersproject/providers';
 import { ethers, Wallet } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
 import {
-    TokenFactory, TokenFactoryFactory, FixedPoint, FixedPointFactory, UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory
+    UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory
 } from '../build/types';
 
+import { MyToken } from '../build/types/MyToken';
+import { MyTokenFactory } from '../build/types/MyTokenFactory';
+import { BigNumber } from 'ethers';
 
 const fs = require('fs');
 
 let provider: Provider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
 const PRIVATE_KEY = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
+const MY_ADDRESS = '0x6919aE4C89f9ED4A79aE70Fb4cC78396F48A42cA'
 const wallet = new Wallet(PRIVATE_KEY).connect(provider);
-let tokenFactory: TokenFactory;
+let myToken: MyToken
 
 deploy();
 
@@ -23,40 +27,46 @@ async function deploy() {
 
     writeToJson([{contract:"UniswapV2Factory",address:uniswapV2Factory.address}, {contract:"UniswapV2Router02",address:uniswapV2Router02.address}], "./frontend/src/lib/assets/deployments.json")
 
-    tokenFactory = await new TokenFactoryFactory(wallet).deploy();
     await deployTokensAndWrite();
     
 }
 
+interface ITokensInfo {
+            address: string,
+            name: string,
+            symbol: string
+}
+
 async function deployTokensAndWrite() {
-    for (let i = 0; i < 1; i++) {
-        let txn = await tokenFactory.createNewToken(`Token${i+1}`, `TK${i+1}`)
-        await txn.wait();
+    let tokensInfo: Array<ITokensInfo> = new Array();
 
+
+    for (let i = 0; i < 20; i++) {
+        let txn = await new MyTokenFactory(wallet).deploy(`Token${i+1}`, `TK${i+1}`)
+        await txn.deployed();
+        console.log(`TK${i+1} has been deployed at ${txn.address}"`)
+        tokensInfo.push({address: txn.address, name: `Token${i+1}`, symbol: `TK${i+1}`})
     }
-
-    let addresses = await tokenFactory.getArr();
-
     
-    writeToJson((populate(addresses)), "./frontend/src/lib/assets/tokens/tokens.json")
-    sendToAddress(0x6919aE4C89f9ED4A79aE70Fb4cC78396F48A42cA, addresses)
+    writeToJson(tokensInfo, "./frontend/src/lib/assets/tokens/tokens.json")
+    sendToAddress(MY_ADDRESS, tokensInfo, ethers.constants.WeiPerEther.mul(BigNumber.from(10000)))
     
 }
 
-async function sendToAddress(amount: number, addresses: string[]) {
+async function sendToAddress(recipient: string, addresses: Array<ITokensInfo>, amount: any) {
     const walletAddress = await wallet.getAddress()
     for(let i=0; i<addresses.length; i++) {
-        const contract = await new ethers.Contract(addresses[i], erc20Abi, wallet);
-        // await contract.transferFrom(await wallet.getAddress(), '0x6919aE4C89f9ED4A79aE70Fb4cC78396F48A42cA', 100)
-        await contract.mint()
-        console.log(await contract.balanceOf(walletAddress))
+        const contract = await new ethers.Contract(addresses[i].address, erc20Abi, wallet) as MyToken;
+        await contract.deployed();
+
+        let txn = await contract.transfer(recipient, amount)
+        await txn.wait()
+        console.log(await getBalance(contract, recipient), `of TK${i+1} has been sent to`, recipient);
     }
 }
 
-function populate(arr: string[]) {
-    return arr.map((item, i) => {
-        return { "address": item, "name": `Token${i+1}`, "symbol": `TK${i+1}` }
-    })
+async function getBalance(contract: MyToken, address: string) {
+    return (await contract.balanceOf(address)).div(ethers.constants.WeiPerEther).toString()
 }
 
 function writeToJson(info: any , path: string) {
