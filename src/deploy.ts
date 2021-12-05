@@ -25,43 +25,52 @@ async function deploy() {
     const uniswapV2Factory = await new UniswapV2FactoryFactory(wallet).deploy(msgSender);
     const uniswapV2Router02 = await new UniswapV2Router02Factory(wallet).deploy(uniswapV2Factory.address, msgSender); // 2nd argument is meant to be address of WETH
 
-    writeToJson([{contract:"UniswapV2Factory",address:uniswapV2Factory.address}, {contract:"UniswapV2Router02",address:uniswapV2Router02.address}], "./frontend/src/lib/assets/deployments.json")
+    writeToJson([{ contract: "UniswapV2Factory", address: uniswapV2Factory.address }, { contract: "UniswapV2Router02", address: uniswapV2Router02.address }], "./frontend/src/lib/assets/deployments.json")
 
     await deployTokensAndWrite();
-    
+
 }
 
 interface ITokensInfo {
-            address: string,
-            name: string,
-            symbol: string
+    address: string,
+    name: string,
+    symbol: string
 }
 
 async function deployTokensAndWrite() {
     let tokensInfo: Array<ITokensInfo> = new Array();
 
 
-    for (let i = 0; i < 20; i++) {
-        let txn = await new MyTokenFactory(wallet).deploy(`Token${i+1}`, `TK${i+1}`)
+    for (let i = 0; i < 30; i++) {
+        if (i == 0) {
+            let txn = await new MyTokenFactory(wallet).deploy(`Native`, `NATIVE`);
+            await txn.deployed();
+            console.log(`NATIVE has been deployed at ${txn.address}`)
+            tokensInfo.push({ address: txn.address, name: `Native`, symbol: `NATIVE` })
+            continue
+        }
+
+        let txn = await new MyTokenFactory(wallet).deploy(`Token${i + 1}`, `TK${i + 1}`)
         await txn.deployed();
-        console.log(`TK${i+1} has been deployed at ${txn.address}"`)
-        tokensInfo.push({address: txn.address, name: `Token${i+1}`, symbol: `TK${i+1}`})
+        console.log(`TK${i + 1} has been deployed at ${txn.address}"`)
+        tokensInfo.push({ address: txn.address, name: `Token${i + 1}`, symbol: `TK${i + 1}` })
     }
-    
+
     writeToJson(tokensInfo, "./frontend/src/lib/assets/tokens/tokens.json")
-    sendToAddress(MY_ADDRESS, tokensInfo, ethers.constants.WeiPerEther.mul(BigNumber.from(10000)))
-    
+    sendToAddress(MY_ADDRESS, tokensInfo)
+
 }
 
-async function sendToAddress(recipient: string, addresses: Array<ITokensInfo>, amount: any) {
+async function sendToAddress(recipient: string, addresses: Array<ITokensInfo>) {
     const walletAddress = await wallet.getAddress()
-    for(let i=0; i<addresses.length; i++) {
+    for (let i = 0; i < addresses.length; i++) {
+        let amount = ethers.constants.WeiPerEther.mul(BigNumber.from(Math.round(Math.random()*100000)))
         const contract = await new ethers.Contract(addresses[i].address, erc20Abi, wallet) as MyToken;
         await contract.deployed();
 
         let txn = await contract.transfer(recipient, amount)
         await txn.wait()
-        console.log(await getBalance(contract, recipient), `of TK${i+1} has been sent to`, recipient);
+        console.log(await getBalance(contract, recipient), `of TK${i + 1} has been sent to`, recipient);
     }
 }
 
@@ -69,7 +78,7 @@ async function getBalance(contract: MyToken, address: string) {
     return (await contract.balanceOf(address)).div(ethers.constants.WeiPerEther).toString()
 }
 
-function writeToJson(info: any , path: string) {
+function writeToJson(info: any, path: string) {
     const jsonContent = JSON.stringify(info);
 
     fs.writeFile(path, jsonContent, 'utf8', (err: any) => {
