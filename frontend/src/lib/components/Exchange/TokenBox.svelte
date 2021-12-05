@@ -5,6 +5,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import TokenSelector from './TokenSelector.svelte';
+	import { getBalance } from '$lib/scripts/Exchange/Swap'
 
 	let inputElement: HTMLInputElement;
 	export let dollars;
@@ -14,9 +15,9 @@
 
 	// events
 	const dispatch = createEventDispatcher();
-	function handleSelection(e) {
-		balance = getBalance(e.detail.address); // TODO remove, balance will be gotten from a descendant
+	async function handleSelection(e) {
 		dispatch('tokenSelected', e.detail);
+		balance = await getBalance(e.detail.address);
 	}
 	/**
 	 * @dev input event is dispatched on every key stroke, which is far too often to be querying blockchain every time.
@@ -53,9 +54,7 @@
 		currentInputElement = inputElement;
 	}
 
-	function getBalance(address: string) {
-		return Math.random() * 100;
-	}
+	
 
 	function formatNumber(num: number, decimals: number) {
 		return Math.round(num * 10 ** decimals) / 10 ** decimals;

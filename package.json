@@ -7,7 +7,7 @@
     "clean": "rimraf build",
     "build": "yarn clean && waffle && mars",
     "test": "mocha",
-    "deploy": "rimraf frontend/src/lib/assets/tokens/tokens.json && rimraf src/deployments.json && ts-node src/deploy.ts"
+    "deploy": "rimraf frontend/src/lib/assets/tokens/tokens.json && rimraf frontend/src/lib/assets/deployments.json && ts-node src/deploy.ts"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.3.3",

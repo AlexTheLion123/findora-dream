@@ -3,7 +3,6 @@ import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchan
 import { isProvided } from '$lib/stores';
 import type { Address } from 'soltypes';
 
-
 /**
  * 
  * @returns an object representing the correct state of the global variables for the UI. some may be undefined
@@ -38,7 +37,6 @@ export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2
     }
 
     function assignVars({route, numTk1 , dollars1}: {route: Address[], numTk1:number, dollars1: number}, swapVals) {
-        console.log(route, numTk1, dollars1)
         routeP = route;
         if(!swapVals) {
             numTk2P = numTk1;
@@ -61,7 +59,6 @@ async function getExactSwapData(addr1: Address, addr2: Address, numTk1: number) 
         dollars1: dollars2
     }
 }
-
 
 export async function handleInputGeneric(numTk1P: number, addr1P: Address | undefined, addr2P: Address | undefined) {
     let routeP

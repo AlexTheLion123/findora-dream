@@ -31,7 +31,6 @@
 
 	async function handleSelection1(e) {
 		token1Address = e.detail.address;
-		console.log(e)
 		assignToGlobalVars(await handleSelectionGeneric(numTokens1, numTokens2, token1Address, token2Address, checkCurrent(e.detail.element)), false)
 	}
 

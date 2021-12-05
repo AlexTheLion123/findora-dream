@@ -1,6 +1,6 @@
 import { writable} from 'svelte/store'
 import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
-import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
+import type { UniswapV2Router02} from '$lib/typesUsed/UniswapV2Router02';
 
 
 // metamask
