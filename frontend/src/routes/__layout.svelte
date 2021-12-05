@@ -1,7 +1,5 @@
 <script context="module" lang="ts">
 	import { ethers } from 'ethers';
-	import UniswapV2Router02 from '$lib/abis/UniswapV2Router02.json';
-	import type { UniswapV2Router02 as RouterType} from '$lib/types/UniswapV2Router02';
 </script>
 
 <script lang="ts">
@@ -16,18 +14,12 @@
 			// connected
 			$provider = new ethers.providers.Web3Provider(window.ethereum);
 			$signer = $provider.getSigner();
-			$router = new ethers.Contract(
-				'0x5252085F859f2C466b8Bfca1D1e0059615dFd5fB',
-				UniswapV2Router02.abi,
-				$signer
-			) as RouterType;
 			$isProvided = true;
 			console.log('hello');
 		} else {
 			$provider = null;
 			$signer = null;
 			$isProvided = false;
-			$router = null;
 		}
 	});
 </script>

@@ -5,15 +5,21 @@ import {ERC20} from '$lib/abis/ERC20';
 import type { MyToken } from '$lib/typesUsed/MyToken'
 import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
 import { ProviderError } from './Errors'
+import type { UniswapV2Router02} from '$lib/typesUsed/UniswapV2Router02';
 
-let signer_val: JsonRpcSigner
-let provider_val: Web3Provider
+
+let signer_val: JsonRpcSigner | undefined
+let provider_val: Web3Provider | undefined
+let router_val: UniswapV2Router02 | undefined;
 
 signer.subscribe(signer => {
     signer_val = signer
 })
 provider.subscribe(provider => {
     provider_val = provider
+})
+router.subscribe(router => {
+    router_val = router
 })
 
 /**
@@ -36,6 +42,7 @@ async function getSignerAddress(signer: JsonRpcSigner) {
     return await signer_val.getAddress()
 }
 
+
 export async function getOtherNumTokens(
     addr1: Address,
     addr2: Address,
@@ -46,15 +53,14 @@ export async function getOtherNumTokens(
     return Math.random() * 100;
 };
 
-export async function getDollarValue(addr: Address, numTk: number) { // TODO fix
-
-
+export async function getDollarValue(addr: Address, numTk: number) { // TODO fix last probably
     return numTk * Math.random() * 100;
 }
 
 export async function getRoute(addr1, addr2): Promise<Address[]> {
+    if(!router_val) return
 
-
+    router_val.get
 
     async function checkPairExists(a1ddr: Address, addr2: Address) {
         return true; // query blockchain
