@@ -5,19 +5,24 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import TokenSelector from './TokenSelector.svelte';
-	import { getBalance } from '$lib/scripts/Exchange/Swap'
+	import { getBalance } from '$lib/scripts/Exchange/Swap';
+	import { ProviderError } from '$lib/scripts/Exchange/Errors';
 
 	let inputElement: HTMLInputElement;
 	export let dollars;
 	export let numTokens;
-	let balance = 0.0;
+	let balance: string = '0.0';
 	let inputEventDispatchBuffer = 1000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
 
 	// events
 	const dispatch = createEventDispatcher();
 	async function handleSelection(e) {
 		dispatch('tokenSelected', e.detail);
-		balance = await getBalance(e.detail.address);
+		balance =
+			(await getBalance(e.detail.address).catch((error) => {
+				error instanceof ProviderError ? alert('Connect to metamask') : console.log(error);
+			})) || balance;
+			// TODO getbalance on connection after selection
 	}
 	/**
 	 * @dev input event is dispatched on every key stroke, which is far too often to be querying blockchain every time.
@@ -54,9 +59,10 @@
 		currentInputElement = inputElement;
 	}
 
-	
-
-	function formatNumber(num: number, decimals: number) {
+	function formatNumber(num: number | string, decimals: number) {
+		if (typeof num === 'string') {
+			return Math.round(parseInt(num) * 10 ** decimals) / 10 ** decimals;
+		}
 		return Math.round(num * 10 ** decimals) / 10 ** decimals;
 	}
 </script>

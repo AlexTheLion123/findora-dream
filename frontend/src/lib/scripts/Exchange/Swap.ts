@@ -4,7 +4,7 @@ import { ethers } from 'ethers'
 import {ERC20} from '$lib/abis/ERC20';
 import type { MyToken } from '$lib/typesUsed/MyToken'
 import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
-
+import { ProviderError } from './Errors'
 
 let signer_val: JsonRpcSigner
 let provider_val: Web3Provider
@@ -22,7 +22,7 @@ provider.subscribe(provider => {
  * @returns 
  */
 export async function getBalance(address: string) {
-    if (!provider_val || !signer_val) throw new Error("Provider or signer do not exist yet");
+    if (!provider_val || !signer_val) throw new ProviderError("Provider or signer do not exist yet");
     const erc20Contract = new ethers.Contract(address, ERC20, provider_val) as MyToken
     const bal = await getErc20Balance(erc20Contract, await getSignerAddress(signer_val));
     return bal;
