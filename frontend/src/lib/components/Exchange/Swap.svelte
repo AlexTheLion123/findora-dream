@@ -1,25 +1,16 @@
 <script lang="ts">
-	import { isProvided, router } from '$lib/stores';
-	// import type { UniswapV2Router02} from '$lib/types/UniswapV2Router02';
-
 	import DoubleTokenBox from './DoubleTokenBox.svelte';
 	import TradeButton from './TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	isProvided.subscribe((value) => {
-		if (value) {
-			// isProvided = true, then signed router contract exists
-		}
-	});
-
-
+	
 </script>
 
 <form>
 	<p class="title">Swap</p>
 
 	<div class="double-token-box">
-		<DoubleTokenBox/>
+		<DoubleTokenBox />
 	</div>
 
 	<div class="slider-box">

@@ -1,4 +1,4 @@
-export const ERC20 = [
+export const ERC20ABI = [
     "constructor(string name_, string symbol_)",
     "event Approval(address indexed owner, address indexed spender, uint256 value)",
     "event Transfer(address indexed from, address indexed to, uint256 value)",

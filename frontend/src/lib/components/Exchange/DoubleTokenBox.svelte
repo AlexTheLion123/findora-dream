@@ -1,3 +1,23 @@
+<script context="module" lang="ts">
+	import { setFactoryAndRouterAddress, signRouterAndFactory} from '$lib/scripts/ConnectContracts'
+	import { signer } from '$lib/stores'
+
+	// NOTE contracts are signed in a module context in the relevant components that use them.
+	// This can be changed to sign all contracts at once upon load asynchronously
+
+	// do not require provider to do this
+	setFactoryAndRouterAddress();
+
+	// once signer available then we can sign router contract store
+	signer.subscribe((value) => {
+		if (value) {
+			// isProvided = true, then sign the router contract.
+			// DoubleTokenBox signs the router contract in module context since it is used in both the swap and liquidity components
+			signRouterAndFactory();
+		}
+	});
+</script>
+
 <script lang="ts">
 	import { handleSelectionGeneric, handleInputGeneric } from '$lib/scripts/Exchange/Events';
 	import type { Address } from 'soltypes';
@@ -23,30 +43,51 @@
 	 */
 
 	function checkCurrent(element: HTMLElement) {
-		if(currentInputElement) {
-			return currentInputElement.parentElement === element.parentElement.parentElement.parentElement.parentElement.parentElement // TODO find better way to do this
+		if (currentInputElement) {
+			return (
+				currentInputElement.parentElement ===
+				element.parentElement.parentElement.parentElement.parentElement.parentElement
+			); // TODO find better way to do this
 		}
 		return false;
 	}
 
 	async function handleSelection1(e) {
 		token1Address = e.detail.address;
-		assignToGlobalVars(await handleSelectionGeneric(numTokens1, numTokens2, token1Address, token2Address, checkCurrent(e.detail.element)), false)
+		assignToGlobalVars(
+			await handleSelectionGeneric(
+				numTokens1,
+				numTokens2,
+				token1Address,
+				token2Address,
+				checkCurrent(e.detail.element)
+			),
+			false
+		);
 	}
 
 	async function handleSelection2(e) {
 		token2Address = e.detail.address;
-		assignToGlobalVars(await handleSelectionGeneric(numTokens2, numTokens1, token2Address, token1Address, checkCurrent(e.detail.element)), true)
+		assignToGlobalVars(
+			await handleSelectionGeneric(
+				numTokens2,
+				numTokens1,
+				token2Address,
+				token1Address,
+				checkCurrent(e.detail.element)
+			),
+			true
+		);
 	}
 
 	async function handleInput1(e) {
 		numTokens1 = e.detail.numTokens;
-		assignToGlobalVars(await handleInputGeneric(numTokens1, token1Address, token2Address), false)
+		assignToGlobalVars(await handleInputGeneric(numTokens1, token1Address, token2Address), false);
 	}
 
 	async function handleInput2(e) {
 		numTokens2 = e.detail.numTokens;
-		assignToGlobalVars(await handleInputGeneric(numTokens2, token2Address, token1Address), true)
+		assignToGlobalVars(await handleInputGeneric(numTokens2, token2Address, token1Address), true);
 	}
 
 	function assignToGlobalVars(
@@ -67,7 +108,7 @@
 
 		if (routeR) {
 			// swap is ready to be performed
-			console.log("swap is ready")
+			console.log('swap is ready');
 		}
 	}
 </script>

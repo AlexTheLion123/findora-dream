@@ -1,1 +1,10 @@
-[{"contract":"UniswapV2Factory","address":"0x3804d2E6bCc4AAE38a801B55F42EfE367E88006f"},{"contract":"UniswapV2Router02","address":"0xc94a415a2B4fd8B9Aa4Ac3B49Bc379121c23E99C"}]
+[
+    {
+        "contract": "UniswapV2Factory",
+        "address": "0x3804d2E6bCc4AAE38a801B55F42EfE367E88006f"
+    },
+    {
+        "contract": "UniswapV2Router02",
+        "address": "0xc94a415a2B4fd8B9Aa4Ac3B49Bc379121c23E99C"
+    }
+]
