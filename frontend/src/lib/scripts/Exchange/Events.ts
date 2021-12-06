@@ -1,14 +1,13 @@
 
-import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchange/Swap';
+import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchange/ExchangeQueries';
 import { isProvided } from '$lib/stores';
-import type { Address } from 'soltypes';
-
+import { NoRouteError } from './Errors'
 /**
  * 
  * @returns an object representing the correct state of the global variables for the UI. some may be undefined
  */
-export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2P: number | undefined, addr1P: Address, addr2P: Address | undefined, isCurrent: boolean) {
-    let routeP: Address[] | undefined
+export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2P: number | undefined, addr1P: string, addr2P: string | undefined, isCurrent: boolean) {
+    let routeP: string[] | undefined
     let dollars1P: number | undefined
     let dollars2P: number | undefined
 
@@ -36,9 +35,9 @@ export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2
         numTk2R: numTk2P
     }
 
-    function assignVars({route, numTk1 , dollars1}: {route: Address[], numTk1:number, dollars1: number}, swapVals) {
+    function assignVars({ route, numTk1, dollars1 }: { route: string[], numTk1: number, dollars1: number }, swapVals) {
         routeP = route;
-        if(!swapVals) {
+        if (!swapVals) {
             numTk2P = numTk1;
             dollars2P = dollars1;
         } else {
@@ -49,9 +48,10 @@ export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2
 
 }
 
-async function getExactSwapData(addr1: Address, addr2: Address, numTk1: number) {
-    const route = await getRoute(addr1, addr2);
-    const numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route);
+async function getExactSwapData(addr1: string, addr2: string, numTk1: number) {
+    const route = await getRoute(addr1, addr2).catch(err => {alert(err); return });
+
+    const numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route as string[]);
     const dollars2 = await getDollarValue(addr2, numTk2)
     return {
         route: route,
@@ -60,7 +60,7 @@ async function getExactSwapData(addr1: Address, addr2: Address, numTk1: number) 
     }
 }
 
-export async function handleInputGeneric(numTk1P: number, addr1P: Address | undefined, addr2P: Address | undefined) {
+export async function handleInputGeneric(numTk1P: number, addr1P: string | undefined, addr2P: string | undefined) {
     let routeP
     let dollars1P
     let numTk2P

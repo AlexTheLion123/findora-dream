@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import TokenSelector from './TokenSelector.svelte';
-	import { getBalance } from '$lib/scripts/Exchange/Swap';
+	import { getBalance } from '$lib/scripts/Exchange/ExchangeQueries';
 	import { ProviderError } from '$lib/scripts/Exchange/Errors';
 
 	let inputElement: HTMLInputElement;

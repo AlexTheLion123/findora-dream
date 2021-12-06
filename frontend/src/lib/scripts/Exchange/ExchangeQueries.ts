@@ -1,26 +1,24 @@
-import type { Bytes32, Uint256, Uint32, Address } from 'soltypes';
-import { router, signer, factory } from '$lib/stores';
+import { router, signer, factory, nativeTokenAddress } from '$lib/stores';
 import { ethers } from 'ethers'
 import { ERC20ABI } from '$lib/abis/ERC20ABI';
 import type { MyToken } from '$lib/typesUsed/MyToken'
 import type { JsonRpcSigner } from '@ethersproject/providers';
-import { getErc20Balance, getSignerAddress } from './Exchange_utils';
+import { getErc20Balance, getSignerAddress, checkPairAgainstNative, checkAddressExists } from './ExchangeUtils';
 // import { ProviderError } from './Errors'
-import { SignerError, FactoryDNE } from './Errors'
+import { SignerError, FactoryDNE, NoRouteError } from './Errors'
 import type { UniswapV2Router02 } from '$lib/typesUsed/UniswapV2Router02';
 import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
+import { check } from 'prettier';
 
 let signer_val: JsonRpcSigner | undefined
-let factory_val: UniswapV2Factory
+let factory_val: UniswapV2Factory | undefined
+let nativeAddress_val: string
 // let provider_val: Web3Provider | undefined
 // let router_val: UniswapV2Router02 | undefined;
 
-signer.subscribe(signer => {
-    signer_val = signer
-})
-factory.subscribe(value => {
-    factory_val = value
-})
+signer.subscribe(value => signer_val = value)
+factory.subscribe(value => factory_val = value)
+nativeTokenAddress.subscribe(value => nativeAddress_val = value)
 
 /// @dev creates ERC20 contract instance at the relevant address and gets balance
 export async function getBalance(address: string) {
@@ -35,32 +33,33 @@ export async function getBalance(address: string) {
  * For now, just check both tokens against the native. 
  * Add additional checks against other popular tokens as they get added
  */
-export async function getRoute(addr1, addr2): Promise<Address[]> {
+export async function getRoute(addr1, addr2): Promise<string[]> {
     if (!factory_val) throw new FactoryDNE("Factory does not exist yet");
 
-    const address: string | void = await factory_val.getPair(addr1, addr2).catch(console.log);
-    console.log(address)
-    // TODO next, for now only checks against native
-    async function checkPairExists(a1ddr: Address, addr2: Address) {
-        return true; // query blockchain
+    // check direct pair, returns zero address if no pair
+    const pairAddress: string = await factory_val.getPair(addr1, addr2);
+    if (!checkAddressExists(pairAddress)) {
+        // check indirect pair against native, throws if no pair
+        checkPairAgainstNative(factory_val, nativeAddress_val, addr1, addr2).catch(err => {
+            alert(err);
+            return
+        })
+        return [addr1, nativeTokenAddress, addr2];
     }
-
-    return [addr1, addr2];
+    return [pairAddress];
 }
 
 export async function getOtherNumTokens(
-    addr1: Address,
-    addr2: Address,
+    addr1: string,
+    addr2: string,
     numTk1: number,
-    route: Array<Address>
+    route: Array<string>
 ) {
     // TODO next2
     return Math.random() * 100;
 };
 
-
-
-export async function getDollarValue(addr: Address, numTk: number) { // TODO fix last probably
+export async function getDollarValue(addr: string, numTk: number) { // TODO fix last probably
     return numTk * Math.random() * 100;
 }
 

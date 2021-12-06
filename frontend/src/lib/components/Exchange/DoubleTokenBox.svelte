@@ -4,6 +4,7 @@
 
 	// NOTE contracts are signed in a module context in the relevant components that use them.
 	// This can be changed to sign all contracts at once upon load asynchronously
+	// native token address is set in TokenSearchDialog in module context
 
 	// do not require provider to do this
 	setFactoryAndRouterAddress();

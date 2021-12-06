@@ -21,6 +21,7 @@ export const FACTORY_ADDRESS = writable(null as string)
 export const ROUTER_ADDRESS = writable(null as string)
 export const router = writable(null as UniswapV2Router02);
 export const factory = writable(null as UniswapV2Factory)
+export const nativeTokenAddress = writable(null as string);
 
 // grid or list layout, can probably handle some other way
 export const isGrid = writable(false);

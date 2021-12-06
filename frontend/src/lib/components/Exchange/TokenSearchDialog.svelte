@@ -1,6 +1,17 @@
+<script context="module" lang="ts">
+	import tokens from '$lib/assets/tokens/tokens.json';
+	import { nativeTokenAddress } from '$lib/stores'
+
+	// TODO add tags property to search token list, all searches should be via tags
+	for(let i=0; i<tokens.length; i++){
+		if(tokens[i].name === "Native") nativeTokenAddress.set(tokens[i].address);
+		break;
+	}
+</script>
+
 <script lang="ts">
+	// TODO look at other moving stuff to module context
 	import { createEventDispatcher } from 'svelte';
-    import tokens from '$lib/assets/tokens/tokens.json';
 	import TokenSearchItem from '$lib/components/Exchange/TokenSearchItem.svelte';
     
 	export let isShown = false;
