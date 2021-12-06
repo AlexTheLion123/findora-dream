@@ -1,28 +1,36 @@
 <script context="module" lang="ts">
 	export let currentInputElement: HTMLInputElement; // is used, not sure why showing problem
+	import { getBalance } from '$lib/scripts/Exchange/ExchangeQueries';
+	import { createEventDispatcher } from 'svelte';
+	import { signer} from '$lib/stores'
+	import type { JsonRpcSigner} from '@ethersproject/providers'
+
+	let signer_val: null | JsonRpcSigner;
+	signer.subscribe(value => signer_val = value)
 </script>
 
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import TokenSelector from './TokenSelector.svelte';
-	import { getBalance } from '$lib/scripts/Exchange/ExchangeQueries';
 	import { ProviderError } from '$lib/scripts/Exchange/Errors';
 
 	let inputElement: HTMLInputElement;
-	export let dollars;
-	export let numTokens;
-	let balance: string = '0.0';
+	export let dollars: number;
+	export let numTokens: number;
+	export let balance: number = 0.00;
 	let inputEventDispatchBuffer = 1000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
 
 	// events
 	const dispatch = createEventDispatcher();
-	async function handleSelection(e) {
+	async function handleSelection(e: any) {
+		// TODO use shortcut
 		dispatch('tokenSelected', e.detail);
-		balance =
-			(await getBalance(e.detail.address).catch((error) => {
-				error instanceof ProviderError ? alert('Connect to metamask') : console.log(error);
-			})) || balance;
-			// TODO getbalance on connection after selection
+
+		if(!signer_val) { // TODO throw proper error
+			alert("Connect to metmask") 
+			return
+		}
+
+		balance = await getBalance(e.detail.address, signer_val);
 	}
 	/**
 	 * @dev input event is dispatched on every key stroke, which is far too often to be querying blockchain every time.
@@ -31,7 +39,7 @@
 	const handleInput = (function () {
 		let isTimeout = false;
 
-		return function (event) {
+		return function (event: any) {
 			updateCurrentInputElement();
 
 			if (isTimeout == true) {

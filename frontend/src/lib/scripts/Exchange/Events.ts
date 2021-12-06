@@ -1,57 +1,54 @@
 
 import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchange/ExchangeQueries';
-import { isProvided } from '$lib/stores';
-import { NoRouteError } from './Errors'
-/**
- * 
- * @returns an object representing the correct state of the global variables for the UI. some may be undefined
- */
-export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2P: number | undefined, addr1P: string, addr2P: string | undefined, isCurrent: boolean) {
-    let routeP: string[] | undefined
-    let dollars1P: number | undefined
-    let dollars2P: number | undefined
+import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
 
-    if (numTk1P) {
+export async function handleSelectionGeneric(numTk1: number | undefined, numTk2: number | undefined, addr1: string, addr2: string | undefined, isCurrent: boolean, factory: UniswapV2Factory, nativeAddr: string) {
+    let route: string[] | undefined
+    let dollars1: number | undefined
+    let dollars2: number | undefined
+
+    if (numTk1) {
         // current box fully filled out
         // need to work out dollars again since different token
-        dollars1P = await getDollarValue(addr1P, numTk1P); // TODO remove await, can handle async
+        dollars1 = await getDollarValue(addr1, numTk1); // TODO remove await, can handle async
 
-        if (addr2P && isCurrent) {
+        if (addr2 && isCurrent) {
             // other token selected as well
-            assignVars(await getExactSwapData(addr1P, addr2P, numTk1P), false)
+            assignVars(await getExactSwapData(addr1, addr2, numTk1, factory, nativeAddr), false)
 
-        } else if (addr2P && !isCurrent) {
-            assignVars(await getExactSwapData(addr2P, addr1P, numTk2P), true)
+        } else if (addr2 && !isCurrent) {
+            assignVars(await getExactSwapData(addr2, addr1, numTk2, factory, nativeAddr), true)
         }
-    } else if (addr2P && numTk2P) {
-        assignVars(await getExactSwapData(addr2P, addr1P, numTk2P), true)
+    } else if (addr2 && numTk2) {
+        assignVars(await getExactSwapData(addr2, addr1, numTk2, factory, nativeAddr), true)
     }
 
     return {
-        dollars1R: dollars1P,
-        dollars2R: dollars2P,
-        routeR: routeP,
-        numTk1R: numTk1P,
-        numTk2R: numTk2P
+        dollars1: dollars1,
+        dollars2: dollars2,
+        route: route,
+        numTk1: numTk1,
+        numTk2: numTk2
     }
 
-    function assignVars({ route, numTk1, dollars1 }: { route: string[], numTk1: number, dollars1: number }, swapVals) {
-        routeP = route;
+    function assignVars({ route: routeR, numTk1: numTk1R, dollars1: dollars1R }: { route: string[], numTk1: number, dollars1: number }, swapVals) {
+        route = routeR;
         if (!swapVals) {
-            numTk2P = numTk1;
-            dollars2P = dollars1;
+            numTk2 = numTk1R;
+            dollars2 = dollars1R;
         } else {
-            numTk1P = numTk1;
-            dollars1P = dollars1;
+            numTk1 = numTk1R;
+            dollars1 = dollars1R;
         }
     }
 
 }
 
-async function getExactSwapData(addr1: string, addr2: string, numTk1: number) {
-    const route = await getRoute(addr1, addr2)
-    if(!route) return;
-    
+async function getExactSwapData(addr1: string, addr2: string, numTk1: number, factory: UniswapV2Factory, nativeAddr: string) {
+
+    const route = await getRoute(addr1, addr2, factory, nativeAddr)
+    if (!route) return;
+
     const numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route);
     const dollars2 = await getDollarValue(addr2, numTk2)
     return {
@@ -61,21 +58,22 @@ async function getExactSwapData(addr1: string, addr2: string, numTk1: number) {
     }
 }
 
-export async function handleInputGeneric(numTk1P: number, addr1P: string | undefined, addr2P: string | undefined) {
-    let routeP
-    let dollars1P
-    let numTk2P
-    let dollars2P
+export async function handleInputGeneric(numTk1: number, addr1: string | undefined, addr2: string | undefined, factory: UniswapV2Factory, nativeAddr: string) {
+    let route
+    let dollars1
+    let numTk2
+    let dollars2
 
-    if (addr1P) {
+    if (addr1) {
         // token 1 selected
-        dollars1P = await getDollarValue(addr1P, numTk1P);
+        dollars1 = await getDollarValue(addr1, numTk1);
 
-        if (addr2P) {
+        if (addr2) {
             // token 2 also selected, then we can go ahead and get all data
-            routeP = await getRoute(addr1P, addr2P);
-            numTk2P = await getOtherNumTokens(addr1P, addr2P, numTk1P, routeP);
-            dollars2P = await getDollarValue(addr2P, numTk2P);
+
+            route = await getRoute(addr1, addr2, factory, nativeAddr); 
+            numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route);
+            dollars2 = await getDollarValue(addr2, numTk2);
         }
     }
 
@@ -83,11 +81,11 @@ export async function handleInputGeneric(numTk1P: number, addr1P: string | undef
     // And of course, we also don't care if neither are selected.
 
     return {
-        dollars1R: dollars1P,
-        dollars2R: dollars2P,
-        routeR: routeP,
-        numTk1R: numTk1P,
-        numTk2R: numTk2P
+        dollars1: dollars1,
+        dollars2: dollars2,
+        route: route,
+        numTk1: numTk1,
+        numTk2: numTk2
     }
 }
 

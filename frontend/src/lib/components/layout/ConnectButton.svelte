@@ -32,12 +32,12 @@
 
 		// listen to relevant events
 		if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-			ethereum.on('chainChanged', (_chainId) => {
+			ethereum.on('chainChanged', (_chainId: string) => {
 				handleChainChanged(_chainId);
 				updateButton();
 			}); // listen to chain changes
 
-			ethereum.on('accountsChanged', (newAccounts) => {
+			ethereum.on('accountsChanged', (newAccounts: string[]) => {
 				accounts = newAccounts;
 				updateButton();
 			});
@@ -87,11 +87,11 @@
 				button.onclick = onClickConnect;
 			}
 		}
-		accounts[0] ? updateStores(accounts[0]) : updateStores(null);
+		accounts[0] ? updateStores(accounts[0]) : updateStores(undefined);
 	}
 
 	async function onClickConnect() {
-		await ethereum.request({ method: 'eth_requestAccounts' }).then((_accounts) => {
+		await ethereum.request({ method: 'eth_requestAccounts' }).then((_accounts: string[]) => {
 			accounts = _accounts;
 			updateButton();
 		});
@@ -101,12 +101,14 @@
 		return ethereum.request({ method: 'eth_chainId' }).catch(console.log);
 	}
 
+
 	function updateStores(_curAccount: string | undefined) {
 		if (_curAccount) {
 			$isConnected = true;
 			$currentAccount = _curAccount;
 		} else {
 			$isConnected = false;
+			// @ts-ignore
 			$currentAccount = null;
 		}
 	}
@@ -116,7 +118,7 @@
 		return checkNetwork(_chainId);
 	}
 
-	function checkNetwork(_chainId) {
+	function checkNetwork(_chainId: string | null) {
 		if (_chainId !== '0x1' && _chainId !== '0x539') { // TODO remove dev chainId
 			// is not ethereum mainnet
 			// not ethereum
@@ -133,7 +135,7 @@
 	}
 
 	function changeSymbol() {
-		// TODO change symbol
+		// TODO change symbol or removed, think handled in other components
 	}
 
 	function setButtonText(text: string, isDisabled: boolean) {

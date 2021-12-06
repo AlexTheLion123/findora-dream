@@ -2,14 +2,16 @@
 	import { createEventDispatcher } from 'svelte';
 
 	export let src = 'src/lib/assets/tokens/logos/eth_logo.svg';
-	export let name;
-    export let symbol;
-    export let address;
+	export let name: string;
+    export let symbol: string;
+    export let address: string;
+
+	let item: HTMLDivElement;
 
 	const dispatch = createEventDispatcher();
-	function dispatchEvent() {
+	function dispatchEvent(item: HTMLDivElement) {
         dispatch('tokenSelected', {
-            element: this,
+            element: item,
             src: src, 
             symbol: symbol,
             address: address
@@ -17,7 +19,7 @@
     }
 </script>
 
-<div class="container" on:click={dispatchEvent}>
+<div class="container" bind:this={item} on:click={() => dispatchEvent(item)}>
 	<img {src} class="logo" width="35" height="35" alt="" />
 	<p>{name}</p>
 </div>

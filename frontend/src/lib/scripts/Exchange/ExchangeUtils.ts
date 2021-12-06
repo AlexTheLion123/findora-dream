@@ -5,7 +5,7 @@ import { NoRouteError } from './Errors';
 import { Address } from 'soltypes';
 
 export async function getErc20Balance(contract: MyToken, address: string) {
-    return (await contract.balanceOf(address)).div(ethers.constants.WeiPerEther).toString();
+    return parseInt((await contract.balanceOf(address)).div(ethers.constants.WeiPerEther).toString());
 }
 
 export function getSignerAddress(signer: JsonRpcSigner) {

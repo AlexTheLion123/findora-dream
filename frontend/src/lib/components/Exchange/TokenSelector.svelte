@@ -3,11 +3,11 @@
 	import TokenSearchDialog from './TokenSearchDialog.svelte';
 
 	let showSearch = false; // bound to child
-    let logoSrc;
+    let logoSrc: string;
     let symbol = "Select";
 
 	const dispatch = createEventDispatcher();
-	function handleSelection(e) {
+	function handleSelection(e: any) {
 		logoSrc = e.detail.src;
 		symbol = e.detail.symbol;
 

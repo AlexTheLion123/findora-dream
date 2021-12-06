@@ -7,6 +7,7 @@
 		if(tokens[i].name === "Native") nativeTokenAddress.set(tokens[i].address);
 		break;
 	}
+
 </script>
 
 <script lang="ts">
@@ -15,19 +16,21 @@
 	import TokenSearchItem from '$lib/components/Exchange/TokenSearchItem.svelte';
     
 	export let isShown = false;
-	let current;
+	let current: HTMLElement | undefined;
 
 	const dispatch = createEventDispatcher();
-	function handleSelection(e) {
+	function handleSelection(e: any) {
 		if (current) {
 			// if another element has already been selected
 			current.style.background = 'none';
 		}
-		current = e.detail.element; // update current
+		current = e.detail.element as HTMLElement; // update current
         current.style.background = "rgb(255, 255, 255, 0.3)";
 
         dispatch("tokenSelected", e.detail);
 	}
+
+
 </script>
 
 {#if isShown}

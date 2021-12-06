@@ -1,15 +1,11 @@
 
-import type { Address } from 'soltypes';
-
 // Exchange
-
-
 export interface ICallbackReturn {
-    dollars1R: number | undefined,
-    dollars2R: number | undefined,
-    routeR: Address[] | undefined,
-    numTk1R: number | undefined,
-    numTk2R: number | undefined
+    dollars1: number | undefined,
+    dollars2: number | undefined,
+    route: String[] | undefined,
+    numTk1: number | undefined,
+    numTk2: number | undefined
 }
 
-export type TCallback = (numTokens1: number | undefined, addr1: Address, addr2: Address, bool: boolean) => Promise<ICallbackReturn>
+export type TCallback = (numTokens1: number | undefined, addr1: String, addr2: String, bool: boolean) => Promise<ICallbackReturn>
