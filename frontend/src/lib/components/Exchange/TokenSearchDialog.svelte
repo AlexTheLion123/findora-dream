@@ -20,6 +20,7 @@
 
 	const dispatch = createEventDispatcher();
 	function handleSelection(e: any) {
+		isShown = false;
 		if (current) {
 			// if another element has already been selected
 			current.style.background = 'none';
