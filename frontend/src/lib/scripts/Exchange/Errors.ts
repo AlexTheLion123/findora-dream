@@ -18,3 +18,17 @@ export class RouterAddressNotSetError extends Error {
         this.name = "Router address not set"
     }
 }
+
+export class RouterDNE extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "Router does not exist"
+    }
+}
+
+export class FactoryDNE extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "Factory does not exist"
+    }
+}
