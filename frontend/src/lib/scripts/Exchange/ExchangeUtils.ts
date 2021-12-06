@@ -25,3 +25,4 @@ export async function checkPairAgainstNative(factory, nativeAddr, addr1, addr2) 
 export function checkAddressExists(address: string) {
     return address !== ethers.constants.AddressZero
 }
+
