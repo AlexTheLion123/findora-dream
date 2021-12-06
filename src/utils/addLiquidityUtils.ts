@@ -5,18 +5,18 @@ import type { MyToken, UniswapV2Router02, UniswapV2Factory, UniswapV2Pair } from
 import type { Wallet } from 'ethers'
 
 /**
-     * @dev first approve before spending
+     * @dev 
      * We don't need to worry about creating pair first since router will automatically call createPair on factory if pair does not exist
+     * @param spender - address of the smart contract. This is used to approve tokens transfer to LP 
+     * @param minTo - address of the account to mint the liquidity tokens to.
      */
-export async function addLiquitySpecific(_addr1: string, _addr2: string, _amount1: ethers.BigNumber, _amount2: ethers.BigNumber, spender: string, router: UniswapV2Router02, factory: UniswapV2Factory, provider: Wallet) {
+export async function addLiquitySpecific(_addr1: string, _addr2: string, _amount1: ethers.BigNumber, _amount2: ethers.BigNumber, spender: string, router: UniswapV2Router02, factory: UniswapV2Factory, provider: Wallet, mintTo: string) {
 
-    // need to approve for both tokens
     await approveTransfer(_addr1, _amount1, spender, router, factory, provider)
     await approveTransfer(_addr2, _amount2, spender, router, factory, provider)
 
-    const txn = await router.addLiquidity(_addr1, _addr2, _amount1, _amount2, 0, 0, spender, _amount1) // TODO fix deadline to get realistic value
+    const txn = await router.addLiquidity(_addr1, _addr2, _amount1, _amount2, 0, 0, mintTo, _amount1) // TODO fix deadline to get realistic value
     await txn.wait();
-
 
     // check that pair was indeed create and that liquidity was added
     await checkAdditionSuccess(factory, _addr1, _addr2, provider);

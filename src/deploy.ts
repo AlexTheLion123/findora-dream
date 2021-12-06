@@ -88,12 +88,12 @@ async function addLiquity() {
     const signedRouter = uniswapV2Router02.connect(wallet);
     const signedFactory = uniswapV2Factory.connect(wallet);
     
-    await addLiquitySpecific(addr1, addr2, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
-    await addLiquitySpecific(addr1, addr3, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
-    await addLiquitySpecific(addr1, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
-    await addLiquitySpecific(addr2, addr3, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
-    await addLiquitySpecific(addr2, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
-    await addLiquitySpecific(addr3, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
+    await addLiquitySpecific(addr1, addr2, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);
+    await addLiquitySpecific(addr1, addr3, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);
+    await addLiquitySpecific(addr1, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);
+    await addLiquitySpecific(addr2, addr3, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);
+    await addLiquitySpecific(addr2, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);
+    await addLiquitySpecific(addr3, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);
     
 }
 
