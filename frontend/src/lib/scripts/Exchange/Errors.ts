@@ -1,4 +1,4 @@
-export class ProviderError extends Error {
+export class ProviderError extends Error { // TODO remove either this or SignerError, only need one I think
     constructor(message) {
         super(message);
         this.name = "ProviderError"

@@ -33,7 +33,7 @@ export async function getBalance(address: string) {
  * For now, just check both tokens against the native. 
  * Add additional checks against other popular tokens as they get added
  */
-export async function getRoute(addr1, addr2): Promise<string[]> {
+export async function getRoute(addr1, addr2): Promise<string[] | void> {
     if (!factory_val) throw new FactoryDNE("Factory does not exist yet");
 
     // check direct pair, returns zero address if no pair
@@ -44,7 +44,7 @@ export async function getRoute(addr1, addr2): Promise<string[]> {
             alert(err);
             return
         })
-        return [addr1, nativeTokenAddress, addr2];
+        return [addr1, nativeAddress_val, addr2];
     }
     return [pairAddress];
 }

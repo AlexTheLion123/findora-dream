@@ -49,9 +49,10 @@ export async function handleSelectionGeneric(numTk1P: number | undefined, numTk2
 }
 
 async function getExactSwapData(addr1: string, addr2: string, numTk1: number) {
-    const route = await getRoute(addr1, addr2).catch(err => {alert(err); return });
-
-    const numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route as string[]);
+    const route = await getRoute(addr1, addr2)
+    if(!route) return;
+    
+    const numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route);
     const dollars2 = await getDollarValue(addr2, numTk2)
     return {
         route: route,
