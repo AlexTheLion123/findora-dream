@@ -58,9 +58,17 @@ async function getBalance(contract: MyToken, address: string) {
 * @dev unused, since only needed after UniswapV2Pair creation code is edited. (Never?)
 * Prints undefined when there is no error
 */
-export function replaceInitCode(){
-   const pairInitCode = ethers.utils.keccak256("0x" + UniswapV2Pair.bytecode).substring(2)
-   replaceInitCodeInFile(`hex'${pairInitCode}' // init code hash`, '../lib/v2-periphery/contracts/libraries/UniswapV2Library.sol')
+export function replaceInitCode() {
+    const pairInitCode = ethers.utils.keccak256("0x" + UniswapV2Pair.bytecode).substring(2)
+    replaceInitCodeInFile(`hex'${pairInitCode}' // init code hash`, '../lib/v2-periphery/contracts/libraries/UniswapV2Library.sol')
 }
+
+
+
+
+
+
+
+
 
 // getNiceAbi("UniswapV2Pair")

@@ -1,7 +1,7 @@
-import { Provider } from '@ethersproject/providers';
+import type { Provider } from '@ethersproject/providers';
 import { ethers, Wallet } from 'ethers';
 import {
-    UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory, UniswapV2Pair, MyToken
+    UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory
 } from '../build/types';
 import { MyTokenFactory } from '../build/types/MyTokenFactory';
 import { writeToJson } from './deployUtils';
@@ -9,6 +9,7 @@ import { erc20ABI, uniswapV2PairABI } from './deployABIs';
 import { replaceInitCodeInFile} from './deployUtils'; // keep but don't use 
 import type { ITokensInfo } from './deployTypes';
 import {sendToAddress} from './deployUtils'
+import { addLiquitySpecific } from './utils/addLiquidityUtils';
 
 let provider: Provider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
 const PRIVATE_KEY = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
@@ -74,9 +75,11 @@ async function deployTokensAndWrite() {
  * sends liquidity tokens to my address
  */
 async function addLiquity() {
-    const tenThou = ethers.constants.WeiPerEther.mul(10000);
-    const nineThou = ethers.constants.WeiPerEther.mul(9000)
-    
+    //const tenThou = ethers.constants.WeiPerEther.mul(10000);
+    const nineThou = ethers.constants.WeiPerEther.mul(9000);
+    const fiftyThou = ethers.constants.WeiPerEther.mul(50000);
+    const walletAddress = await wallet.getAddress();
+
     const addr1 = tokensInfo[0].address
     const addr2 = tokensInfo[1].address
     const addr3 = tokensInfo[2].address
@@ -85,58 +88,12 @@ async function addLiquity() {
     const signedRouter = uniswapV2Router02.connect(wallet);
     const signedFactory = uniswapV2Factory.connect(wallet);
     
-    addLiquity2();
+    await addLiquitySpecific(addr1, addr2, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
+    await addLiquitySpecific(addr1, addr3, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
+    await addLiquitySpecific(addr1, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
+    await addLiquitySpecific(addr2, addr3, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
+    await addLiquitySpecific(addr2, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
+    await addLiquitySpecific(addr3, addr4, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet);
     
-    /**
-     * @dev first approve before spending
-     * We don't need to worry about creating pair first since router will automatically call createPair on factory if pair does not exist
-     */
-    async function addLiquity2() {
-        const walletAddress = await wallet.getAddress();
-
-        // need to approve for both tokens
-        await approveTransfer(addr1)
-        await approveTransfer(addr2)
-
-        async function approveTransfer(_addr: string) {
-            const erc20Instance = new ethers.Contract(_addr, erc20ABI, wallet) as MyToken;
-
-            // approve router contract to spend wallet's coins
-            const txn = await erc20Instance.approve(signedRouter.address, tenThou);
-            await txn.wait();
-
-            // check that approval
-            const txn2 = await erc20Instance.allowance(walletAddress, signedRouter.address)
-            console.log(txn2.toString())
-        }
-
-
-        let txn = await signedRouter.addLiquidity(addr1,addr2,nineThou,nineThou,0,0,await wallet.getAddress(),tenThou)
-        await txn.wait();
-    
-        const pairAddress = await signedFactory.getPair(addr1, addr2);
-    
-        // check that pair was indeed create and that liquidity was added
-        const pairContract = await new ethers.Contract(pairAddress, uniswapV2PairABI, wallet) as UniswapV2Pair
-        await pairContract.deployed();
-        const reserves: any = await pairContract.getReserves();
-        console.log("Reserve1: ", reserves[0].toString());
-        console.log("Reserve2: ", reserves[1].toString());
-    }
-
-    
-    
-    // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
-    // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
-    // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
-    // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
-    // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
 }
 
-
-
-
-// function createPairAndAddLiquidity(factory, router, addr1, addr2, mintTo, deadline) {
-    
-
-// }
