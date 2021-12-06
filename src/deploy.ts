@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/providers';
 import { ethers, Wallet } from 'ethers';
 import {
-    UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory, UniswapV2Pair
+    UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory, UniswapV2Pair, MyToken
 } from '../build/types';
 import { MyTokenFactory } from '../build/types/MyTokenFactory';
 import { writeToJson } from './deployUtils';
@@ -85,18 +85,46 @@ async function addLiquity() {
     const signedRouter = uniswapV2Router02.connect(wallet);
     const signedFactory = uniswapV2Factory.connect(wallet);
     
-    let txn = await signedFactory.createPair(addr1, addr2);
-    await txn.wait()
-    const pairAddress = await signedFactory.getPair(addr1, addr2);
-    console.log("Pair created at", pairAddress)
+    addLiquity2();
+    
+    /**
+     * @dev first approve before spending
+     * We don't need to worry about creating pair first since router will automatically call createPair on factory if pair does not exist
+     */
+    async function addLiquity2() {
+        const walletAddress = await wallet.getAddress();
 
-    txn = await signedRouter.addLiquidity(addr1,addr2,tenThou,tenThou,0,0,MY_ADDRESS,tenThou)
-    await txn.wait()
+        // need to approve for both tokens
+        await approveTransfer(addr1)
+        await approveTransfer(addr2)
 
-    // check that pair was indeed create and that liquidity was added
-    const pairContract = await new ethers.Contract(pairAddress, uniswapV2PairABI, wallet) as UniswapV2Pair
-    await pairContract.deployed();
-    console.log("Liquidity added: ", pairContract.getReserves())
+        async function approveTransfer(_addr: string) {
+            const erc20Instance = new ethers.Contract(_addr, erc20ABI, wallet) as MyToken;
+
+            // approve router contract to spend wallet's coins
+            const txn = await erc20Instance.approve(signedRouter.address, tenThou);
+            await txn.wait();
+
+            // check that approval
+            const txn2 = await erc20Instance.allowance(walletAddress, signedRouter.address)
+            console.log(txn2.toString())
+        }
+
+
+        let txn = await signedRouter.addLiquidity(addr1,addr2,nineThou,nineThou,0,0,await wallet.getAddress(),tenThou)
+        await txn.wait();
+    
+        const pairAddress = await signedFactory.getPair(addr1, addr2);
+    
+        // check that pair was indeed create and that liquidity was added
+        const pairContract = await new ethers.Contract(pairAddress, uniswapV2PairABI, wallet) as UniswapV2Pair
+        await pairContract.deployed();
+        const reserves: any = await pairContract.getReserves();
+        console.log("Reserve1: ", reserves[0].toString());
+        console.log("Reserve2: ", reserves[1].toString());
+    }
+
+    
     
     // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
     // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
@@ -104,6 +132,9 @@ async function addLiquity() {
     // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
     // signedRouter.addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)
 }
+
+
+
 
 // function createPairAndAddLiquidity(factory, router, addr1, addr2, mintTo, deadline) {
     

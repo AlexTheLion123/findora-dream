@@ -72,6 +72,11 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
         liquidity = IUniswapV2Pair(pair).mint(to);
     }
+
+    function helperPairFor(address _factory, address addr1,address addr2) external pure returns(address) {
+        return UniswapV2Library.pairFor(_factory, addr1, addr2);
+    }
+
     function addLiquidityETH(
         address token,
         uint amountTokenDesired,
