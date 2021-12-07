@@ -81,7 +81,7 @@ export async function getReserves(factory_addr: string, addr1: string, addr2: st
 }
 
 // TODO cache reserve figures
-export async function calcOutputFromPair(factory_addr: string, numTk1: number, addr1: string, addr2: string, _signer: JsonRpcSigner) {
+export async function calcOutputFromPair(factory_addr: string, numInput: number, addr1: string, addr2: string, _signer: JsonRpcSigner) {
     if (addr1 == addr2) {
         throw new SamePairError();
     }
@@ -90,13 +90,14 @@ export async function calcOutputFromPair(factory_addr: string, numTk1: number, a
     const reserves = await getReserves(factory_addr, addr1, addr2, _signer);
     const reserve0 = reserves[0];
     const reserve1 = reserves[1];
-    return calcNumOutputTokens(numTk1, reserve0, reserve1);
+    return calcNumOutputTokens(numInput, reserve0, reserve1);
 }
 
 // TODO take slippage into account!
 // TODO take trading fee into account
-function calcNumOutputTokens(numInputTk: number, _reserve0: number, _reserve1: number) { // TODO perhaps leave in big number until the end, more accurate?
-    return _reserve1 - (_reserve0 * _reserve1) / (_reserve0 + numInputTk)
+function calcNumOutputTokens(numInput: number | string, _reserve0: number, _reserve1: number) { // TODO perhaps leave in big number until the end, more accurate?
+    numInput = typeof numInput === 'string' ? parseInt(numInput) : numInput;
+    return _reserve1 - ((_reserve0 * _reserve1) / (_reserve0 + numInput))
 }
 
 // TODO display on swap
@@ -104,15 +105,16 @@ function calcNoSlippageSwapRate(numInputTk: number, _reserve0: number, _reserve1
     return numInputTk * _reserve1 / _reserve0
 }
 
-export async function getExactSwapData(addr1: string, addr2: string, numTk1: number, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
+// TODO clean unnessarily large number of arguments
+export async function getExactSwapData(addrInput: string, addrOutput: string, numInput: number, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
     let route: string[];
-    let numTk2: number;
-    let dollars2: number;
+    let numOutput: number;
+    let dollarOutput: number;
 
     try {
-        route = await getRoute(addr1, addr2, factory, nativeAddr)
-        numTk2 = await getOtherNumTokens(factory.address, numTk1, route, _signer)
-        dollars2 = await getDollarValue(addr2, numTk2)
+        route = await getRoute(addrInput, addrOutput, factory, nativeAddr)
+        numOutput = await getOtherNumTokens(factory.address, numInput, route, _signer)
+        dollarOutput = await getDollarValue(addrOutput, numOutput)
     } catch (error) {
         if (error instanceof NoRouteError) {
             alert("No route exists between this pair")
@@ -124,7 +126,7 @@ export async function getExactSwapData(addr1: string, addr2: string, numTk1: num
 
     return {
         route: route,
-        numOutput: numTk2,
-        dollarsOutput: dollars2
+        numOutput: numOutput,
+        dollarOutput: dollarOutput
     }
 }

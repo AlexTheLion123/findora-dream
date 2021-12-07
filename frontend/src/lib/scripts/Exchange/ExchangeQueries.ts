@@ -50,7 +50,7 @@ export async function getRoute(addr1: string, addr2: string, factory: UniswapV2F
 
 export async function getOtherNumTokens(
     factory_addr: string,
-    numTk1: number,
+    numInput: number,
     route: string[],
     _signer: JsonRpcSigner
 ) {
@@ -59,11 +59,11 @@ export async function getOtherNumTokens(
     }
 
     if (route.length === 2) {
-        return calcOutputFromPair(factory_addr, numTk1, route[0], route[1], _signer)
+        return calcOutputFromPair(factory_addr, numInput, route[0], route[1], _signer)
     }
 
     // last item is destination, not pair
-    let currentNum = numTk1;
+    let currentNum = numInput;
     for (let i = 0; i < (route.length - 1); i++) {
         currentNum = await calcOutputFromPair(factory_addr, currentNum, route[i], route[i + 1], _signer)
     }

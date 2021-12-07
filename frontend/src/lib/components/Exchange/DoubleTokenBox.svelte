@@ -7,8 +7,14 @@
 	import type { UniswapV2Router02 } from '$lib/typesUsed/UniswapV2Router02';
 	import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
 	import type { JsonRpcSigner } from '@ethersproject/providers';
-	import { performSwap, performLiquidity } from '$lib/scripts/Exchange/ExchangeQueries' ;
+	import {
+		performSwap,
+		performLiquidity,
+		getDollarValue,
+		getOtherNumTokens
+	} from '$lib/scripts/Exchange/ExchangeQueries';
 	import { NoMetaMaskError } from '$lib/scripts/Exchange/Errors';
+	import { getBalance } from '$lib/scripts/Exchange/ExchangeQueries';
 
 	// NOTE contracts are signed in a module context in the relevant components that use them.
 	// This can be changed to sign all contracts at once upon load asynchronously
@@ -35,48 +41,56 @@
 	router.subscribe((value) => (router_val = value));
 	factory.subscribe((value) => (factory_val = value));
 	nativeTokenAddress.subscribe((value) => (nativeTokenAddr_val = value));
-
 </script>
 
 <script lang="ts">
-	import { handleSelectionGeneric, handleInputGeneric } from '$lib/scripts/Exchange/Events';
 	import TokenBox from './TokenBox.svelte';
-	import { currentInputElement } from './TokenBox.svelte';
+	// import { currentInputElement } from './TokenBox.svelte';
 	import { page } from '$app/stores';
+	import { getExactSwapData } from '$lib/scripts/Exchange/ExchangeUtils';
+	import { respond } from '@sveltejs/kit/ssr';
+import { tick } from 'svelte';
 
-	let token1Address: string; // address
-	let token2Address: string; // address
-	let numTokens1: number;
-	let numTokens2: number;
-	let dollars1 = 0.0;
-	let dollars2 = 0.0;
-	let balance1: number;
-	let balance2: number;
-	let route: null | string[];
-	let canSwap = false;
+	let tokenBox1: TokenBox;
+	let tokenBox2: TokenBox;
+	let canSwapLock = false;
+	let swapData: ISwapData;
+	let currentTokenBox: TokenBox | undefined;
+	let otherTokenBox: TokenBox | undefined;
 
-	export async function perform() {
-		if(!canSwap) {
-			alert("Fill in more details | invalid pair")
-			return;
-		}
-		if(!route || !signer_val || !router_val) {
-			console.log(route)
-			alert("things not existing")
-			return;
-		}
-
-		if($page.path === '/swap') {
-			await performSwap(numTokens1, numTokens2, route, await signer_val.getAddress(), router_val, signer_val, 100)
-		} else if($page.path === '/liquidity') {
-			await performLiquidity();
-		} else {
-			alert("This should never happen")
-		}
-
+	interface ISwapData {
+		route: string[];
+		numOutput: number;
+		dollarOutput: number;
 	}
 
-	
+	// export async function perform() {
+	// 	if (!canSwapLock) {
+	// 		alert('Fill in more details | invalid pair');
+	// 		return;
+	// 	}
+	// 	if (!route || !signer_val || !router_val) {
+	// 		console.log(route);
+	// 		alert('things not existing');
+	// 		return;
+	// 	}
+
+	// 	if ($page.path === '/swap') {
+	// 		await performSwap(
+	// 			numTokens1,
+	// 			numTokens2,
+	// 			route,
+	// 			await signer_val.getAddress(),
+	// 			router_val,
+	// 			signer_val,
+	// 			100
+	// 		);
+	// 	} else if ($page.path === '/liquidity') {
+	// 		await performLiquidity();
+	// 	} else {
+	// 		alert('This should never happen');
+	// 	}
+	// }
 
 	/**
 	 * Event handlers
@@ -88,162 +102,167 @@
 	 *
 	 */
 
-	function checkCurrent(element: HTMLElement) {
-		if (currentInputElement) {
-			return (
-				currentInputElement.parentElement ===
-				element!.parentElement!.parentElement!.parentElement!.parentElement!.parentElement
-			); // TODO find better way to do this
-			// TODO get element by id!
-		}
-		return false;
-	}
+	/**
+	 * @dev there are 3 scenarios to handle
+	 * e contains the selected token box
+	 */
+	// TODO just use current and non-current
 
-	async function handleSelection1(e: any) {
-		token1Address = e.detail.address;
+	async function handleSelectionGeneric(_tokenBox: TokenBox, e: any) {
+		canSwapLock = false;
+		_tokenBox.address = e.detail.address;
 
+		if (!_tokenBox.address) throw 'address does not exist for selection, this should never happen';
+
+		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
 		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
 			alert('Connect to metamask');
-			throw new NoMetaMaskError("Please connect to metamask");
+			throw new NoMetaMaskError('Please connect to metamask');
 		}
 
-		assignToGlobalVars(
-			await handleSelectionGeneric(
-				numTokens1,
-				numTokens2,
-				token1Address,
-				token2Address,
-				checkCurrent(e.detail.element),
-				factory_val,
-				nativeTokenAddr_val,
-				signer_val
-			),
-			false
-		);
-	}
+		getBalance(_tokenBox.address, signer_val)
+			.then((res) => {
+				_tokenBox.balance = res;
+			})
+			.catch(alert);
 
-	async function handleSelection2(e: any) {
-		token2Address = e.detail.address;
+		if (currentTokenBox === _tokenBox) {
+			// Scenario 1 and 2
 
-		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
-			alert('Connect to metmask');
-			throw new NoMetaMaskError("Please connect to metamask");
-		}
+			// can't swap yet, can only get dollar value
+			if (!_tokenBox.numTokens) throw 'this should never happen';
+			getDollarValue(_tokenBox.address, _tokenBox.numTokens)
+				.then((res) => {
+					_tokenBox.dollars = res;
+				})
+				.catch(alert);
 
-		assignToGlobalVars(
-			await handleSelectionGeneric(
-				numTokens2,
-				numTokens1,
-				token2Address,
-				token1Address,
-				checkCurrent(e.detail.element),
-				factory_val,
-				nativeTokenAddr_val,
-				signer_val
-			),
-			true
-		);
-	}
+			if (otherTokenBox && otherTokenBox.address) {
+				// otherTokenBox has also been selected, so we can get its corresponding output tokens
 
-	async function handleInput1(e: any) {
-		numTokens1 = e.detail.numTokens;
+				// _tokenBox is the input
+				await getSwapData(_tokenBox).then(setSwapData).catch(alert);
+			}
+		} else if (currentTokenBox && otherTokenBox) {
+			// if not current, but current exists, can't get dollar value here since no input since not current
 
-		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
-			alert('Connect to metamask');
-			return;
-		}
+			if (currentTokenBox.address) {
+				getRates();
 
-		assignToGlobalVars(
-			await handleInputGeneric(
-				numTokens1,
-				token1Address,
-				token2Address,
-				factory_val,
-				nativeTokenAddr_val,
-				signer_val
-			),
-			false
-		);
-	}
-
-	async function handleInput2(e: any) {
-		numTokens2 = e.detail.numTokens;
-
-		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
-			alert('Connect to metamask');
-			return;
-		}
-
-		assignToGlobalVars(
-			await handleInputGeneric(
-				numTokens2,
-				token2Address,
-				token1Address,
-				factory_val,
-				nativeTokenAddr_val,
-				signer_val
-			),
-			true
-		);
-	}
-
-	function assignToGlobalVars(
-		{
-			dollars1: dollars1_,
-			dollars2: dollars2_,
-			route: route_,
-			numTk1: numTk1_,
-			numTk2: numTk2_
-		}: {
-			dollars1: number | undefined;
-			dollars2: number | undefined;
-			route: string[] | null;
-			numTk1: number | undefined;
-			numTk2: number | undefined;
-		},
-		swapVals: boolean = false
-	) {
-		canSwap = false;
-		route = route_
-		if (!swapVals) {
-			dollars1 = dollars1_ || dollars1;
-			dollars2 = dollars2_ || dollars2;
-			numTokens1 = numTk1_ || numTokens1;
-			numTokens2 = numTk2_ || numTokens2;
+				if (currentTokenBox.numTokens) {
+					// otherTokenBox is the input
+					await getSwapData(currentTokenBox).then(setSwapData).catch(alert);
+				}
+			}
 		} else {
-			dollars2 = dollars1_ || dollars2;
-			dollars1 = dollars2_ || dollars1;
-			numTokens2 = numTk1_ || numTokens2;
-			numTokens1 = numTk2_ || numTokens1;
+			// currentTokenBox does not exist yet
+			if (otherTokenBox && otherTokenBox.address) {
+				console.log(currentTokenBox && otherTokenBox)
+				getRates();
+			}
+		}
+	}
+
+	async function handleInputGeneric(_tokenBox: TokenBox, e: any) {
+		updateCurrentTokenBox(_tokenBox);
+		_tokenBox.numTokens = e.detail.numTokens;
+		if (!_tokenBox.numTokens) throw 'that value does not exist, this should never happen';
+
+		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+			alert('Connect to metamask');
+			return;
 		}
 
-		if (route_) {
-			canSwap = true;
-			
-			
-			// swap is ready to be performed
-			console.log('swap is ready');
+		if (_tokenBox.address) {
+			getDollarValue(_tokenBox.address, _tokenBox.numTokens)
+				.then((res) => (_tokenBox.dollars = res))
+				.catch(alert);
+
+			if (otherTokenBox && otherTokenBox.address) {
+				// _tokenBox is input
+				await getSwapData(_tokenBox).then(setSwapData).catch(alert);
+			}
 		}
+	}
+
+	/**
+	 * @param _tokenBox In this case, _tokenBox should always just be the current token box
+	 */
+	function getSwapData(_tokenBox: TokenBox) {
+		if(_tokenBox !== currentTokenBox) throw "not current box, should never happen"  
+
+
+		if (!otherTokenBox || !currentTokenBox.address || !otherTokenBox.address || !currentTokenBox.numTokens)
+			throw "some required values haven't been provided, this should never happen";
+
+		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
+		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+			alert('Connect to metamask');
+			throw new NoMetaMaskError('Please connect to metamask');
+		}
+		
+		return getExactSwapData(
+			currentTokenBox.address,
+			otherTokenBox.address,
+			currentTokenBox.numTokens,
+			factory_val,
+			nativeTokenAddr_val,
+			signer_val
+		).then((res) => {
+			if(!otherTokenBox) throw "other box does not exist, should never happen"
+
+			otherTokenBox.numTokens = res.numOutput;
+			otherTokenBox.dollars = res.dollarOutput;
+
+			return {
+				route: res.route,
+				numOutput: res.numOutput,
+				dollarOutput: res.dollarOutput
+			};
+		});
+	}
+
+	function updateCurrentTokenBox(_tokenBox: TokenBox) {
+		if (_tokenBox === tokenBox1) {
+			currentTokenBox = tokenBox1;
+			otherTokenBox = tokenBox2;
+		} else {
+			currentTokenBox = tokenBox2;
+			otherTokenBox = tokenBox1;
+		}
+	}
+
+	/**
+	 * @dev just gets the swap rate and dollar rates for the tokens, also caches
+	 */
+	function getRates() {
+		console.log('implement get rates');
+	}
+
+	function setSwapData({ route, numOutput, dollarOutput }: ISwapData) {
+		canSwapLock = true;
+
+		swapData = {
+			route: route,
+			numOutput: numOutput,
+			dollarOutput: dollarOutput
+		};
 	}
 </script>
 
 <div class="token-box">
 	<TokenBox
-		on:tokenSelected={handleSelection1}
-		on:tokenNumInput={handleInput1}
-		dollars={dollars1}
-		numTokens={numTokens1}
-		bind:balance={balance1}
+		bind:this={tokenBox1}
+		on:tokenSelected={(e) => handleSelectionGeneric(tokenBox1, e)}
+		on:tokenNumInput={(e) => handleInputGeneric(tokenBox1, e)}
 	/>
 </div>
 
 <div class="token-box">
 	<TokenBox
-		on:tokenSelected={handleSelection2}
-		on:tokenNumInput={handleInput2}
-		dollars={dollars2}
-		numTokens={numTokens2}
-		bind:balance={balance2}
+		bind:this={tokenBox2}
+		on:tokenSelected={(e) => handleSelectionGeneric(tokenBox2, e)}
+		on:tokenNumInput={(e) => handleInputGeneric(tokenBox2, e)}
 	/>
 </div>
 

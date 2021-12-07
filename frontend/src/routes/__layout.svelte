@@ -13,7 +13,7 @@
 		if (value) {
 			// connected
 			$provider = new ethers.providers.Web3Provider(window.ethereum);
-			$signer = $provider.getSigner();
+			$signer = $provider!.getSigner();
 			$isProvided = true;
 			console.log('hello');
 		} else {
@@ -78,6 +78,15 @@
 		font: inherit;
 		cursor: pointer;
 		outline: inherit;
+	}
+
+	:global(input::-webkit-outer-spin-button),
+	:global(input::-webkit-inner-spin-button) {
+		all: unset;
+	}
+
+	input[type='number'] {
+		-moz-appearance: textfield; /* Firefox */
 	}
 
 	:global(.popup-modal-wrapper) {
