@@ -1,9 +1,22 @@
 
 import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchange/ExchangeQueries';
 import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
+import type { JsonRpcSigner } from '@ethersproject/providers';
 
-export async function handleSelectionGeneric(numTk1: number | undefined, numTk2: number | undefined, addr1: string, addr2: string | undefined, isCurrent: boolean, factory: UniswapV2Factory, nativeAddr: string) {
-    let route: string[] | undefined
+/**
+ * 
+ * @param numTk1 number of tokens 1 to swap
+ * @param numTk2 number of tokens 2 to swap
+ * @param addr1 address of the 1st token
+ * @param addr2 address of the second token
+ * @param isCurrent whether the token box is the one that refers to the token we want to swap
+ * @param factory factory contract instance
+ * @param nativeAddr address of the native token on the blockchain
+ * @param _signer signer instance
+ * @returns 
+ */
+export async function handleSelectionGeneric(numTk1: number | undefined, numTk2: number | undefined, addr1: string, addr2: string | undefined, isCurrent: boolean, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
+    let route: string[] | null
     let dollars1: number | undefined
     let dollars2: number | undefined
 
@@ -14,13 +27,13 @@ export async function handleSelectionGeneric(numTk1: number | undefined, numTk2:
 
         if (addr2 && isCurrent) {
             // other token selected as well
-            assignVars(await getExactSwapData(addr1, addr2, numTk1, factory, nativeAddr), false)
+            assignVars(await getExactSwapData(addr1, addr2, numTk1, factory, nativeAddr, _signer), false)
 
         } else if (addr2 && !isCurrent) {
-            assignVars(await getExactSwapData(addr2, addr1, numTk2, factory, nativeAddr), true)
+            assignVars(await getExactSwapData(addr2, addr1, numTk2, factory, nativeAddr, _signer), true)
         }
     } else if (addr2 && numTk2) {
-        assignVars(await getExactSwapData(addr2, addr1, numTk2, factory, nativeAddr), true)
+        assignVars(await getExactSwapData(addr2, addr1, numTk2, factory, nativeAddr, _signer), true)
     }
 
     return {
@@ -44,12 +57,12 @@ export async function handleSelectionGeneric(numTk1: number | undefined, numTk2:
 
 }
 
-async function getExactSwapData(addr1: string, addr2: string, numTk1: number, factory: UniswapV2Factory, nativeAddr: string) {
+async function getExactSwapData(addr1: string, addr2: string, numTk1: number, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
 
     const route = await getRoute(addr1, addr2, factory, nativeAddr)
-    if (!route) return;
+    if (!route)  return;
 
-    const numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route);
+    const numTk2 = await getOtherNumTokens(factory.address, addr1, addr2, numTk1, route, _signer);
     const dollars2 = await getDollarValue(addr2, numTk2)
     return {
         route: route,
@@ -58,8 +71,8 @@ async function getExactSwapData(addr1: string, addr2: string, numTk1: number, fa
     }
 }
 
-export async function handleInputGeneric(numTk1: number, addr1: string | undefined, addr2: string | undefined, factory: UniswapV2Factory, nativeAddr: string) {
-    let route
+export async function handleInputGeneric(numTk1: number, addr1: string | undefined, addr2: string | undefined, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
+    let route: string[] | null
     let dollars1
     let numTk2
     let dollars2
@@ -70,9 +83,12 @@ export async function handleInputGeneric(numTk1: number, addr1: string | undefin
 
         if (addr2) {
             // token 2 also selected, then we can go ahead and get all data
-
             route = await getRoute(addr1, addr2, factory, nativeAddr); 
-            numTk2 = await getOtherNumTokens(addr1, addr2, numTk1, route);
+            if(!route) {
+                alert("No route, be the first to add liquidity")
+                return
+            };
+            numTk2 = await getOtherNumTokens(factory.address, addr1, addr2, numTk1, route, _signer);
             dollars2 = await getDollarValue(addr2, numTk2);
         }
     }

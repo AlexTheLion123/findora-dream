@@ -6,6 +6,7 @@
 	import { router, signer, factory, nativeTokenAddress } from '$lib/stores';
 	import type { UniswapV2Router02 } from '$lib/typesUsed/UniswapV2Router02';
 	import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
+	import type { JsonRpcSigner } from '@ethersproject/providers';
 
 	// NOTE contracts are signed in a module context in the relevant components that use them.
 	// This can be changed to sign all contracts at once upon load asynchronously
@@ -15,20 +16,23 @@
 	const { factory_address, router_address } = setAndGetFactoryAndRouterAddress();
 
 	// once signer available then we can sign router contract store
+	let signer_val: null | JsonRpcSigner;
 	signer.subscribe((value) => {
 		if (value) {
+			signer_val = value;
 			// isProvided = true, then sign the router contract.
 			// DoubleTokenBox signs the router contract in module context since it is used in both the swap and liquidity components
 			signRouterAndFactory(router, factory, router_address, factory_address, value);
 		}
 	});
+	// TODO stop using separate signer variable, just get signer from factory!
 
 	let router_val: null | UniswapV2Router02; // TODO remove
 	let factory_val: null | UniswapV2Factory;
 	let nativeTokenAddr_val: null | string;
-	router.subscribe(value => router_val = value);
-	factory.subscribe(value => factory_val = value);
-	nativeTokenAddress.subscribe(value => nativeTokenAddr_val = value)
+	router.subscribe((value) => (router_val = value));
+	factory.subscribe((value) => (factory_val = value));
+	nativeTokenAddress.subscribe((value) => (nativeTokenAddr_val = value));
 </script>
 
 <script lang="ts">
@@ -66,15 +70,13 @@
 		return false;
 	}
 
-
-		
-
 	async function handleSelection1(e: any) {
 		token1Address = e.detail.address;
 
-		if(!factory_val|| !nativeTokenAddr_val) { // TODO throw proper error
-			alert("Connect to metamask")
-			return
+		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+			// TODO throw proper error
+			alert('Connect to metamask');
+			return;
 		}
 
 		assignToGlobalVars(
@@ -85,7 +87,8 @@
 				token2Address,
 				checkCurrent(e.detail.element),
 				factory_val,
-				nativeTokenAddr_val
+				nativeTokenAddr_val,
+				signer_val
 			),
 			false
 		);
@@ -94,8 +97,8 @@
 	async function handleSelection2(e: any) {
 		token2Address = e.detail.address;
 
-		if(!factory_val || !nativeTokenAddr_val) { 
-			alert("Connect to metmask")
+		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+			alert('Connect to metmask');
 			return;
 		}
 
@@ -107,7 +110,8 @@
 				token1Address,
 				checkCurrent(e.detail.element),
 				factory_val,
-				nativeTokenAddr_val
+				nativeTokenAddr_val,
+				signer_val
 			),
 			true
 		);
@@ -116,23 +120,43 @@
 	async function handleInput1(e: any) {
 		numTokens1 = e.detail.numTokens;
 
-		if(!factory_val|| !nativeTokenAddr_val) { 
-			alert("Connect to metamask")
-			return
+		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+			alert('Connect to metamask');
+			return;
 		}
 
-		assignToGlobalVars(await handleInputGeneric(numTokens1, token1Address, token2Address, factory_val, nativeTokenAddr_val), false);
+		assignToGlobalVars(
+			await handleInputGeneric(
+				numTokens1,
+				token1Address,
+				token2Address,
+				factory_val,
+				nativeTokenAddr_val,
+				signer_val
+			),
+			false
+		);
 	}
 
 	async function handleInput2(e: any) {
 		numTokens2 = e.detail.numTokens;
 
-		if(!factory_val|| !nativeTokenAddr_val) { 
-			alert("Connect to metamask")
-			return
+		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+			alert('Connect to metamask');
+			return;
 		}
 
-		assignToGlobalVars(await handleInputGeneric(numTokens2, token2Address, token1Address, factory_val, nativeTokenAddr_val), true);
+		assignToGlobalVars(
+			await handleInputGeneric(
+				numTokens2,
+				token2Address,
+				token1Address,
+				factory_val,
+				nativeTokenAddr_val,
+				signer_val
+			),
+			true
+		);
 	}
 
 	function assignToGlobalVars(
@@ -145,7 +169,7 @@
 		}: {
 			dollars1: number | undefined;
 			dollars2: number | undefined;
-			route: string[] | void;
+			route: string[] | null;
 			numTk1: number | undefined;
 			numTk2: number | undefined;
 		},

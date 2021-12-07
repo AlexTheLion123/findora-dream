@@ -29,7 +29,6 @@
 			alert("Connect to metmask") 
 			return
 		}
-
 		balance = await getBalance(e.detail.address, signer_val);
 	}
 	/**
