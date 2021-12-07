@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { erc20ABI, uniswapV2PairABI } from '../deployABIs';
 import type { MyToken, UniswapV2Router02, UniswapV2Factory, UniswapV2Pair } from '../../build/types';
 import type { Wallet } from 'ethers'
+import { getPairAddress } from "../deployUtils";
 
 /**
      * @dev 
@@ -35,10 +36,13 @@ async function approveTransfer(_addr: string, _amount: ethers.BigNumber, _spende
 }
 
 async function checkAdditionSuccess(_factory: UniswapV2Factory, _addr1: string, _addr2: string, _provider: Wallet) {
-    const pairAddress = await _factory.getPair(_addr1, _addr2);
+    const pairAddress = getPairAddress(_factory.address, _addr1, _addr2)
+
     const pairContract = await new ethers.Contract(pairAddress, uniswapV2PairABI, _provider) as UniswapV2Pair
     await pairContract.deployed();
     const reserves: any = await pairContract.getReserves();
     console.log("Reserve1: ", reserves[0].toString(), "Token at", _addr1);
     console.log("Reserve2: ", reserves[1].toString(), "Token at", _addr2);
 }
+
+

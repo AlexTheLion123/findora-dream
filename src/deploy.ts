@@ -50,7 +50,7 @@ async function deployUniswapAndWrite() {
 }
 
 async function deployTokensAndWrite() {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 30; i++) {
         if (i == 0) {
             let txn = await new MyTokenFactory(wallet).deploy(`Native`, `NATIVE`);
             await txn.deployed();
@@ -87,6 +87,8 @@ async function addLiquity() {
 
     const signedRouter = uniswapV2Router02.connect(wallet);
     const signedFactory = uniswapV2Factory.connect(wallet);
+
+
     
     await addLiquitySpecific(addr1, addr2, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);
     await addLiquitySpecific(addr1, addr3, fiftyThou, fiftyThou, walletAddress, signedRouter, signedFactory, wallet, MY_ADDRESS);

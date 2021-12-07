@@ -73,7 +73,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         liquidity = IUniswapV2Pair(pair).mint(to);
     }
 
-    function helperPairFor(address _factory, address addr1,address addr2) external pure returns(address) {
+    function helperPairFor(address _factory, address addr1,address addr2) external pure returns(address) { // TODO remove and find out how to calculate in ethers <- done
         return UniswapV2Library.pairFor(_factory, addr1, addr2);
     }
 

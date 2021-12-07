@@ -4,7 +4,7 @@ import { ethers } from 'ethers'; // TODO delete
 import type { MyToken } from '../build/types/MyToken';
 import type { ITokensInfo } from './deployTypes';
 import { BigNumber } from 'ethers';
-import UniswapV2Pair from '../build/UniswapV2Pair.json'
+import UniswapV2Pair from '../build/UniswapV2Pair.json';
 
 export function writeToJson(info: any, path: string) {
     const jsonContent = JSON.stringify(info);
@@ -38,11 +38,12 @@ function getNiceAbi(filename: string) {
     })
 }
 
+
 export async function sendToAddress(recipient: string, addresses: Array<ITokensInfo>, wallet: any, erc20Abi: any) {
     for (let i = 0; i < addresses.length; i++) {
         let amount = ethers.constants.WeiPerEther.mul(BigNumber.from(Math.round(Math.random() * 100000)))
         const contract = await new ethers.Contract(addresses[i].address, erc20Abi, wallet) as MyToken;
-        await contract.deployed();
+        // await contract.deployed();
 
         let txn = await contract.transfer(recipient, amount)
         await txn.wait()
@@ -63,12 +64,30 @@ export function replaceInitCode() {
     replaceInitCodeInFile(`hex'${pairInitCode}' // init code hash`, '../lib/v2-periphery/contracts/libraries/UniswapV2Library.sol')
 }
 
+export function getPairAddress(_factory_addr: string, _addr1: string, _addr2: string) {
+    let token0: string;
+    let token1: string;
 
+    if(_addr1 < _addr2) {
+        token0 = _addr1;
+        token1 = _addr2;    
+    } else {
+        token0 = _addr2;
+        token1 = _addr1;
+    }
 
+    return ethers.utils.getCreate2Address(
+        _factory_addr,
+        getSalt(token0, token1),
+        getPairInitCode(UniswapV2Pair.bytecode)
+    );
+}
 
+function getPairInitCode(_code: string) {
+    return ethers.utils.keccak256("0x" + _code)
+}
 
+function getSalt(addr1: string, addr2: string) {
+    return ethers.utils.keccak256(ethers.utils.solidityPack(["address", "address"], [addr1, addr2]));
 
-
-
-
-// getNiceAbi("UniswapV2Pair")
+}
