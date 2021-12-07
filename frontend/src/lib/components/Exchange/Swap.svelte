@@ -3,14 +3,15 @@
 	import TradeButton from './TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-	
+
+	let callSwapOnChild: () => Promise<void>
 </script>
 
 <form>
 	<p class="title">Swap</p>
 
 	<div class="double-token-box">
-		<DoubleTokenBox />
+		<DoubleTokenBox bind:perform={callSwapOnChild}/>
 	</div>
 
 	<div class="slider-box">
@@ -18,7 +19,7 @@
 	</div>
 
 	<div class="swap-button">
-		<TradeButton text="Swap" />
+		<TradeButton text="Swap" on:perfomAction={callSwapOnChild}/>
 	</div>
 </form>
 

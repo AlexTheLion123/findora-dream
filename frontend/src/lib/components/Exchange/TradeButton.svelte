@@ -1,8 +1,18 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
+
+
 	export let text: string;
+
+	const dispatch = createEventDispatcher();
+	function dispatchEvent() {
+		dispatch("perfomAction")
+	}
+
 </script>
 
-<button type="submit" >
+<button on:click|preventDefault={dispatchEvent} >
 	{text}
 </button>
 

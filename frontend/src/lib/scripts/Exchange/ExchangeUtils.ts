@@ -1,11 +1,12 @@
 import type { JsonRpcSigner } from '@ethersproject/providers';
 import type { MyToken } from '$lib/typesUsed/MyToken'
 import { ethers } from 'ethers'
-import { NoRouteError } from './Errors';
+import { NoRouteError, SamePairError } from './Errors';
 import { pairCreationCode } from '$lib/assets/pairInitCode';
 import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
 import type { UniswapV2Pair } from '$lib/typesUsed/UniswapV2Pair';
 import { UniswapV2PairABI } from '$lib/abis/UniswapV2PairABI';
+import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchange/ExchangeQueries';
 
 
 export async function getErc20Balance(contract: MyToken, address: string) {
@@ -17,9 +18,14 @@ export function removeDecimals(bigNum: ethers.BigNumber): number {
     return parseInt(bigNum.div(ethers.constants.WeiPerEther).toString())
 }
 
-export function getSignerAddress(signer: JsonRpcSigner) {
-    return signer.getAddress()
+export function addDecimals(num: number) {
+    const multiplier = ethers.constants.WeiPerEther
+    return ethers.BigNumber.from(num).mul(multiplier)
 }
+
+// export function getSignerAddress(signer: JsonRpcSigner) {
+//     return signer.getAddress()
+// }
 
 export async function checkAddressAgainstNative(factory: UniswapV2Factory, nativeAddr: string, addr: string) {
     const tk1AgainstNative = await factory.getPair(nativeAddr, addr);
@@ -75,7 +81,12 @@ export async function getReserves(factory_addr: string, addr1: string, addr2: st
 }
 
 // TODO cache reserve figures
-export async function calcOutputFromPair(factory_addr: string, numTk1, addr1: string, addr2: string, _signer: JsonRpcSigner) {
+export async function calcOutputFromPair(factory_addr: string, numTk1: number, addr1: string, addr2: string, _signer: JsonRpcSigner) {
+    if (addr1 == addr2) {
+        throw new SamePairError();
+    }
+
+
     const reserves = await getReserves(factory_addr, addr1, addr2, _signer);
     const reserve0 = reserves[0];
     const reserve1 = reserves[1];
@@ -85,12 +96,35 @@ export async function calcOutputFromPair(factory_addr: string, numTk1, addr1: st
 // TODO take slippage into account!
 // TODO take trading fee into account
 function calcNumOutputTokens(numInputTk: number, _reserve0: number, _reserve1: number) { // TODO perhaps leave in big number until the end, more accurate?
-    return _reserve1 - (_reserve0*_reserve1)/(_reserve0 + numInputTk)
+    return _reserve1 - (_reserve0 * _reserve1) / (_reserve0 + numInputTk)
 }
 
 // TODO display on swap
 function calcNoSlippageSwapRate(numInputTk: number, _reserve0: number, _reserve1: number) { // TODO perhaps leave in big number until the end, more accurate?
-    return numInputTk * _reserve1  / _reserve0
+    return numInputTk * _reserve1 / _reserve0
 }
 
+export async function getExactSwapData(addr1: string, addr2: string, numTk1: number, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
+    let route: string[];
+    let numTk2: number;
+    let dollars2: number;
 
+    try {
+        route = await getRoute(addr1, addr2, factory, nativeAddr)
+        numTk2 = await getOtherNumTokens(factory.address, numTk1, route, _signer)
+        dollars2 = await getDollarValue(addr2, numTk2)
+    } catch (error) {
+        if (error instanceof NoRouteError) {
+            alert("No route exists between this pair")
+        } else if (error instanceof SamePairError) {
+            alert("Cannot trade same pair")
+        }
+        throw error;
+    }
+
+    return {
+        route: route,
+        numOutput: numTk2,
+        dollarsOutput: dollars2
+    }
+}

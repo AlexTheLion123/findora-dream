@@ -7,6 +7,8 @@
 	import type { UniswapV2Router02 } from '$lib/typesUsed/UniswapV2Router02';
 	import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
 	import type { JsonRpcSigner } from '@ethersproject/providers';
+	import { performSwap, performLiquidity } from '$lib/scripts/Exchange/ExchangeQueries' ;
+	import { NoMetaMaskError } from '$lib/scripts/Exchange/Errors';
 
 	// NOTE contracts are signed in a module context in the relevant components that use them.
 	// This can be changed to sign all contracts at once upon load asynchronously
@@ -33,13 +35,14 @@
 	router.subscribe((value) => (router_val = value));
 	factory.subscribe((value) => (factory_val = value));
 	nativeTokenAddress.subscribe((value) => (nativeTokenAddr_val = value));
+
 </script>
 
 <script lang="ts">
 	import { handleSelectionGeneric, handleInputGeneric } from '$lib/scripts/Exchange/Events';
-	import type { ICallbackReturn } from '$lib/typesFrontend/Types';
 	import TokenBox from './TokenBox.svelte';
 	import { currentInputElement } from './TokenBox.svelte';
+	import { page } from '$app/stores';
 
 	let token1Address: string; // address
 	let token2Address: string; // address
@@ -49,6 +52,31 @@
 	let dollars2 = 0.0;
 	let balance1: number;
 	let balance2: number;
+	let route: null | string[];
+	let canSwap = false;
+
+	export async function perform() {
+		if(!canSwap) {
+			alert("Fill in more details | invalid pair")
+			return;
+		}
+		if(!route || !signer_val || !router_val) {
+			console.log(route)
+			alert("things not existing")
+			return;
+		}
+
+		if($page.path === '/swap') {
+			await performSwap(numTokens1, numTokens2, route, await signer_val.getAddress(), router_val, signer_val, 100)
+		} else if($page.path === '/liquidity') {
+			await performLiquidity();
+		} else {
+			alert("This should never happen")
+		}
+
+	}
+
+	
 
 	/**
 	 * Event handlers
@@ -66,6 +94,7 @@
 				currentInputElement.parentElement ===
 				element!.parentElement!.parentElement!.parentElement!.parentElement!.parentElement
 			); // TODO find better way to do this
+			// TODO get element by id!
 		}
 		return false;
 	}
@@ -74,9 +103,8 @@
 		token1Address = e.detail.address;
 
 		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
-			// TODO throw proper error
 			alert('Connect to metamask');
-			return;
+			throw new NoMetaMaskError("Please connect to metamask");
 		}
 
 		assignToGlobalVars(
@@ -99,7 +127,7 @@
 
 		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
 			alert('Connect to metmask');
-			return;
+			throw new NoMetaMaskError("Please connect to metamask");
 		}
 
 		assignToGlobalVars(
@@ -161,11 +189,11 @@
 
 	function assignToGlobalVars(
 		{
-			dollars1: dollars1P,
-			dollars2: dollars2P,
-			route,
-			numTk1: numTk1P,
-			numTk2: numTk2P
+			dollars1: dollars1_,
+			dollars2: dollars2_,
+			route: route_,
+			numTk1: numTk1_,
+			numTk2: numTk2_
 		}: {
 			dollars1: number | undefined;
 			dollars2: number | undefined;
@@ -175,19 +203,24 @@
 		},
 		swapVals: boolean = false
 	) {
+		canSwap = false;
+		route = route_
 		if (!swapVals) {
-			dollars1 = dollars1P || dollars1;
-			dollars2 = dollars2P || dollars2;
-			numTokens1 = numTk1P || numTokens1;
-			numTokens2 = numTk2P || numTokens2;
+			dollars1 = dollars1_ || dollars1;
+			dollars2 = dollars2_ || dollars2;
+			numTokens1 = numTk1_ || numTokens1;
+			numTokens2 = numTk2_ || numTokens2;
 		} else {
-			dollars2 = dollars1P || dollars2;
-			dollars1 = dollars2P || dollars1;
-			numTokens2 = numTk1P || numTokens2;
-			numTokens1 = numTk2P || numTokens1;
+			dollars2 = dollars1_ || dollars2;
+			dollars1 = dollars2_ || dollars1;
+			numTokens2 = numTk1_ || numTokens2;
+			numTokens1 = numTk2_ || numTokens1;
 		}
 
-		if (route) {
+		if (route_) {
+			canSwap = true;
+			
+			
 			// swap is ready to be performed
 			console.log('swap is ready');
 		}
