@@ -10,6 +10,8 @@ import { calcOutputFromPair } from './ExchangeUtils';
 import type { UniswapV2Router02 } from '$lib/typesUsed/UniswapV2Router02';
 import { NoRouteError, SamePairError } from './Errors';
 
+import { router} from '$lib/stores';
+import { get } from 'svelte/store';
 
 export async function getBalance(contract_address: string, _signer: JsonRpcSigner) {
     // test below
@@ -48,7 +50,29 @@ export async function getRoute(addr1: string, addr2: string, factory: UniswapV2F
     throw new NoRouteError();
 }
 
-export async function getOtherNumTokens(
+// export async function getOtherNumTokens(
+//     factory_addr: string,
+//     numInput: number,
+//     route: string[],
+//     _signer: JsonRpcSigner
+// ) {
+//     if (!route || route.length < 2) {
+//         throw new NoRouteError();
+//     }
+
+//     if (route.length === 2) {
+//         return calcOutputFromPair(factory_addr, numInput, route[0], route[1], _signer)
+//     }
+
+//     // last item is destination, not pair
+//     let currentNum = numInput;
+//     for (let i = 0; i < (route.length - 1); i++) {
+//         currentNum = await calcOutputFromPair(factory_addr, currentNum, route[i], route[i + 1], _signer)
+//     }
+//     return currentNum;
+// }
+
+export function getOtherNumTokens(
     factory_addr: string,
     numInput: number,
     route: string[],
@@ -58,18 +82,13 @@ export async function getOtherNumTokens(
         throw new NoRouteError();
     }
 
-    if (route.length === 2) {
-        return calcOutputFromPair(factory_addr, numInput, route[0], route[1], _signer)
+    const _router = get(router);
+    
+    console.log(route)
+    if(_router) {
+        return _router.getAmountsOut(ethers.utils.parseEther(numInput.toString()), route)
     }
-
-    // last item is destination, not pair
-    let currentNum = numInput;
-    for (let i = 0; i < (route.length - 1); i++) {
-        currentNum = await calcOutputFromPair(factory_addr, currentNum, route[i], route[i + 1], _signer)
-    }
-    return currentNum;
 }
-
 
 export async function getDollarValue(addr: string, numTk: number) { // TODO fix last probably
     return numTk * Math.random() * 100;
@@ -82,10 +101,14 @@ export async function getDollarValue(addr: string, numTk: number) { // TODO fix 
  * @param deadline number in secods e.g. 60 -> 60 seconds after txn submission
  */
 export async function performSwap(amountInExact: number, amountOutMin: number, route: string[], to: string, router: UniswapV2Router02, _signer: JsonRpcSigner, deadline: number) {
-    const amountIn = addDecimals(amountInExact)
-    const amountOut = addDecimals(amountOutMin)
-    let txn = await router.swapExactTokensForTokens(amountIn, amountOut, route, to, amountIn) // TODO fix deadline to sensible number
-    await txn.wait()
+    const amountInBigN = ethers.utils.parseEther(amountInExact.toString())
+    const amountOutBigN = ethers.utils.parseEther(amountOutMin.toString())
+
+    let txn = await router.swapExactTokensForTokens(amountInBigN, amountOutBigN, route, to, amountInBigN) // TODO fix deadline to sensible number
+    await txn.wait();
+
+    alert("yay, swap performed")
+
 }
 
 export async function performLiquidity() {

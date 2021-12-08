@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
 	let inputElement: HTMLInputElement;
 	let INPUT_BUFFER = 1000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
@@ -39,6 +39,10 @@
 		}
 		current = inputElement;
 	}
+
+	onMount(() => {
+		inputElement.value = ""
+	})
 </script>
 
 <input type="number" bind:value={value} bind:this={inputElement} placeholder="0.00" on:input={handleInput} />

@@ -11,7 +11,6 @@
 		performSwap,
 		performLiquidity,
 		getDollarValue,
-		getOtherNumTokens
 	} from '$lib/scripts/Exchange/ExchangeQueries';
 	import { NoMetaMaskError } from '$lib/scripts/Exchange/Errors';
 	import { getBalance } from '$lib/scripts/Exchange/ExchangeQueries';
@@ -64,33 +63,31 @@ import { tick } from 'svelte';
 		dollarOutput: number;
 	}
 
-	// export async function perform() {
-	// 	if (!canSwapLock) {
-	// 		alert('Fill in more details | invalid pair');
-	// 		return;
-	// 	}
-	// 	if (!route || !signer_val || !router_val) {
-	// 		console.log(route);
-	// 		alert('things not existing');
-	// 		return;
-	// 	}
+	export async function perform() {
 
-	// 	if ($page.path === '/swap') {
-	// 		await performSwap(
-	// 			numTokens1,
-	// 			numTokens2,
-	// 			route,
-	// 			await signer_val.getAddress(),
-	// 			router_val,
-	// 			signer_val,
-	// 			100
-	// 		);
-	// 	} else if ($page.path === '/liquidity') {
-	// 		await performLiquidity();
-	// 	} else {
-	// 		alert('This should never happen');
-	// 	}
-	// }
+		if (!canSwapLock) {
+			alert('Fill in more details | invalid pair');
+			return;
+		}
+	
+		if(!currentTokenBox || !otherTokenBox || !currentTokenBox.numTokens || !otherTokenBox.numTokens || !signer_val || !router_val) throw "undefined values before swap, should never happen";
+
+		if ($page.path === '/swap') {
+			await performSwap(
+				currentTokenBox.numTokens,
+				otherTokenBox.numTokens * 0.95,
+				swapData.route,
+				await signer_val.getAddress(),
+				router_val,
+				signer_val,
+				100
+			);
+		} else if ($page.path === '/liquidity') {
+			await performLiquidity();
+		} else {
+			alert('This should never happen');
+		}
+	}
 
 	/**
 	 * Event handlers

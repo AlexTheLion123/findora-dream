@@ -108,25 +108,29 @@ function calcNoSlippageSwapRate(numInputTk: number, _reserve0: number, _reserve1
 // TODO clean unnessarily large number of arguments
 export async function getExactSwapData(addrInput: string, addrOutput: string, numInput: number, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
     let route: string[];
-    let numOutput: number;
+    let numOutput: ethers.BigNumber[] | undefined;
     let dollarOutput: number;
 
     try {
         route = await getRoute(addrInput, addrOutput, factory, nativeAddr)
         numOutput = await getOtherNumTokens(factory.address, numInput, route, _signer)
-        dollarOutput = await getDollarValue(addrOutput, numOutput)
+        if(!numOutput) throw "numOutput does not exist";
+        // dollarOutput = await getDollarValue(addrOutput, parseInt(ethers.utils.formatEther(numOutput[0].toString())))
+        dollarOutput = 2;
     } catch (error) {
         if (error instanceof NoRouteError) {
             alert("No route exists between this pair")
         } else if (error instanceof SamePairError) {
             alert("Cannot trade same pair")
         }
+        console.log("in get swap data catch")
         throw error;
+
     }
 
     return {
         route: route,
-        numOutput: numOutput,
+        numOutput: parseInt(ethers.utils.formatEther(numOutput[1])),
         dollarOutput: dollarOutput
     }
 }

@@ -5,9 +5,10 @@
 <script lang="ts">
 	import TokenSelector from './TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
+import { onMount } from 'svelte';
 
 	let tokenBox: any;
-	export let numTokens: number;
+	export let numTokens = 0.00;
 	export let dollars: number = 0.00;
 	export let balance: number = 0.00;
 	export let address: string = "";
