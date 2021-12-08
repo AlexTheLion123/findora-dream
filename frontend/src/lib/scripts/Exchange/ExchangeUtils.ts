@@ -7,10 +7,9 @@ import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
 import type { UniswapV2Pair } from '$lib/typesUsed/UniswapV2Pair';
 import { UniswapV2PairABI } from '$lib/abis/UniswapV2PairABI';
 import { getOtherNumTokens, getDollarValue, getRoute } from '$lib/scripts/Exchange/ExchangeQueries';
-
+import { ERC20ABI } from '$lib/abis/ERC20ABI';
 
 export async function getErc20Balance(contract: MyToken, address: string) {
-
     return removeDecimals(await contract.balanceOf(address))
 }
 
@@ -105,32 +104,17 @@ function calcNoSlippageSwapRate(numInputTk: number, _reserve0: number, _reserve1
     return numInputTk * _reserve1 / _reserve0
 }
 
-// TODO clean unnessarily large number of arguments
-export async function getExactSwapData(addrInput: string, addrOutput: string, numInput: number, factory: UniswapV2Factory, nativeAddr: string, _signer: JsonRpcSigner) {
-    let route: string[];
-    let numOutput: ethers.BigNumber[] | undefined;
-    let dollarOutput: number;
+export async function getAllowance(_addressToken: string, _addressOwner: string, _addressSpender: string, _signer: JsonRpcSigner): Promise<number> {
+    const erc20Instance = new ethers.Contract(_addressToken, ERC20ABI, _signer) as MyToken
+    return parseInt(ethers.utils.formatEther(await erc20Instance.allowance(_addressOwner,_addressSpender)));
+}
 
-    try {
-        route = await getRoute(addrInput, addrOutput, factory, nativeAddr)
-        numOutput = await getOtherNumTokens(factory.address, numInput, route, _signer)
-        if(!numOutput) throw "numOutput does not exist";
-        // dollarOutput = await getDollarValue(addrOutput, parseInt(ethers.utils.formatEther(numOutput[0].toString())))
-        dollarOutput = 2;
-    } catch (error) {
-        if (error instanceof NoRouteError) {
-            alert("No route exists between this pair")
-        } else if (error instanceof SamePairError) {
-            alert("Cannot trade same pair")
-        }
-        console.log("in get swap data catch")
-        throw error;
+export async function checkAllowance(toSpend: number, addressOwner: string, addressSpender: string, pairAddress: string, _signer: JsonRpcSigner): Promise<boolean> {
+    // save getter time
+    return await getAllowance(
+        pairAddress,
+        addressOwner,
+        addressSpender,
+        _signer) < toSpend ? false : true;
 
-    }
-
-    return {
-        route: route,
-        numOutput: parseInt(ethers.utils.formatEther(numOutput[1])),
-        dollarOutput: dollarOutput
-    }
 }

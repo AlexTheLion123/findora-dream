@@ -12,7 +12,6 @@ import { getPairAddress } from "../deployUtils";
      * @param minTo - address of the account to mint the liquidity tokens to.
      */
 export async function addLiquitySpecific(_addr1: string, _addr2: string, _amount1: ethers.BigNumber, _amount2: ethers.BigNumber, spender: string, router: UniswapV2Router02, factory: UniswapV2Factory, provider: Wallet, mintTo: string) {
-
     await approveTransfer(_addr1, _amount1, spender, router, factory, provider)
     await approveTransfer(_addr2, _amount2, spender, router, factory, provider)
 
@@ -24,8 +23,8 @@ export async function addLiquitySpecific(_addr1: string, _addr2: string, _amount
 
 }
 
-async function approveTransfer(_addr: string, _amount: ethers.BigNumber, _spender: string, _router: UniswapV2Router02, _factory: UniswapV2Factory, provider: Wallet) {
-    const erc20Instance = new ethers.Contract(_addr, erc20ABI, provider) as MyToken;
+async function approveTransfer(tokenAddress: string, _amount: ethers.BigNumber, _spender: string, _router: UniswapV2Router02, _factory: UniswapV2Factory, provider: Wallet) {
+    const erc20Instance = await new ethers.Contract(tokenAddress, erc20ABI, provider).deployed() as MyToken;
 
     // approve router contract to spend wallet's coins
     const txn = await erc20Instance.approve(_router.address, _amount);
@@ -38,8 +37,7 @@ async function approveTransfer(_addr: string, _amount: ethers.BigNumber, _spende
 async function checkAdditionSuccess(_factory: UniswapV2Factory, _addr1: string, _addr2: string, _provider: Wallet) {
     const pairAddress = getPairAddress(_factory.address, _addr1, _addr2)
 
-    const pairContract = await new ethers.Contract(pairAddress, uniswapV2PairABI, _provider) as UniswapV2Pair
-    await pairContract.deployed();
+    const pairContract = await new ethers.Contract(pairAddress, uniswapV2PairABI, _provider).deployed() as UniswapV2Pair
     const reserves: any = await pairContract.getReserves();
     console.log("Reserve1: ", reserves[0].toString(), "Token at", _addr1);
     console.log("Reserve2: ", reserves[1].toString(), "Token at", _addr2);

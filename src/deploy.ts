@@ -11,9 +11,13 @@ import type { ITokensInfo } from './deployTypes';
 import {sendToAddress} from './deployUtils'
 import { addLiquitySpecific } from './utils/addLiquidityUtils';
 
+require('dotenv').config()
+
 let provider: Provider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
-const PRIVATE_KEY = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
-const MY_ADDRESS = '0x6919aE4C89f9ED4A79aE70Fb4cC78396F48A42cA'
+const PRIVATE_KEY = process.env.TEST_PK as string;
+const MY_ADDRESS = process.env.MY_ADDRESS as string;
+const MY_PK_DEV = process.env.MY_PK_DEV as string;
+
 const wallet = new Wallet(PRIVATE_KEY).connect(provider);
 
 let uniswapV2Factory: UniswapV2Factory;
@@ -26,6 +30,7 @@ async function deploy() {
     await deployUniswapAndWrite();
     await deployTokensAndWrite();
     await addLiquity();
+    await sendMeGasMoney();
 }
 
 /**
@@ -50,7 +55,7 @@ async function deployUniswapAndWrite() {
 }
 
 async function deployTokensAndWrite() {
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 10; i++) {
         if (i == 0) {
             let txn = await new MyTokenFactory(wallet).deploy(`Native`, `NATIVE`);
             await txn.deployed();
@@ -99,3 +104,17 @@ async function addLiquity() {
     
 }
 
+async function sendMeGasMoney() {
+    const txn = await wallet.sendTransaction({
+        to: MY_ADDRESS,
+        value: ethers.utils.parseEther("5.0")
+    });
+    await txn.wait()
+
+    console.log("my eth balance", await checkMybalance())
+}
+
+async function checkMybalance() {
+    const myWallet = new Wallet(MY_PK_DEV).connect(provider);
+    return ethers.utils.formatEther(await myWallet.getBalance())
+}

@@ -11,6 +11,7 @@
 		performSwap,
 		performLiquidity,
 		getDollarValue,
+		approveMax
 	} from '$lib/scripts/Exchange/ExchangeQueries';
 	import { NoMetaMaskError } from '$lib/scripts/Exchange/Errors';
 	import { getBalance } from '$lib/scripts/Exchange/ExchangeQueries';
@@ -46,9 +47,10 @@
 	import TokenBox from './TokenBox.svelte';
 	// import { currentInputElement } from './TokenBox.svelte';
 	import { page } from '$app/stores';
-	import { getExactSwapData } from '$lib/scripts/Exchange/ExchangeUtils';
+	import { getPairAddress } from '$lib/scripts/Exchange/ExchangeUtils';
+	import { getExactSwapData } from '$lib/scripts/Exchange/ExchangeQueries';
 	import { respond } from '@sveltejs/kit/ssr';
-import { tick } from 'svelte';
+	import { tick } from 'svelte';
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
@@ -61,16 +63,32 @@ import { tick } from 'svelte';
 		route: string[];
 		numOutput: number;
 		dollarOutput: number;
+		pairAddress: string;
+		sufficientAllowance: boolean
 	}
 
 	export async function perform() {
-
 		if (!canSwapLock) {
 			alert('Fill in more details | invalid pair');
 			return;
 		}
-	
-		if(!currentTokenBox || !otherTokenBox || !currentTokenBox.numTokens || !otherTokenBox.numTokens || !signer_val || !router_val) throw "undefined values before swap, should never happen";
+
+		if (
+			!currentTokenBox ||
+			!otherTokenBox ||
+			!currentTokenBox.numTokens ||
+			!otherTokenBox.numTokens ||
+			!signer_val ||
+			!router_val
+		) {
+			throw 'undefined values before swap, should never happen'; 
+		}
+
+		if(!swapData.sufficientAllowance) {
+			console.log("approving token first")
+			await approveMax(swapData.route[0], router_val.address, signer_val)
+			.catch(e => console.log("approving the maximum amount failed",e))
+		}
 
 		if ($page.path === '/swap') {
 			await performSwap(
@@ -154,7 +172,7 @@ import { tick } from 'svelte';
 		} else {
 			// currentTokenBox does not exist yet
 			if (otherTokenBox && otherTokenBox.address) {
-				console.log(currentTokenBox && otherTokenBox)
+				console.log(currentTokenBox && otherTokenBox);
 				getRates();
 			}
 		}
@@ -186,27 +204,32 @@ import { tick } from 'svelte';
 	 * @param _tokenBox In this case, _tokenBox should always just be the current token box
 	 */
 	function getSwapData(_tokenBox: TokenBox) {
-		if(_tokenBox !== currentTokenBox) throw "not current box, should never happen"  
+		if (_tokenBox !== currentTokenBox) throw 'not current box, should never happen';
 
-
-		if (!otherTokenBox || !currentTokenBox.address || !otherTokenBox.address || !currentTokenBox.numTokens)
+		if (
+			!otherTokenBox ||
+			!currentTokenBox.address ||
+			!otherTokenBox.address ||
+			!currentTokenBox.numTokens
+		)
 			throw "some required values haven't been provided, this should never happen";
 
 		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
-		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+		if (!factory_val || !nativeTokenAddr_val || !signer_val || !router_val || !router_val.address) {
 			alert('Connect to metamask');
 			throw new NoMetaMaskError('Please connect to metamask');
 		}
-		
+
 		return getExactSwapData(
 			currentTokenBox.address,
 			otherTokenBox.address,
 			currentTokenBox.numTokens,
 			factory_val,
 			nativeTokenAddr_val,
-			signer_val
+			signer_val,
+			router_val.address
 		).then((res) => {
-			if(!otherTokenBox) throw "other box does not exist, should never happen"
+			if (!otherTokenBox) throw 'other box does not exist, should never happen';
 
 			otherTokenBox.numTokens = res.numOutput;
 			otherTokenBox.dollars = res.dollarOutput;
@@ -214,7 +237,9 @@ import { tick } from 'svelte';
 			return {
 				route: res.route,
 				numOutput: res.numOutput,
-				dollarOutput: res.dollarOutput
+				dollarOutput: res.dollarOutput,
+				pairAddress: res.pairAddress,
+				sufficientAllowance: res.sufficientAllowance
 			};
 		});
 	}
@@ -236,15 +261,35 @@ import { tick } from 'svelte';
 		console.log('implement get rates');
 	}
 
-	function setSwapData({ route, numOutput, dollarOutput }: ISwapData) {
+	async function setSwapData({ route, numOutput, dollarOutput, sufficientAllowance }: ISwapData) {
 		canSwapLock = true;
+
+		if (!currentTokenBox || !currentTokenBox.address || !otherTokenBox || !otherTokenBox.address)
+			throw 'some required details not provdided, this should never happen';
+
+		const pairAddress = getPairAddress(
+			factory_address,
+			currentTokenBox.address,
+			otherTokenBox.address
+		);
 
 		swapData = {
 			route: route,
 			numOutput: numOutput,
-			dollarOutput: dollarOutput
+			dollarOutput: dollarOutput,
+			pairAddress: pairAddress,
+			sufficientAllowance: sufficientAllowance
 		};
 	}
+
+	/**
+	 * @param _currentTokenBox is the token box holding the swap info
+	 * @returns true if allowance is sufficient, otherwise returns false
+	 */
+
+	
+
+
 </script>
 
 <div class="token-box">
