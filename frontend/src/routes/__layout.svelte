@@ -3,23 +3,28 @@
 </script>
 
 <script lang="ts">
-	import { isConnected, provider, signer, isProvided, router } from '$lib/stores';
+	// TODO see if we actually use provider for readonly stuff, or just use signer for everything?
+	import { isConnected, provider, signer, isProvided, signerAddress } from '$lib/stores';
 
 	import Nav from '$lib/components/layout/Nav.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
 	import Background from '$lib/components/layout/Background.svelte';
 
-	isConnected.subscribe((value) => {
+	isConnected.subscribe(async (value) => {
 		if (value) {
 			// connected
 			$provider = new ethers.providers.Web3Provider(window.ethereum);
-			$signer = $provider!.getSigner();
 			$isProvided = true;
-			console.log('hello');
+
+			$signer = $provider!.getSigner();
+			$signerAddress = await $signer!.getAddress()
+			
+			console.log('We are now connected');
 		} else {
 			$provider = null;
 			$signer = null;
 			$isProvided = false;
+			$signerAddress = null;
 		}
 	});
 </script>

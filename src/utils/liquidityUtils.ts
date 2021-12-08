@@ -1,9 +1,9 @@
 
 import { ethers } from "ethers";
-import { erc20ABI, uniswapV2PairABI } from '../deployABIs';
+import { erc20ABI, uniswapV2PairABI } from '../ABIs';
 import type { MyToken, UniswapV2Router02, UniswapV2Factory, UniswapV2Pair } from '../../build/types';
 import type { Wallet } from 'ethers'
-import { getPairAddress } from "../deployUtils";
+import { getPairAddress } from "."
 
 /**
      * @dev 
@@ -29,9 +29,6 @@ async function approveTransfer(tokenAddress: string, _amount: ethers.BigNumber, 
     // approve router contract to spend wallet's coins
     const txn = await erc20Instance.approve(_router.address, _amount);
     await txn.wait();
-
-    // check that approval
-    const txn2 = await erc20Instance.allowance(_spender, _router.address)
 }
 
 async function checkAdditionSuccess(_factory: UniswapV2Factory, _addr1: string, _addr2: string, _provider: Wallet) {

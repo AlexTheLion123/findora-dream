@@ -1,10 +1,10 @@
 const fs = require('fs');
 const lineReplace = require('line-replace')
 import { ethers } from 'ethers'; // TODO delete
-import type { MyToken } from '../build/types/MyToken';
-import type { ITokensInfo } from './deployTypes';
+import type { MyToken } from '../../build/types/MyToken';
+import type { ITokensInfo } from '..';
 import { BigNumber } from 'ethers';
-import UniswapV2Pair from '../build/UniswapV2Pair.json';
+import UniswapV2Pair from '../../build/UniswapV2Pair.json';
 
 export function writeToJson(info: any, path: string) {
     const jsonContent = JSON.stringify(info);

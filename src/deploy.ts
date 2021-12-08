@@ -1,15 +1,11 @@
 import type { Provider } from '@ethersproject/providers';
 import { ethers, Wallet } from 'ethers';
 import {
-    UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory
+    UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory, MyTokenFactory
 } from '../build/types';
-import { MyTokenFactory } from '../build/types/MyTokenFactory';
-import { writeToJson } from './deployUtils';
-import { erc20ABI, uniswapV2PairABI } from './deployABIs';
-import { replaceInitCodeInFile} from './deployUtils'; // keep but don't use 
-import type { ITokensInfo } from './deployTypes';
-import {sendToAddress} from './deployUtils'
-import { addLiquitySpecific } from './utils/addLiquidityUtils';
+import { writeToJson, sendToAddress, addLiquitySpecific,replaceInitCodeInFile } from './utils'
+import { erc20ABI, uniswapV2PairABI } from './ABIs';
+import type { ITokensInfo } from '.';
 
 require('dotenv').config()
 

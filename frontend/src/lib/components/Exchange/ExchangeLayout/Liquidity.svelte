@@ -1,7 +1,7 @@
 <script>
-    import DoubleTokenBox from './DoubleTokenBox.svelte';
-    import TradeButton from './TradeButton.svelte'
-    import PoolInfo from './PoolInfo.svelte'
+    import DoubleTokenBox from '../DoubleTokenBox.svelte';
+    import TradeButton from '../TradeButton.svelte'
+    import PoolInfo from '../PoolInfo.svelte'
 
 </script>
 

@@ -13,6 +13,7 @@
 
 		dispatch('tokenSelected', e.detail);
 	}
+	
 </script>
 
 <button on:click|preventDefault={() => (showSearch = true)}>

@@ -13,7 +13,7 @@
 <script lang="ts">
 	// TODO look at other moving stuff to module context
 	import { createEventDispatcher } from 'svelte';
-	import TokenSearchItem from '$lib/components/Exchange/TokenSearchItem.svelte';
+	import TokenSearchItem from './TokenSearchItem.svelte';
     
 	export let isShown = false;
 	let current: HTMLElement | undefined;

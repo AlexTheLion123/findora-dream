@@ -3,7 +3,7 @@
 
 
 <script lang="ts">
-	import TokenSelector from './TokenSelector.svelte';
+	import TokenSelector from './TokenSelection/TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
 import { onMount } from 'svelte';
 
@@ -11,7 +11,9 @@ import { onMount } from 'svelte';
 	export let numTokens = 0.00;
 	export let dollars: number = 0.00;
 	export let balance: number = 0.00;
-	export let address: string = "";
+	export let address: string = ""; 
+	export let decimals: number;
+
 	// export let address: string; updated in parent with event
 
 	function formatNumber(num: number | string, decimals: number) {

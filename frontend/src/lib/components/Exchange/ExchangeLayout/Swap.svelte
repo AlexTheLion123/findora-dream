@@ -1,6 +1,6 @@
 <script lang="ts">
-	import DoubleTokenBox from './DoubleTokenBox.svelte';
-	import TradeButton from './TradeButton.svelte';
+	import DoubleTokenBox from '../DoubleTokenBox.svelte';
+	import TradeButton from '../TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
 

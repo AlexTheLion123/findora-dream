@@ -1,56 +1,24 @@
 <script context="module" lang="ts">
-	import {
-		setAndGetFactoryAndRouterAddress,
-		signRouterAndFactory
-	} from '$lib/scripts/ConnectContracts';
-	import { router, signer, factory, nativeTokenAddress } from '$lib/stores';
-	import type { UniswapV2Router02 } from '$lib/typesUsed/UniswapV2Router02';
-	import type { UniswapV2Factory } from '$lib/typesUsed/UniswapV2Factory';
+	import type { UniswapV2Router02, UniswapV2Factory } from '$lib/typesUsed';
 	import type { JsonRpcSigner } from '@ethersproject/providers';
+
 	import {
 		performSwap,
 		performLiquidity,
 		getDollarValue,
-		approveMax
-	} from '$lib/scripts/Exchange/ExchangeQueries';
-	import { NoMetaMaskError } from '$lib/scripts/Exchange/Errors';
-	import { getBalance } from '$lib/scripts/Exchange/ExchangeQueries';
-
-	// NOTE contracts are signed in a module context in the relevant components that use them.
-	// This can be changed to sign all contracts at once upon load asynchronously
-	// native token address is set in TokenSearchDialog in module context
-
-	// do not require provider to do this
-	const { factory_address, router_address } = setAndGetFactoryAndRouterAddress();
-
-	// once signer available then we can sign router contract store
-	let signer_val: null | JsonRpcSigner;
-	signer.subscribe((value) => {
-		if (value) {
-			signer_val = value;
-			// isProvided = true, then sign the router contract.
-			// DoubleTokenBox signs the router contract in module context since it is used in both the swap and liquidity components
-			signRouterAndFactory(router, factory, router_address, factory_address, value);
-		}
-	});
-	// TODO stop using separate signer variable, just get signer from factory!
-
-	let router_val: null | UniswapV2Router02; // TODO remove
-	let factory_val: null | UniswapV2Factory;
-	let nativeTokenAddr_val: null | string;
-	router.subscribe((value) => (router_val = value));
-	factory.subscribe((value) => (factory_val = value));
-	nativeTokenAddress.subscribe((value) => (nativeTokenAddr_val = value));
+		approveMax,
+		NoMetaMaskError,
+		getBalance,
+		getPairAddress,
+		getExactSwapData
+	} from '$lib/scripts/exchange';
 </script>
 
 <script lang="ts">
 	import TokenBox from './TokenBox.svelte';
 	// import { currentInputElement } from './TokenBox.svelte';
 	import { page } from '$app/stores';
-	import { getPairAddress } from '$lib/scripts/Exchange/ExchangeUtils';
-	import { getExactSwapData } from '$lib/scripts/Exchange/ExchangeQueries';
-	import { respond } from '@sveltejs/kit/ssr';
-	import { tick } from 'svelte';
+	import { factory, router } from '$lib/stores';
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
@@ -64,7 +32,7 @@
 		numOutput: number;
 		dollarOutput: number;
 		pairAddress: string;
-		sufficientAllowance: boolean
+		sufficientAllowance: boolean;
 	}
 
 	export async function perform() {
@@ -78,16 +46,17 @@
 			!otherTokenBox ||
 			!currentTokenBox.numTokens ||
 			!otherTokenBox.numTokens ||
-			!signer_val ||
-			!router_val
+			!$factory ||
+			!$router
 		) {
-			throw 'undefined values before swap, should never happen'; 
+			throw 'undefined values before swap, should never happen';
 		}
 
-		if(!swapData.sufficientAllowance) {
-			console.log("approving token first")
-			await approveMax(swapData.route[0], router_val.address, signer_val)
-			.catch(e => console.log("approving the maximum amount failed",e))
+		if (!swapData.sufficientAllowance) {
+			alert('approving token first');
+			await approveMax(swapData.route[0], $router.address, $router.signer).catch((e) =>
+				console.log('approving the maximum amount failed', e)
+			);
 		}
 
 		if ($page.path === '/swap') {
@@ -103,7 +72,7 @@
 		} else if ($page.path === '/liquidity') {
 			await performLiquidity();
 		} else {
-			alert('This should never happen');
+			alert('Invalid pageThis should never happen');
 		}
 	}
 
@@ -267,11 +236,13 @@
 		if (!currentTokenBox || !currentTokenBox.address || !otherTokenBox || !otherTokenBox.address)
 			throw 'some required details not provdided, this should never happen';
 
-		const pairAddress = getPairAddress(
-			factory_address,
-			currentTokenBox.address,
-			otherTokenBox.address
-		);
+		// const pairAddress = getPairAddress(
+		// 	factory_address,
+		// 	currentTokenBox.address,
+		// 	otherTokenBox.address
+		// );
+
+		// TODO get pair address when calculation route
 
 		swapData = {
 			route: route,
@@ -286,10 +257,6 @@
 	 * @param _currentTokenBox is the token box holding the swap info
 	 * @returns true if allowance is sufficient, otherwise returns false
 	 */
-
-	
-
-
 </script>
 
 <div class="token-box">

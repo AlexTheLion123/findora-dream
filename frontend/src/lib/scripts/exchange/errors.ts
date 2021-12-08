@@ -65,3 +65,11 @@ export class NoRouteError extends RouteError {
         this.message = "No route exists between the pair"
     }
 }
+
+export class ApprovalError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "Approval error"
+        this.message = "There was a problem approving"
+    }
+}

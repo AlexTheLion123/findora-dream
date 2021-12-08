@@ -16,11 +16,11 @@
 	</section>
 	<section id="Exchange">
 		<h4>Exchange</h4>
-		<a class="item" href="/swap" class:selected={$page.path == '/swap'}>
+		<a class="item" href="/exchange/swap" class:selected={$page.path == '/swap'}>
 			<i class="fab fa-instagram-square" />
 			Swap
 		</a>
-		<a class="item" href="/liquidity" class:selected={$page.path == '/liquidity'}>
+		<a class="item" href="/exchange/liquidity" class:selected={$page.path == '/liquidity'}>
 			<i class="fab fa-instagram-square" />
 			Liquidity
 		</a>

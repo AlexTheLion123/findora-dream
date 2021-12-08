@@ -1,5 +1,5 @@
 <script>
-    import Liquidity from '$lib/components/Exchange/Liquidity.svelte'
+    import Liquidity from '$lib/components/Exchange/ExchangeLayout/Liquidity.svelte'
 </script>
 
 
