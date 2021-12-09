@@ -49,15 +49,6 @@ export interface ICheckAllowance extends IGetAllowance {
     toSpend: number
 }
 
-
-export interface IGetReserves {
-    factoryAddr: string,
-    addr1: string,
-    addr2: string,
-    signer: Signer,
-    decimals: number
-}
-
 export interface ISetSwapDataOutput {
     numTokens: number,
     decimals: number,

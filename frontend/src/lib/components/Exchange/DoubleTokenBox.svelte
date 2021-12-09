@@ -1,65 +1,41 @@
 <script context="module" lang="ts">
 	import {
-		performSwap,
+		swapExactInput,
 		performLiquidity,
-		getDollarValue,
 		approveMax,
 		NoMetaMaskError,
-		getBalance,
-		getExactSwapData
+		checkAllowance,
+		getQuote,
+		addDecimals,
+		removeDecimals
 	} from '$lib/scripts/exchange';
-
-	import type {TySwapData, ISetSwapDataOutput, ISetSwapDataInput } from '$lib/typesFrontend';
+	import { Contract } from 'ethers';
+	import type { Ierc20 } from '$lib/typesUsed';
+	import type { TySwapData, ISetSwapDataOutput, ISetSwapDataInput } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
 	import TokenBox from './TokenBox.svelte';
 	import { factory, nativeTokenAddress, router, signer, signerAddress } from '$lib/stores';
 	import { page } from '$app/stores';
+	import { ERC20ABI } from '$lib/abis';
+import { getContext } from 'svelte';
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
 	let canSwapLock = false;
-	let swapData: TySwapData;
 	let currentTokenBox: TokenBox | undefined;
 	let otherTokenBox: TokenBox | undefined;
 
+	const {nativeAddr, dollarsAddr} = getContext("Exchange")
+
 	export async function perform() {
-		if (!canSwapLock) {
-			alert('Swap is locked');
-			throw "Swap is locked";
-		}
-
-		if (
-			!currentTokenBox ||
-			!otherTokenBox ||
-			!currentTokenBox.numTokens ||
-			!otherTokenBox.numTokens ||
-			!$factory ||
-			!$router ||
-			!$signerAddress ||
-			!$signer
-		) {
-			throw 'undefined values before swap, should never happen';
-		}
-
-		if (!swapData.sufficientAllowance) {
-			alert('approving token first');
-			await approveMax(swapData.route[0], $router.address, $router.signer).catch((e) =>
-				console.log('approving the maximum amount failed', e)
-			);
-		}
-
 		if ($page.path === '/swap') {
-			await performSwap(
-				currentTokenBox.numTokens,
-				otherTokenBox.numTokens * 0.95,
-				swapData.route,
-				$signerAddress,
-				$router,
-				$signer,
-				100
-			);
+			if (!(await checkAllowance())) {
+				approveMax();
+			}
+
+			await performSwap();
 		} else if ($page.path === '/liquidity') {
 			await performLiquidity();
 		} else {
@@ -74,16 +50,29 @@
 		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
 
 		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
-		if (!$factory || !$nativeTokenAddress || !$signer || !$signerAddress) {
+		if (!$signer) {
 			alert('Connect to metamask');
 			throw new NoMetaMaskError('Please connect to metamask');
 		}
 
-		getBalance(tokenBox.address, tokenBox.decimals, $signer, $signerAddress)
-			.then((res) => {
-				tokenBox.balance = res;
+		(new Contract(tokenBox.address, ERC20ABI, $signer) as Ierc20)
+			.deployed()
+			.then(async (res) => {
+				tokenBox.decimals = await res.decimals();
+
+				if (!$signerAddress || !tokenBox.address) {
+					alert('Connect to metamask');
+					throw new NoMetaMaskError('Please connect to metamask');
+				}
+
+				res
+					.balanceOf($signerAddress)
+					.then((res) => (tokenBox.balance = removeDecimals(res, tokenBox.decimals)));
 			})
-			.catch(alert);
+			.catch((e) => {
+				alert('No contract deployed here or failed to get coin info');
+				throw 'No contract deployed here or failed to get coin info';
+			});
 
 		if (currentTokenBox === tokenBox) {
 			// Scenario 1 and 2
@@ -123,8 +112,10 @@
 	}
 
 	async function handleInputGeneric(tokenBox: TokenBox, e: any) {
+		canSwapLock = false;
 		updateCurrentTokenBox(tokenBox);
 		tokenBox.numTokens = e.detail.numTokens;
+
 		if (!tokenBox.numTokens) throw 'that value does not exist, this should never happen';
 
 		if (!$factory || !$nativeTokenAddress || !$signer) {
@@ -148,20 +139,17 @@
 		return getSwapData(tokenBox).then(setSwapData);
 	}
 
-	function setSwapDataInput({numTokens, addr, decimals, sufficientAllowance}: ISetSwapDataInput) {
+	function setSwapDataInput({
+		numTokens,
+		addr,
+		decimals,
+		sufficientAllowance
+	}: ISetSwapDataInput) {}
 
-	}
-
-	
-
-	function setSwapDataOutput({numTokens, addr, decimals}: ISetSwapDataOutput) {
-
-	}
+	function setSwapDataOutput({ numTokens, addr, decimals }: ISetSwapDataOutput) {}
 
 	/// @dev gets data not crucial to performing swap, such as dollar values, price impact <- gonna have to do entire calc manually?
-	function getPeripharyData() {
-
-	}
+	function getPeripharyData() {}
 
 	type TSwapData = typeof setSwapDataInput & ReturnType<setSwapDataOutput>;
 

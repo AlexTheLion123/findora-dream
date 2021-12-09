@@ -4,8 +4,7 @@ import { UniswapV2FactoryABI, UniswapV2Router02ABI } from '$lib/abis';
 import type { UniswapV2Router02, UniswapV2Factory } from '$lib/typesUsed';
 import type { JsonRpcSigner } from '@ethersproject/providers';
 
-export async function getFactoryAndRouterObjects(signer: JsonRpcSigner) {
-    const {factoryAddress, routerAddress} = getFactoryAndRouterAddress();
+export async function getFactoryAndRouterObjects(signer: JsonRpcSigner, factoryAddress: string, routerAddress: string) {
     const {factoryContract, routerContract} = await getSignedFactoryAndRouterContracts(factoryAddress, routerAddress, signer)
     return {
         factory: factoryContract,
@@ -13,7 +12,7 @@ export async function getFactoryAndRouterObjects(signer: JsonRpcSigner) {
     }
 }
 
-function getFactoryAndRouterAddress() {
+export function getFactoryAndRouterAddress() {
     let factory: string | undefined;
     let router: string | undefined;
 

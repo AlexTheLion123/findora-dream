@@ -31,6 +31,8 @@ interface UniswapV2Router02Interface extends ethers.utils.Interface {
     "getAmountOut(uint256,uint256,uint256)": FunctionFragment;
     "getAmountsIn(uint256,address[])": FunctionFragment;
     "getAmountsOut(uint256,address[])": FunctionFragment;
+    "getReserves(address,address)": FunctionFragment;
+    "helperPairFor(address,address,address)": FunctionFragment;
     "quote(uint256,uint256,uint256)": FunctionFragment;
     "removeLiquidity(address,address,uint256,uint256,uint256,address,uint256)": FunctionFragment;
     "removeLiquidityETH(address,uint256,uint256,uint256,address,uint256)": FunctionFragment;
@@ -90,6 +92,14 @@ interface UniswapV2Router02Interface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getAmountsOut",
     values: [BigNumberish, string[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getReserves",
+    values: [string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "helperPairFor",
+    values: [string, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "quote",
@@ -236,6 +246,14 @@ interface UniswapV2Router02Interface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getAmountsOut",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getReserves",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "helperPairFor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "quote", data: BytesLike): Result;
@@ -451,6 +469,46 @@ export class UniswapV2Router02 extends Contract {
     ): Promise<{
       amounts: BigNumber[];
       0: BigNumber[];
+    }>;
+
+    getReserves(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      a: BigNumber;
+      b: BigNumber;
+      0: BigNumber;
+      1: BigNumber;
+    }>;
+
+    "getReserves(address,address)"(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      a: BigNumber;
+      b: BigNumber;
+      0: BigNumber;
+      1: BigNumber;
+    }>;
+
+    helperPairFor(
+      _factory: string,
+      addr1: string,
+      addr2: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      0: string;
+    }>;
+
+    "helperPairFor(address,address,address)"(
+      _factory: string,
+      addr1: string,
+      addr2: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      0: string;
     }>;
 
     quote(
@@ -881,6 +939,42 @@ export class UniswapV2Router02 extends Contract {
     path: string[],
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
+
+  getReserves(
+    tokenA: string,
+    tokenB: string,
+    overrides?: CallOverrides
+  ): Promise<{
+    a: BigNumber;
+    b: BigNumber;
+    0: BigNumber;
+    1: BigNumber;
+  }>;
+
+  "getReserves(address,address)"(
+    tokenA: string,
+    tokenB: string,
+    overrides?: CallOverrides
+  ): Promise<{
+    a: BigNumber;
+    b: BigNumber;
+    0: BigNumber;
+    1: BigNumber;
+  }>;
+
+  helperPairFor(
+    _factory: string,
+    addr1: string,
+    addr2: string,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  "helperPairFor(address,address,address)"(
+    _factory: string,
+    addr1: string,
+    addr2: string,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   quote(
     amountA: BigNumberish,
@@ -1332,6 +1426,42 @@ export class UniswapV2Router02 extends Contract {
       path: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
+
+    getReserves(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      a: BigNumber;
+      b: BigNumber;
+      0: BigNumber;
+      1: BigNumber;
+    }>;
+
+    "getReserves(address,address)"(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<{
+      a: BigNumber;
+      b: BigNumber;
+      0: BigNumber;
+      1: BigNumber;
+    }>;
+
+    helperPairFor(
+      _factory: string,
+      addr1: string,
+      addr2: string,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "helperPairFor(address,address,address)"(
+      _factory: string,
+      addr1: string,
+      addr2: string,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     quote(
       amountA: BigNumberish,
@@ -1799,6 +1929,32 @@ export class UniswapV2Router02 extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getReserves(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getReserves(address,address)"(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    helperPairFor(
+      _factory: string,
+      addr1: string,
+      addr2: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "helperPairFor(address,address,address)"(
+      _factory: string,
+      addr1: string,
+      addr2: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     quote(
       amountA: BigNumberish,
       reserveA: BigNumberish,
@@ -2220,6 +2376,32 @@ export class UniswapV2Router02 extends Contract {
     "getAmountsOut(uint256,address[])"(
       amountIn: BigNumberish,
       path: string[],
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getReserves(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getReserves(address,address)"(
+      tokenA: string,
+      tokenB: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    helperPairFor(
+      _factory: string,
+      addr1: string,
+      addr2: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "helperPairFor(address,address,address)"(
+      _factory: string,
+      addr1: string,
+      addr2: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -5,16 +5,49 @@
 	import Swap from '$lib/components/Exchange/ExchangeLayout/Swap.svelte';
 	import Liquidity from '$lib/components/Exchange/ExchangeLayout/Liquidity.svelte';
 	import { page } from '$app/stores';
-	import { getFactoryAndRouterObjects } from '$lib/scripts/exchange';
+	import tokens from '$lib/assets/tokens/tokens.json';
+	import { getFactoryAndRouterObjects, getFactoryAndRouterAddress } from '$lib/scripts/exchange';
 	import { isConnected, signer, factory, router } from '$lib/stores';
+	import { setContext } from 'svelte';
 
 	const options = [{ component: Swap }, { component: Liquidity }];
 	let current = options[0];
 	current = $page.path === '/exchange/swap' ? options[0] : options[1];
 
+	const {factoryAddress, routerAddress} = getFactoryAndRouterAddress()
+	const {nativeAddr, dollarAddr} = getNativeAndDollarAddr(tokens)
+
+	function getNativeAndDollarAddr(array: typeof tokens) {
+		let nativeAddr: string = "";
+		let dollarAddr: string = "";
+
+		tokens.map(item => {
+			if(item.symbol === "NATIVE") {
+				nativeAddr = item.address
+			}
+			if(item.symbol === "USDT") {
+				dollarAddr = item.address
+			}
+		})
+
+		if(!nativeAddr || !dollarAddr) throw "unable to get native or dollar token addresses";
+
+		return {
+			nativeAddr: nativeAddr,
+			dollarAddr: dollarAddr
+		}
+	}
+
+	setContext("Exchange", {
+		factoryAddress: factoryAddress,
+		routerAddress: routerAddress,
+		nativeTokenAddr: nativeAddr,
+		dollarAddress: dollarAddr
+	})
+
 	isConnected.subscribe(async (value) => {
 		if (value && $signer) {
-			const obj = await getFactoryAndRouterObjects($signer).catch((e) => {
+			const obj = await getFactoryAndRouterObjects($signer, factoryAddress, routerAddress).catch((e) => {
 				alert('Broken: unable to get factory and router');
 				throw 'unable to get factory and router';
 			});
