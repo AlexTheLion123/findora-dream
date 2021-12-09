@@ -3,9 +3,8 @@ import { SamePairError } from './errors';
 import { pairCreationCode } from '$lib/assets/pairInitCode';
 import { ERC20ABI, UniswapV2PairABI } from '$lib/abis';
 import type { Ierc20, UniswapV2Factory, UniswapV2Pair } from '$lib/typesUsed';
-import type { MyToken } from '$lib/typesUsed'
+import type { ITokenInfo, IGetAllowance, ICheckAllowance, IGetReserves } from '$lib/typesFrontend'
 import type { Signer } from 'ethers';
-import type {ITokenInfo} from '$lib/typesFrontend'
 
 export async function getErc20Balance(contract: Ierc20, address: string, decimals: number) {
     return removeDecimals(await contract.balanceOf(address), decimals)
@@ -45,14 +44,14 @@ export function getPairAddress(factoryAddr: string, addr1: string, addr2: string
     function getPairInitCode(_code: string) {
         return ethers.utils.keccak256("0x" + _code)
     }
-    
+
     function getSalt(addr1: string, addr2: string) {
         return ethers.utils.keccak256(ethers.utils.solidityPack(["address", "address"], [addr1, addr2]));
-    
+
     }
 }
 
-export async function getReserves(factoryAddr: string, addr1: string, addr2: string, signer: Signer, decimals: number): Promise<number[]> {
+export async function getReserves({factoryAddr, addr1, addr2, signer, decimals}: IGetReserves): Promise<number[]> {
     const pairAddress = getPairAddress(factoryAddr, addr1, addr2)
     const { _reserve0, _reserve1 } = await (new ethers.Contract(pairAddress, UniswapV2PairABI, signer) as UniswapV2Pair).getReserves();
 
@@ -67,11 +66,11 @@ export async function getReserves(factoryAddr: string, addr1: string, addr2: str
 }
 
 // TODO cache reserve figures
-export async function calcOutputFromPair({addrInput, addrOutput, numInput, decimals}: ITokenInfo, factoryAddr: string, signer: Signer) {
+export async function calcOutputFromPair({ addrInput, addrOutput, numInput, decimals }: ITokenInfo, factoryAddr: string, signer: Signer) {
     if (addrInput == addrOutput) {
         throw new SamePairError();
     }
-    const [reserve0, reserve1] = await getReserves(factoryAddr, addrInput, addrOutput, signer, decimals);
+    const [reserve0, reserve1] = await getReserves({factoryAddr: factoryAddr, addr1: addrInput, addr2: addrOutput, signer: signer, decimals: decimals});
     return calcNumOutputTokens(numInput, reserve0, reserve1);
 }
 
@@ -87,18 +86,18 @@ function calcNoSlippageSwapRate(numInputTk: number, reserve0: number, reserve1: 
     return numInputTk * reserve1 / reserve0
 }
 
-export async function getAllowance(tokenAddr: string, ownerAddr: string, spenderAddr: string, _signer: Signer): Promise<number> {
-    const erc20Instance = new ethers.Contract(tokenAddr, ERC20ABI, _signer) as MyToken
-    return parseInt(ethers.utils.formatEther(await erc20Instance.allowance(ownerAddr,spenderAddr)));
+export async function getAllowance({ tokenAddr, ownerAddr, spenderAddr, signer }: IGetAllowance): Promise<number> {
+    const erc20Instance = new ethers.Contract(tokenAddr, ERC20ABI, signer) as Ierc20
+    return parseInt(ethers.utils.formatEther(await erc20Instance.allowance(ownerAddr, spenderAddr)));
 }
 
-export async function checkAllowance(toSpend: number, addressOwner: string, addressSpender: string, pairAddress: string, _signer: Signer): Promise<boolean> {
-    // save getter time
-    return await getAllowance(
-        pairAddress,
-        addressOwner,
-        addressSpender,
-        _signer) < toSpend ? false : true;
+export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: ICheckAllowance): Promise<boolean> {
+    return await getAllowance({
+        tokenAddr: tokenAddr,
+        ownerAddr: ownerAddr,
+        spenderAddr: spenderAddr,
+        signer: signer
+    }) < toSpend ? false : true;
 
 }
 

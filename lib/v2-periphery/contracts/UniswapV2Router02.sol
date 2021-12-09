@@ -446,4 +446,8 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     {
         return UniswapV2Library.getAmountsIn(factory, amountOut, path);
     }
+
+    function getReserves(address tokenA, address tokenB) external view returns(uint a, uint b){
+        return UniswapV2Library.getReserves(factory, tokenA, tokenB);
+    }
 }

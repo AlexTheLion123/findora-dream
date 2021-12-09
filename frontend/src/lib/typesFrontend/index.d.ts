@@ -16,7 +16,8 @@ export interface ITokenInfo {
     addrInput: string,
     addrOutput: string,
     numInput: number,
-    decimals: number
+    decimalsIn: number,
+    decimalsOut: number,
 }
 
 export interface IStores {
@@ -25,4 +26,64 @@ export interface IStores {
     signer: Signer, 
     factory: UniswapV2Factory,
     router: UniswapV2Router02
+}
+
+export type TySwapData = ({
+    numInput: number,
+    numOutput?: never,
+} | {
+    numInput?: never,
+    numOutput: number
+}) & {route: string[], sufficientAllowance: boolean};
+
+
+export interface IGetAllowance {
+    tokenAddr: string,
+    ownerAddr: string,
+    spenderAddr: string,
+    signer: Signer
+}
+
+
+export interface ICheckAllowance extends IGetAllowance {
+    toSpend: number
+}
+
+
+export interface IGetReserves {
+    factoryAddr: string,
+    addr1: string,
+    addr2: string,
+    signer: Signer,
+    decimals: number
+}
+
+export interface ISetSwapDataOutput {
+    numTokens: number,
+    decimals: number,
+    route: string[]
+}
+
+export interface ISetSwapDataInput extends ISetSwapDataOutput {
+    sufficientAllowance: boolean
+}
+
+export interface ISwap {
+    route: string[]
+    to: string,
+    router: UniswapV2Router02,
+    signer: Signer,
+    deadline: number,
+    decimalsIn: number,
+    decimalsOut: number
+}
+
+interface ISwapInput extends ISwap {
+    amountInExact: number, 
+    amountOutMin: number
+}
+
+interface ISwapOutput extends ISwap {
+    amountOutExact: number,
+    amountInMax: number
 }

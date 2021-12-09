@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 import { NoRouteError, SamePairError } from './errors'; // TODO make errors extend Erc20Error
-import { getErc20Balance, checkAddressAgainstNative, checkAddressExists, addDecimals, checkAllowance } from './utils';
+import { getErc20Balance, checkAddressAgainstNative, checkAddressExists, addDecimals, removeDecimals } from './utils';
 import { ERC20ABI } from '$lib/abis';
 import type { UniswapV2Factory, UniswapV2Router02, Ierc20 } from '$lib/typesUsed';
 import type { Signer } from 'ethers';
@@ -23,9 +23,9 @@ export function getBalance(tokenAddress: string, decimals: number, signer: Signe
  * @dev must be calculated by front-end or smart contract user. No helper functions in contract
  * For now, just check both tokens against the native. Add additional checks against other popular tokens as they get added
  * @param nativeAddr - address of the native token of that blockchain
- * @param finalDest - address of the account to send the final output tokens to
  * @returns route with addr1 always as route[0]
  */
+
 export async function getRoute(addr1: string, addr2: string, factory: UniswapV2Factory, nativeAddr: string): Promise<string[]> {
     if (addr1 === addr2) {
         throw new SamePairError();
@@ -46,29 +46,52 @@ export async function getRoute(addr1: string, addr2: string, factory: UniswapV2F
     throw new NoRouteError();
 }
 
-export function getOtherNumTokens(
+export function _getAmountsOut(
     numInput: number,
+    decimalsIn: number,
+    decimalsOut: number,
     route: string[],
     router: UniswapV2Router02
-): Promise<ethers.BigNumber[]> {
+): Promise<number> {
 
     if (!route || route.length < 2) {
         throw new NoRouteError();
     }
 
-    return router.getAmountsOut(ethers.utils.parseEther(numInput.toString()), route)
+    return router.getAmountsOut(addDecimals(numInput, decimalsIn), route)
+        .then(res => removeDecimals(res[0], decimalsOut))
 }
 
-export async function getDollarValue(addr: string, numTk: number) { // TODO fix last probably
-    return numTk * Math.random() * 100;
+
+/**
+ * @dev the way we calculate the route, it should necessarily be possible to calculate dollar value
+ * @returns the exact dollar value of the input parameter, without taking slippage into account
+ */
+export async function getExactDollarValue({addrInput, dollarsAddr, numInput, nativeAddr, factory, router}: {
+    addrInput: string,
+    dollarsAddr: string,
+    numInput: number, 
+    nativeAddr: string,
+    factory: UniswapV2Factory,
+    router: UniswapV2Router02
+}) { 
+
+    return getRoute(addrInput, dollarsAddr, factory, nativeAddr)
+    .then(_route=> {
+        let current = numInput
+        for(let i=0; i<_route.length-1; i++) {
+            router.;
+        }
+    })
+
 }
 
 export async function approveMax(addressToken: string, addressSpender: string, signer: Signer) {
     let txn = await (new ethers.Contract(addressToken, ERC20ABI, signer) as Ierc20).deployed()
-    .then(res => {
-        res.connect(signer)
-        return res.approve(addressSpender, ethers.constants.MaxUint256)
-    })
+        .then(res => {
+            res.connect(signer)
+            return res.approve(addressSpender, ethers.constants.MaxUint256)
+        })
     await txn.wait();
 }
 

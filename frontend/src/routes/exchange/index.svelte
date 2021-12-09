@@ -5,7 +5,7 @@
 	import Swap from '$lib/components/Exchange/ExchangeLayout/Swap.svelte';
 	import Liquidity from '$lib/components/Exchange/ExchangeLayout/Liquidity.svelte';
 	import { page } from '$app/stores';
-	import { getFactoryAndRouterObjects } from '$lib/scripts/exchange/context';
+	import { getFactoryAndRouterObjects } from '$lib/scripts/exchange';
 	import { isConnected, signer, factory, router } from '$lib/stores';
 
 	const options = [{ component: Swap }, { component: Liquidity }];

@@ -1,7 +1,4 @@
 <script context="module" lang="ts">
-	import type { UniswapV2Router02, UniswapV2Factory } from '$lib/typesUsed';
-	import type { JsonRpcSigner } from '@ethersproject/providers';
-
 	import {
 		performSwap,
 		performLiquidity,
@@ -9,36 +6,28 @@
 		approveMax,
 		NoMetaMaskError,
 		getBalance,
-		getPairAddress,
 		getExactSwapData
 	} from '$lib/scripts/exchange';
+
+	import type {TySwapData, ISetSwapDataOutput, ISetSwapDataInput } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
 	import TokenBox from './TokenBox.svelte';
-	// import { currentInputElement } from './TokenBox.svelte';
+	import { factory, nativeTokenAddress, router, signer, signerAddress } from '$lib/stores';
 	import { page } from '$app/stores';
-	import { factory, router } from '$lib/stores';
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
 	let canSwapLock = false;
-	let swapData: ISwapData;
+	let swapData: TySwapData;
 	let currentTokenBox: TokenBox | undefined;
 	let otherTokenBox: TokenBox | undefined;
 
-	interface ISwapData {
-		route: string[];
-		numOutput: number;
-		dollarOutput: number;
-		pairAddress: string;
-		sufficientAllowance: boolean;
-	}
-
 	export async function perform() {
 		if (!canSwapLock) {
-			alert('Fill in more details | invalid pair');
-			return;
+			alert('Swap is locked');
+			throw "Swap is locked";
 		}
 
 		if (
@@ -47,7 +36,9 @@
 			!currentTokenBox.numTokens ||
 			!otherTokenBox.numTokens ||
 			!$factory ||
-			!$router
+			!$router ||
+			!$signerAddress ||
+			!$signer
 		) {
 			throw 'undefined values before swap, should never happen';
 		}
@@ -64,9 +55,9 @@
 				currentTokenBox.numTokens,
 				otherTokenBox.numTokens * 0.95,
 				swapData.route,
-				await signer_val.getAddress(),
-				router_val,
-				signer_val,
+				$signerAddress,
+				$router,
+				$signer,
 				100
 			);
 		} else if ($page.path === '/liquidity') {
@@ -76,48 +67,32 @@
 		}
 	}
 
-	/**
-	 * Event handlers
-	 * There are four events:
-	 * 1. Token 1 selected
-	 * 2. Token 2 selected
-	 * 3. Token 1 input
-	 * 4. Token 2 input
-	 *
-	 */
-
-	/**
-	 * @dev there are 3 scenarios to handle
-	 * e contains the selected token box
-	 */
-	// TODO just use current and non-current
-
-	async function handleSelectionGeneric(_tokenBox: TokenBox, e: any) {
+	async function handleSelectionGeneric(tokenBox: TokenBox, e: any) {
 		canSwapLock = false;
-		_tokenBox.address = e.detail.address;
+		tokenBox.address = e.detail.address;
 
-		if (!_tokenBox.address) throw 'address does not exist for selection, this should never happen';
+		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
 
 		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
-		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+		if (!$factory || !$nativeTokenAddress || !$signer || !$signerAddress) {
 			alert('Connect to metamask');
 			throw new NoMetaMaskError('Please connect to metamask');
 		}
 
-		getBalance(_tokenBox.address, signer_val)
+		getBalance(tokenBox.address, tokenBox.decimals, $signer, $signerAddress)
 			.then((res) => {
-				_tokenBox.balance = res;
+				tokenBox.balance = res;
 			})
 			.catch(alert);
 
-		if (currentTokenBox === _tokenBox) {
+		if (currentTokenBox === tokenBox) {
 			// Scenario 1 and 2
 
 			// can't swap yet, can only get dollar value
-			if (!_tokenBox.numTokens) throw 'this should never happen';
-			getDollarValue(_tokenBox.address, _tokenBox.numTokens)
+			if (!tokenBox.numTokens) throw 'this should never happen';
+			getDollarValue(tokenBox.address, tokenBox.numTokens)
 				.then((res) => {
-					_tokenBox.dollars = res;
+					tokenBox.dollars = res;
 				})
 				.catch(alert);
 
@@ -125,7 +100,7 @@
 				// otherTokenBox has also been selected, so we can get its corresponding output tokens
 
 				// _tokenBox is the input
-				await getSwapData(_tokenBox).then(setSwapData).catch(alert);
+				await getAndSetSwapData(tokenBox).catch(alert);
 			}
 		} else if (currentTokenBox && otherTokenBox) {
 			// if not current, but current exists, can't get dollar value here since no input since not current
@@ -135,7 +110,7 @@
 
 				if (currentTokenBox.numTokens) {
 					// otherTokenBox is the input
-					await getSwapData(currentTokenBox).then(setSwapData).catch(alert);
+					await getAndSetSwapData(currentTokenBox).catch(alert);
 				}
 			}
 		} else {
@@ -147,33 +122,52 @@
 		}
 	}
 
-	async function handleInputGeneric(_tokenBox: TokenBox, e: any) {
-		updateCurrentTokenBox(_tokenBox);
-		_tokenBox.numTokens = e.detail.numTokens;
-		if (!_tokenBox.numTokens) throw 'that value does not exist, this should never happen';
+	async function handleInputGeneric(tokenBox: TokenBox, e: any) {
+		updateCurrentTokenBox(tokenBox);
+		tokenBox.numTokens = e.detail.numTokens;
+		if (!tokenBox.numTokens) throw 'that value does not exist, this should never happen';
 
-		if (!factory_val || !nativeTokenAddr_val || !signer_val) {
+		if (!$factory || !$nativeTokenAddress || !$signer) {
 			alert('Connect to metamask');
 			return;
 		}
 
-		if (_tokenBox.address) {
-			getDollarValue(_tokenBox.address, _tokenBox.numTokens)
-				.then((res) => (_tokenBox.dollars = res))
+		if (tokenBox.address) {
+			getDollarValue(tokenBox.address, tokenBox.numTokens)
+				.then((res) => (tokenBox.dollars = res))
 				.catch(alert);
 
 			if (otherTokenBox && otherTokenBox.address) {
 				// _tokenBox is input
-				await getSwapData(_tokenBox).then(setSwapData).catch(alert);
+				getAndSetSwapData(tokenBox);
 			}
 		}
 	}
 
-	/**
-	 * @param _tokenBox In this case, _tokenBox should always just be the current token box
-	 */
-	function getSwapData(_tokenBox: TokenBox) {
-		if (_tokenBox !== currentTokenBox) throw 'not current box, should never happen';
+	function getAndSetSwapData(tokenBox: TokenBox) {
+		return getSwapData(tokenBox).then(setSwapData);
+	}
+
+	function setSwapDataInput({numTokens, addr, decimals, sufficientAllowance}: ISetSwapDataInput) {
+
+	}
+
+	
+
+	function setSwapDataOutput({numTokens, addr, decimals}: ISetSwapDataOutput) {
+
+	}
+
+	/// @dev gets data not crucial to performing swap, such as dollar values, price impact <- gonna have to do entire calc manually?
+	function getPeripharyData() {
+
+	}
+
+	type TSwapData = typeof setSwapDataInput & ReturnType<setSwapDataOutput>;
+
+	/// @param _tokenBox In this case, tokenBox should always just be the current token box
+	function getSwapData(tokenBox: TokenBox) {
+		if (tokenBox !== currentTokenBox) throw 'not current box, should never happen';
 
 		if (
 			!otherTokenBox ||
@@ -184,19 +178,32 @@
 			throw "some required values haven't been provided, this should never happen";
 
 		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
-		if (!factory_val || !nativeTokenAddr_val || !signer_val || !router_val || !router_val.address) {
+		if (
+			!$factory ||
+			!$nativeTokenAddress ||
+			!$signer ||
+			!$router ||
+			!$router.address ||
+			!$signerAddress
+		) {
 			alert('Connect to metamask');
 			throw new NoMetaMaskError('Please connect to metamask');
 		}
 
 		return getExactSwapData(
-			currentTokenBox.address,
-			otherTokenBox.address,
-			currentTokenBox.numTokens,
-			factory_val,
-			nativeTokenAddr_val,
-			signer_val,
-			router_val.address
+			{
+				addrInput: currentTokenBox.address,
+				addrOutput: otherTokenBox.address,
+				numInput: currentTokenBox.numTokens,
+				decimals: currentTokenBox.decimals
+			},
+			{
+				factory: $factory,
+				nativeAddr: $nativeTokenAddress,
+				signer: $signer,
+				signerAddr: $signerAddress,
+				router: $router
+			}
 		).then((res) => {
 			if (!otherTokenBox) throw 'other box does not exist, should never happen';
 
@@ -205,9 +212,11 @@
 
 			return {
 				route: res.route,
+				numInput: res.numInput,
 				numOutput: res.numOutput,
-				dollarOutput: res.dollarOutput,
-				pairAddress: res.pairAddress,
+				addrInput: res.addrInput,
+				addrOutput: res.addrOutput,
+				decimals: res.decimals,
 				sufficientAllowance: res.sufficientAllowance
 			};
 		});
@@ -236,19 +245,10 @@
 		if (!currentTokenBox || !currentTokenBox.address || !otherTokenBox || !otherTokenBox.address)
 			throw 'some required details not provdided, this should never happen';
 
-		// const pairAddress = getPairAddress(
-		// 	factory_address,
-		// 	currentTokenBox.address,
-		// 	otherTokenBox.address
-		// );
-
-		// TODO get pair address when calculation route
-
 		swapData = {
 			route: route,
 			numOutput: numOutput,
 			dollarOutput: dollarOutput,
-			pairAddress: pairAddress,
 			sufficientAllowance: sufficientAllowance
 		};
 	}
