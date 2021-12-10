@@ -53,21 +53,25 @@ async function deployUniswapAndWrite() {
 async function deployTokensAndWrite() {
     for (let i = 0; i < 10; i++) {
         if (i == 0) {
-            let txn = await new MyTokenFactory(wallet).deploy(`Native`, `NATIVE`);
-            await txn.deployed();
-            console.log(`NATIVE has been deployed at ${txn.address}`)
-            tokensInfo.push({ address: txn.address, name: `Native`, symbol: `NATIVE` })
+            await deployWithName("Native", "NATIVE")
+            continue
+        } else if(i == 1) {
+            await deployWithName("USDT", "USDT")
             continue
         }
-        let txn = await new MyTokenFactory(wallet).deploy(`Token${i + 1}`, `TK${i + 1}`)
-        await txn.deployed();
-        console.log(`TK${i + 1} has been deployed at ${txn.address}"`)
-        tokensInfo.push({ address: txn.address, name: `Token${i + 1}`, symbol: `TK${i + 1}` })
+        await deployWithName(`Token${i + 1}`, `TK${i + 1}`)
     }
 
     writeToJson(tokensInfo, "frontend/src/lib/assets/tokens/tokens.json")
     await sendToAddress(MY_ADDRESS, tokensInfo, wallet, erc20ABI)
 
+}
+
+async function deployWithName(name: string, symbol: string) {
+    let txn = await new MyTokenFactory(wallet).deploy(name, symbol);
+    await txn.deployed();
+    console.log(`${symbol} has been deployed at ${txn.address}`)
+    tokensInfo.push({ address: txn.address, name: name, symbol: symbol })
 }
 
 
