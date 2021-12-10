@@ -5,10 +5,9 @@
 		approveMax,
 		NoMetaMaskError,
 		checkAllowance,
-		getQuote,
-		addDecimals,
-		removeDecimals
+		getQuote
 	} from '$lib/scripts/exchange';
+	import { addDecimals,removeDecimals} from '$lib/scripts/exchange/utils/utils'
 	import { Contract } from 'ethers';
 	import type { Ierc20 } from '$lib/typesUsed';
 	import type { TySwapData, ISetSwapDataOutput, ISetSwapDataInput } from '$lib/typesFrontend';
@@ -19,7 +18,7 @@
 	import { factory, nativeTokenAddress, router, signer, signerAddress } from '$lib/stores';
 	import { page } from '$app/stores';
 	import { ERC20ABI } from '$lib/abis';
-import { getContext } from 'svelte';
+	import { getContext } from 'svelte';
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
@@ -27,9 +26,12 @@ import { getContext } from 'svelte';
 	let currentTokenBox: TokenBox | undefined;
 	let otherTokenBox: TokenBox | undefined;
 
-	const {nativeAddr, dollarsAddr} = getContext("Exchange")
+	console.log(getContext("exchange"))
 
-	export async function perform() {
+	// const { nativeAddr, dollarsAddr } = getContext('Exchange');
+	// alert(nativeAddr);
+
+	async function perform() {
 		if ($page.path === '/swap') {
 			if (!(await checkAllowance())) {
 				approveMax();

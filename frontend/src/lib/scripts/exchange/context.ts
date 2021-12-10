@@ -32,6 +32,26 @@ export function getFactoryAndRouterAddress() {
     return { factoryAddress: factory, routerAddress: router }
 }
 
+export function getNativeAndDollarAddr(tokens: {address: string, symbol: string, name: string}[]) {
+
+    let nativeAddr!: string;
+    let dollarAddr!: string;
+
+    tokens.map((item) => {
+        if (item.symbol === 'NATIVE') {
+            nativeAddr = item.address;
+        }
+        if (item.symbol === 'USDT') {
+            dollarAddr = item.address;
+        }
+    });
+
+    return {
+        nativeAddr: nativeAddr,
+        dollarAddr: dollarAddr
+    };
+}
+
 async function getSignedFactoryAndRouterContracts(factoryAddress: string, routerAddress: string, signer: JsonRpcSigner) {
     const factoryContract =await new ethers.Contract(factoryAddress, UniswapV2FactoryABI, signer).deployed() as UniswapV2Factory
     const routerContract = await new ethers.Contract(routerAddress, UniswapV2Router02ABI, signer).deployed() as UniswapV2Router02

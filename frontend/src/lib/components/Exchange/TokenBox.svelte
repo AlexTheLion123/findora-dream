@@ -10,7 +10,7 @@
 	export let dollars: number = 0.00;
 	export let balance: number = 0.00;
 	export let address: string = ""; 
-	export let decimals: number;
+	export let decimals: number = 18;
 
 	// export let address: string; updated in parent with event
 

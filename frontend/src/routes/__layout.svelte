@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { ethers } from 'ethers';
+	import { providers } from 'ethers';
 </script>
 
 <script lang="ts">
@@ -13,12 +13,12 @@
 	isConnected.subscribe(async (value) => {
 		if (value) {
 			// connected
-			$provider = new ethers.providers.Web3Provider(window.ethereum);
+			$provider = new providers.Web3Provider(window.ethereum);
 			$isProvided = true;
 
 			$signer = $provider!.getSigner();
-			$signerAddress = await $signer!.getAddress()
-			
+			$signerAddress = await $signer!.getAddress();
+
 			console.log('We are now connected');
 		} else {
 			$provider = null;
@@ -95,13 +95,13 @@
 	}
 
 	:global(.popup-modal-wrapper) {
-        z-index: 999;
-        position: absolute;
-        top: 0;
-        right:0;
-        bottom:0;
-        left:0;
-        background: rgba(0,0,0,0.3);
+		z-index: 999;
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background: rgba(0, 0, 0, 0.3);
 
 		display: grid;
 		place-items: center;

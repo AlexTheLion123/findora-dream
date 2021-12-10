@@ -3,7 +3,6 @@
 	import TradeButton from '../TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
-
 	let callSwapOnChild: () => Promise<void>
 </script>
 
