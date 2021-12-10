@@ -47,20 +47,6 @@ function _calcPI({ quoteOutput, actualOutput }: { quoteOutput: BigNumber, actual
     return 1 - actualOutput.div(quoteOutput).toNumber()
 }
 
-export async function getDollarsBoth({ addrInput, numInput, priceImpact }: {
-    addrInput: string,
-    numInput: number,
-    priceImpact: number
-}) {
-    const dollarsInput = 23423;
-    const dollarsOutput = dollarsInput * priceImpact;
-
-    return {
-        dollarsInput: dollarsInput,
-        dollarsOuput: dollarsOutput
-    }
-}
-
 export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
     toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
 }): Promise<boolean> {

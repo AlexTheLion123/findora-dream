@@ -5,9 +5,10 @@
 		approveMax,
 		NoMetaMaskError,
 		checkAllowance,
-		getQuote
+		getQuote,
+		getRoute
 	} from '$lib/scripts/exchange';
-	import { addDecimals,removeDecimals} from '$lib/scripts/exchange/utils/utils'
+	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
 	import { Contract } from 'ethers';
 	import type { Ierc20 } from '$lib/typesUsed';
 	import type { TySwapData, ISetSwapDataOutput, ISetSwapDataInput } from '$lib/typesFrontend';
@@ -15,7 +16,7 @@
 
 <script lang="ts">
 	import TokenBox from './TokenBox.svelte';
-	import { factory, nativeTokenAddress, router, signer, signerAddress } from '$lib/stores';
+	import { factory, router, signer, signerAddress } from '$lib/stores';
 	import { page } from '$app/stores';
 	import { ERC20ABI } from '$lib/abis';
 	import { getContext } from 'svelte';
@@ -26,10 +27,8 @@
 	let currentTokenBox: TokenBox | undefined;
 	let otherTokenBox: TokenBox | undefined;
 
-	console.log(getContext("exchange"))
-
-	// const { nativeAddr, dollarsAddr } = getContext('Exchange');
-	// alert(nativeAddr);
+	const { nativeAddr, dollarAddr } = getContext('exchange');
+	console.log(nativeAddr, dollarAddr);
 
 	async function perform() {
 		if ($page.path === '/swap') {
@@ -49,6 +48,7 @@
 		canSwapLock = false;
 		tokenBox.address = e.detail.address;
 
+
 		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
 
 		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
@@ -60,16 +60,17 @@
 		(new Contract(tokenBox.address, ERC20ABI, $signer) as Ierc20)
 			.deployed()
 			.then(async (res) => {
-				tokenBox.decimals = await res.decimals();
+				tokenBox.decimals = await res.decimals()
 
 				if (!$signerAddress || !tokenBox.address) {
 					alert('Connect to metamask');
 					throw new NoMetaMaskError('Please connect to metamask');
 				}
 
-				res
-					.balanceOf($signerAddress)
-					.then((res) => (tokenBox.balance = removeDecimals(res, tokenBox.decimals)));
+				res.balanceOf($signerAddress).then((res) => {
+					tokenBox.balance = removeDecimals(res, tokenBox.decimals as number);
+					console.log($signerAddress, tokenBox.address)
+				});
 			})
 			.catch((e) => {
 				alert('No contract deployed here or failed to get coin info');
@@ -80,12 +81,12 @@
 			// Scenario 1 and 2
 
 			// can't swap yet, can only get dollar value
-			if (!tokenBox.numTokens) throw 'this should never happen';
-			getDollarValue(tokenBox.address, tokenBox.numTokens)
-				.then((res) => {
-					tokenBox.dollars = res;
+			if (!tokenBox.numTokens || !tokenBox.decimals || !$factory) throw 'this should never happen';
+
+			getQuote({addrInput: tokenBox.address, dollarsAddr: dollarAddr, numInput: addDecimals(tokenBox.numTokens, tokenBox.decimals), nativeAddr: nativeAddr, factory: $factory, signer: $signer})
+				.then(res => {
+					tokenBox.dollars = removeDecimals(res, tokenBox.decimals as number);
 				})
-				.catch(alert);
 
 			if (otherTokenBox && otherTokenBox.address) {
 				// otherTokenBox has also been selected, so we can get its corresponding output tokens
@@ -120,7 +121,7 @@
 
 		if (!tokenBox.numTokens) throw 'that value does not exist, this should never happen';
 
-		if (!$factory || !$nativeTokenAddress || !$signer) {
+		if (!$factory || !nativeAddr || !$signer) {
 			alert('Connect to metamask');
 			return;
 		}
@@ -135,81 +136,6 @@
 				getAndSetSwapData(tokenBox);
 			}
 		}
-	}
-
-	function getAndSetSwapData(tokenBox: TokenBox) {
-		return getSwapData(tokenBox).then(setSwapData);
-	}
-
-	function setSwapDataInput({
-		numTokens,
-		addr,
-		decimals,
-		sufficientAllowance
-	}: ISetSwapDataInput) {}
-
-	function setSwapDataOutput({ numTokens, addr, decimals }: ISetSwapDataOutput) {}
-
-	/// @dev gets data not crucial to performing swap, such as dollar values, price impact <- gonna have to do entire calc manually?
-	function getPeripharyData() {}
-
-	type TSwapData = typeof setSwapDataInput & ReturnType<setSwapDataOutput>;
-
-	/// @param _tokenBox In this case, tokenBox should always just be the current token box
-	function getSwapData(tokenBox: TokenBox) {
-		if (tokenBox !== currentTokenBox) throw 'not current box, should never happen';
-
-		if (
-			!otherTokenBox ||
-			!currentTokenBox.address ||
-			!otherTokenBox.address ||
-			!currentTokenBox.numTokens
-		)
-			throw "some required values haven't been provided, this should never happen";
-
-		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
-		if (
-			!$factory ||
-			!$nativeTokenAddress ||
-			!$signer ||
-			!$router ||
-			!$router.address ||
-			!$signerAddress
-		) {
-			alert('Connect to metamask');
-			throw new NoMetaMaskError('Please connect to metamask');
-		}
-
-		return getExactSwapData(
-			{
-				addrInput: currentTokenBox.address,
-				addrOutput: otherTokenBox.address,
-				numInput: currentTokenBox.numTokens,
-				decimals: currentTokenBox.decimals
-			},
-			{
-				factory: $factory,
-				nativeAddr: $nativeTokenAddress,
-				signer: $signer,
-				signerAddr: $signerAddress,
-				router: $router
-			}
-		).then((res) => {
-			if (!otherTokenBox) throw 'other box does not exist, should never happen';
-
-			otherTokenBox.numTokens = res.numOutput;
-			otherTokenBox.dollars = res.dollarOutput;
-
-			return {
-				route: res.route,
-				numInput: res.numInput,
-				numOutput: res.numOutput,
-				addrInput: res.addrInput,
-				addrOutput: res.addrOutput,
-				decimals: res.decimals,
-				sufficientAllowance: res.sufficientAllowance
-			};
-		});
 	}
 
 	function updateCurrentTokenBox(_tokenBox: TokenBox) {
@@ -227,20 +153,6 @@
 	 */
 	function getRates() {
 		console.log('implement get rates');
-	}
-
-	async function setSwapData({ route, numOutput, dollarOutput, sufficientAllowance }: ISwapData) {
-		canSwapLock = true;
-
-		if (!currentTokenBox || !currentTokenBox.address || !otherTokenBox || !otherTokenBox.address)
-			throw 'some required details not provdided, this should never happen';
-
-		swapData = {
-			route: route,
-			numOutput: numOutput,
-			dollarOutput: dollarOutput,
-			sufficientAllowance: sufficientAllowance
-		};
 	}
 
 	/**

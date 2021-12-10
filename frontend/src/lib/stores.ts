@@ -15,7 +15,6 @@ export const provider  = writable<null | Web3Provider>(null)
 export const signer = writable<null | JsonRpcSigner>(null)
 export const signerAddress = writable<null | string>(null)  
 export const isProvided = writable(false);
-export const nativeTokenAddress = writable<null | string>(null)
 
 // exchange
 export const factory = writable<null | UniswapV2Factory>(null)

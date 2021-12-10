@@ -1,13 +1,5 @@
-<script context="module" lang="ts">
-	import tokens from '$lib/assets/tokens/tokens.json';
-	import { nativeTokenAddress } from '$lib/stores'
-
-	// TODO add tags property to search token list, all searches should be via tags
-	for(let i=0; i<tokens.length; i++){
-		if(tokens[i].name === "Native") nativeTokenAddress.set(tokens[i].address);
-		break;
-	}
-
+<script context="module">
+	import tokens from '$lib/assets/tokens/tokens.json'
 </script>
 
 <script lang="ts">
