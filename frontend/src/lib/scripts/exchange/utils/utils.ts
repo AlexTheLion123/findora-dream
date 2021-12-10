@@ -6,7 +6,7 @@ import type { Signer, BigNumber } from 'ethers';
 
 
 export function removeDecimals(bigNum: BigNumber, decimals: number): number {
-    return parseInt(utils.formatUnits(bigNum), decimals)
+    return parseInt(utils.formatUnits(bigNum, decimals))
 }
 
 export function addDecimals(num: number, decimals: number): BigNumber {

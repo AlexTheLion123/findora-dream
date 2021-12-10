@@ -1,12 +1,27 @@
 import { getAmountsAndReservesOut, getAllowance } from './utils/swapUtils'
 import { NoRouteError, SamePairError } from '.';
-import {  checkAddressAgainstNative, checkAddressExists } from './utils/utils'
-import type { Signer, BigNumber, ethers} from 'ethers'
+import { checkAddressAgainstNative, checkAddressExists } from './utils/utils'
+import type { Signer, BigNumber} from 'ethers'
 import type { UniswapV2Factory, Ierc20 } from '$lib/typesUsed'
-
+import { factory } from '$lib/stores';
+import {ethers } from 'ethers'
 /**
  * All these exported methods are called from the frontend to update display and component values
  */
+
+/// @dev gets all the data required for a swap, starting from the route and numInput
+export async function getAll({ addrInput, addrOutput, numInput, factory, nativeAddr, signer }: {
+    addrInput: string,
+    addrOutput: string,
+    numInput: BigNumber,
+    factory: UniswapV2Factory,
+    nativeAddr: string,
+    signer: Signer
+}) {    
+    return getRoute({ addrInput: addrInput, addrOutput: addrOutput, factory: factory, nativeAddr: nativeAddr })
+        .then(res => getNumOutputAndPIFromRoute({ route: res, numInput: numInput, factoryAddr: factory.address, signer: signer }))
+}
+
 
 export async function getNumOutputAndPIFromRoute({ route, numInput, factoryAddr, signer }: {
     route: string[],
@@ -16,7 +31,7 @@ export async function getNumOutputAndPIFromRoute({ route, numInput, factoryAddr,
 }) {
     const { reservesArr, amountsOutArr } = await getAmountsAndReservesOut({ route: route, numInput: numInput, factoryAddr: factoryAddr, signer: signer })
     const numOutput = amountsOutArr[amountsOutArr.length - 1];
-    const priceImpact = getPI({ reservesArr, amountsOutArr }, numInput)
+    const priceImpact = getPI({ reservesArr, amountsOutArr }, numInput, numOutput)
     return {
         numOutput: numOutput,
         priceImpact: priceImpact
@@ -24,15 +39,15 @@ export async function getNumOutputAndPIFromRoute({ route, numInput, factoryAddr,
 
 }
 
-function getPI({ reservesArr, amountsOutArr }: Awaited<ReturnType<typeof getAmountsAndReservesOut>>, numInput: BigNumber) {
-    let currentNum = numInput
-    _quoteFromRerservesArr(numInput, reservesArr)
-    return _calcPI({ quoteOutput: numInput, actualOutput: currentNum })
+/// @dev calculates price impact by getting a quote (i.e. no price impact) based on the numInput
+function getPI({ reservesArr, amountsOutArr }: Awaited<ReturnType<typeof getAmountsAndReservesOut>>, numInput: BigNumber, numOutput: BigNumber) {
+    console.log("getting price impact")
+    const quoteOutput = _quoteFromRerservesArr(numInput, reservesArr)
+    return _calcPI({ quoteOutput: quoteOutput, actualOutput: numOutput })
 }
 
-function _quoteFromRerservesArr(numInput: BigNumber, reservesArr: {reserve0: BigNumber, reserve1: BigNumber}[]) {
+function _quoteFromRerservesArr(numInput: BigNumber, reservesArr: { reserve0: BigNumber, reserve1: BigNumber }[]) {
     let currentNum = numInput
-    console.log("currentNum", currentNum)
     for (let i = 0; i < reservesArr.length; i++) {
         const quote = _quote({ amountIn: currentNum, reserveIn: reservesArr[i].reserve0, reserveOut: reservesArr[i].reserve1 })
         currentNum = quote;
@@ -40,17 +55,27 @@ function _quoteFromRerservesArr(numInput: BigNumber, reservesArr: {reserve0: Big
     return currentNum
 }
 
-function _quote({ amountIn, reserveIn, reserveOut }: { 
+function _quote({ amountIn, reserveIn, reserveOut }: { // TODO fix numbers, loses decimals
     amountIn: BigNumber,
     reserveIn: BigNumber,
     reserveOut: BigNumber
- }) {
+}) {
     return amountIn.mul(reserveOut).div(reserveIn)
 }
 
 function _calcPI({ quoteOutput, actualOutput }: { quoteOutput: BigNumber, actualOutput: BigNumber }) {
-    return 1 - actualOutput.div(quoteOutput).toNumber()
+    /**
+     * assuming quoteOutput < actualOutput, so we know already that division without decimal = 0
+     * so we simply mod to get fractional part
+     */
+
+    const num1 = quoteOutput.mod(actualOutput).div(ethers.utils.parseUnits("10", 10))
+    const num2 = quoteOutput.div(ethers.utils.parseUnits("10", 10))
+    return num1.toNumber()/num2.toNumber()
+    
 }
+
+
 
 export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
     toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
@@ -69,7 +94,7 @@ export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAdd
  * @returns used to return the exact dollar value of the input parameter, without taking price impact into account.
  */
 
- export async function getQuote({ addrInput, dollarsAddr, numInput, nativeAddr, factory, signer }: {
+export async function getQuote({ addrInput, dollarsAddr, numInput, nativeAddr, factory, signer }: {
     addrInput: string,
     dollarsAddr: string,
     numInput: BigNumber,
@@ -78,32 +103,32 @@ export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAdd
     signer: Signer
 }) {
 
-    return getRoute({addr1: addrInput, addr2: dollarsAddr, factory: factory, nativeAddr: nativeAddr})
-        .then(async _route => getAmountsAndReservesOut({route: _route, numInput: numInput, factoryAddr: factory.address, signer: signer}))
+    return getRoute({ addrInput: addrInput, addrOutput: dollarsAddr, factory: factory, nativeAddr: nativeAddr })
+        .then(async _route => getAmountsAndReservesOut({ route: _route, numInput: numInput, factoryAddr: factory.address, signer: signer }))
         .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]; amountsOutArr: BigNumber[]; }) => _quoteFromRerservesArr(numInput, value.reservesArr))
-        
+
 }
 
 // TODO change logic to accomodate array of main tokens instead of nativeAddr
-export async function getRoute({addr1, addr2, factory, nativeAddr}: {
-    addr1: string,
-    addr2: string,
+export async function getRoute({ addrInput, addrOutput, factory, nativeAddr }: {
+    addrInput: string,
+    addrOutput: string,
     factory: UniswapV2Factory,
     nativeAddr: string
 }): Promise<string[]> {
-    if (addr1 === addr2) {
+    if (addrInput === addrOutput) {
         throw new SamePairError();
     }
 
-    const pairAddress = await factory.getPair(addr1, addr2); // we have to query blockchain, and can't use pairfor, because pair might not exist
+    const pairAddress = await factory.getPair(addrInput, addrOutput); // we have to query blockchain, and can't use pairfor, because pair might not exist
 
     if (checkAddressExists(pairAddress)) {
-        return [addr1, addr2]
+        return [addrInput, addrOutput]
     }
 
-    if (await checkAddressAgainstNative(factory, nativeAddr, addr1) && await checkAddressAgainstNative(factory, nativeAddr, addr2)) {
+    if (await checkAddressAgainstNative(factory, nativeAddr, addrInput) && await checkAddressAgainstNative(factory, nativeAddr, addrOutput)) {
         // check indirect pair against native, throws if no pair
-        return [addr1, nativeAddr, addr2];
+        return [addrInput, nativeAddr, addrOutput];
     }
 
     // if this point is reached, no route exists and returns empty array

@@ -6,12 +6,12 @@
 		NoMetaMaskError,
 		checkAllowance,
 		getQuote,
-		getRoute
+		getRoute,
+		getAll
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
-	import { Contract } from 'ethers';
-	import type { Ierc20 } from '$lib/typesUsed';
-	import type { TySwapData, ISetSwapDataOutput, ISetSwapDataInput } from '$lib/typesFrontend';
+	import { Contract, Signer } from 'ethers';
+	import type { Ierc20, UniswapV2Factory } from '$lib/typesUsed';
 </script>
 
 <script lang="ts">
@@ -55,7 +55,7 @@
 			throw new NoMetaMaskError('Please connect to metamask');
 		}
 
-		(new Contract(tokenBox.address, ERC20ABI, $signer) as Ierc20)
+		const getBalanceAndDecimals = (new Contract(tokenBox.address, ERC20ABI, $signer) as Ierc20)
 			.deployed()
 			.then(async (res) => {
 				tokenBox.decimals = await res.decimals();
@@ -65,10 +65,9 @@
 					throw new NoMetaMaskError('Please connect to metamask');
 				}
 
-				res.balanceOf($signerAddress).then((res) => {
-					tokenBox.balance = removeDecimals(res, tokenBox.decimals as number);
-					console.log($signerAddress, tokenBox.address);
-				});
+				return res
+					.balanceOf($signerAddress)
+					.then((res) => (tokenBox.balance = removeDecimals(res, tokenBox.decimals as number)));
 			})
 			.catch((e) => {
 				alert('No contract deployed here or failed to get coin info');
@@ -79,9 +78,10 @@
 			// Scenario 1 and 2
 
 			// can't swap yet, can only get dollar value
-			if (!tokenBox.numTokens || !tokenBox.decimals || !$factory) throw 'this should never happen';
+			if (!tokenBox.numTokens || !tokenBox.decimals || !$factory)
+				throw 'details not fetched yet, should probably never happen';
 
-			getQuote({
+			const getDollars = getQuote({
 				addrInput: tokenBox.address,
 				dollarsAddr: dollarAddr,
 				numInput: addDecimals(tokenBox.numTokens, tokenBox.decimals),
@@ -89,7 +89,7 @@
 				factory: $factory,
 				signer: $signer
 			})
-				.then((res) => tokenBox.dollars = removeDecimals(res, tokenBox.decimals as number))
+				.then((res) => (tokenBox.dollars = removeDecimals(res, tokenBox.decimals as number)))
 				.catch((error) => {
 					alert('unable to get dollar value');
 					console.log(error);
@@ -98,9 +98,35 @@
 
 			if (otherTokenBox && otherTokenBox.address) {
 				// otherTokenBox has also been selected, so we can get its corresponding output tokens
+				// currentTokenBox (= tokenBox) is the input
 
-				// _tokenBox is the input
-				await getAndSetSwapData(tokenBox).catch(alert);
+				Promise.all([getBalanceAndDecimals]).then((values) => {
+					// this promise sets all the relevant values, so we can force typescript to accept values
+
+					getAll({
+						addrInput: tokenBox.address as string,
+						addrOutput: otherTokenBox!.address as string,
+						numInput: addDecimals(tokenBox.numTokens as number, tokenBox.decimals as number),
+						factory: $factory as UniswapV2Factory, // have checked factory and signer already
+						nativeAddr: nativeAddr,
+						signer: $signer as Signer
+					})
+						.then(({ numOutput, priceImpact }) => {
+							return Promise.all([getDollars]).then((values) => {
+								if (!otherTokenBox?.decimals) {
+									alert('decimals not retrieved yet for other token box');
+									throw 'decimals not retrieved yet for other token box';
+								}
+
+								otherTokenBox!.numTokens = removeDecimals(numOutput, otherTokenBox.decimals);
+								otherTokenBox!.dollars = calcOutputGivenPI(tokenBox.dollars as number, priceImpact);
+							});
+						})
+						.catch((e) => {
+							alert('error in getting values for swap');
+							console.log('Error in getting values swap');
+						});
+				});
 			}
 		} else if (currentTokenBox && otherTokenBox) {
 			// if not current, but current exists, can't get dollar value here since no input since not current
@@ -154,6 +180,10 @@
 			currentTokenBox = tokenBox2;
 			otherTokenBox = tokenBox1;
 		}
+	}
+
+	function calcOutputGivenPI(numInput: number, priceImpact: number) {
+		return numInput * (1 - priceImpact);
 	}
 
 	/**
