@@ -53,6 +53,7 @@ export async function getReservesQuery({factoryAddr, addrInput, addrOutput, sign
     signer: Signer
 }): Promise<BigNumber[]> {
     const pairAddress = getPairAddress(factoryAddr, addrInput, addrOutput)
+    
     const { _reserve0, _reserve1 } = await (new Contract(pairAddress, UniswapV2PairABI, signer) as UniswapV2Pair).getReserves();
 
     if (addrInput < addrOutput) {

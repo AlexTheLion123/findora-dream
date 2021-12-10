@@ -28,7 +28,6 @@ export function getFactoryAndRouterAddress() {
         throw "This should never happen, make sure deployment files are in correct location in frontend files"; 
     }
 
-    console.log("factory and router address set")
     return { factoryAddress: factory, routerAddress: router }
 }
 

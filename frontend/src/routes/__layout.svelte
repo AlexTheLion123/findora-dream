@@ -19,7 +19,6 @@
 			$signer = $provider!.getSigner();
 			$signerAddress = await $signer!.getAddress();
 
-			console.log('We are now connected');
 		} else {
 			$provider = null;
 			$signer = null;

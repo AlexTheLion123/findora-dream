@@ -28,7 +28,6 @@
 	let otherTokenBox: TokenBox | undefined;
 
 	const { nativeAddr, dollarAddr } = getContext('exchange');
-	console.log(nativeAddr, dollarAddr);
 
 	async function perform() {
 		if ($page.path === '/swap') {
@@ -48,7 +47,6 @@
 		canSwapLock = false;
 		tokenBox.address = e.detail.address;
 
-
 		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
 
 		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
@@ -60,7 +58,7 @@
 		(new Contract(tokenBox.address, ERC20ABI, $signer) as Ierc20)
 			.deployed()
 			.then(async (res) => {
-				tokenBox.decimals = await res.decimals()
+				tokenBox.decimals = await res.decimals();
 
 				if (!$signerAddress || !tokenBox.address) {
 					alert('Connect to metamask');
@@ -69,7 +67,7 @@
 
 				res.balanceOf($signerAddress).then((res) => {
 					tokenBox.balance = removeDecimals(res, tokenBox.decimals as number);
-					console.log($signerAddress, tokenBox.address)
+					console.log($signerAddress, tokenBox.address);
 				});
 			})
 			.catch((e) => {
@@ -83,10 +81,20 @@
 			// can't swap yet, can only get dollar value
 			if (!tokenBox.numTokens || !tokenBox.decimals || !$factory) throw 'this should never happen';
 
-			getQuote({addrInput: tokenBox.address, dollarsAddr: dollarAddr, numInput: addDecimals(tokenBox.numTokens, tokenBox.decimals), nativeAddr: nativeAddr, factory: $factory, signer: $signer})
-				.then(res => {
-					tokenBox.dollars = removeDecimals(res, tokenBox.decimals as number);
-				})
+			getQuote({
+				addrInput: tokenBox.address,
+				dollarsAddr: dollarAddr,
+				numInput: addDecimals(tokenBox.numTokens, tokenBox.decimals),
+				nativeAddr: nativeAddr,
+				factory: $factory,
+				signer: $signer
+			})
+				.then((res) => tokenBox.dollars = removeDecimals(res, tokenBox.decimals as number))
+				.catch((error) => {
+					alert('unable to get dollar value');
+					console.log(error);
+					throw 'unable to get dollar value';
+				});
 
 			if (otherTokenBox && otherTokenBox.address) {
 				// otherTokenBox has also been selected, so we can get its corresponding output tokens

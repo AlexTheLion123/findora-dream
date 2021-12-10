@@ -1,7 +1,7 @@
 import { getAmountsAndReservesOut, getAllowance } from './utils/swapUtils'
 import { NoRouteError, SamePairError } from '.';
 import {  checkAddressAgainstNative, checkAddressExists } from './utils/utils'
-import type { Signer, BigNumber} from 'ethers'
+import type { Signer, BigNumber, ethers} from 'ethers'
 import type { UniswapV2Factory, Ierc20 } from '$lib/typesUsed'
 
 /**
@@ -32,14 +32,19 @@ function getPI({ reservesArr, amountsOutArr }: Awaited<ReturnType<typeof getAmou
 
 function _quoteFromRerservesArr(numInput: BigNumber, reservesArr: {reserve0: BigNumber, reserve1: BigNumber}[]) {
     let currentNum = numInput
+    console.log("currentNum", currentNum)
     for (let i = 0; i < reservesArr.length; i++) {
-        const quote = _quote({ amountsIn: currentNum, reserveIn: reservesArr[i].reserve0, reserveOut: reservesArr[i].reserve1 })
+        const quote = _quote({ amountIn: currentNum, reserveIn: reservesArr[i].reserve0, reserveOut: reservesArr[i].reserve1 })
         currentNum = quote;
     }
     return currentNum
 }
 
-function _quote({ amountIn, reserveIn, reserveOut }: { [k: string]: BigNumber }) {
+function _quote({ amountIn, reserveIn, reserveOut }: { 
+    amountIn: BigNumber,
+    reserveIn: BigNumber,
+    reserveOut: BigNumber
+ }) {
     return amountIn.mul(reserveOut).div(reserveIn)
 }
 

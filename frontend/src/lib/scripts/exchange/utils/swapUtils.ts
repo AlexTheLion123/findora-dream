@@ -23,13 +23,13 @@ export async function getAmountsAndReservesOut({ route, numInput, factoryAddr, s
     let amountsOut: BigNumber[] = new Array(route.length-1)
 
     for (let i = 0; i < route.length - 1; i++) {
-
+        
         const [reserve0, reserve1] = await getReservesQuery({ factoryAddr: factoryAddr, addrInput: route[i], addrOutput: route[i+1], signer: signer});
         const amountOut = getAmountOutManual({amountIn: currentNum, reserveIn: reserve0, reserveOut: reserve1});
         
-        reserves.push({reserve0: reserve0, reserve1: reserve1})
-        amountsOut.push(amountOut)
-    }
+        reserves[i] = ({reserve0: reserve0, reserve1: reserve1})
+        amountsOut[i] = (amountOut)
+    }  
 
     return {
         reservesArr: reserves,
