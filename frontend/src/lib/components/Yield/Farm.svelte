@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
     import { isGrid } from '$lib/stores';
 
-    export let number;
+    export let number: number;
 </script>
 
 {#if $isGrid}

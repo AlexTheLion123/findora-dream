@@ -2,23 +2,36 @@
     import DoubleTokenBox from '../DoubleTokenBox.svelte';
     import TradeButton from '../TradeButton.svelte'
     import PoolInfo from '../PoolInfo.svelte'
+    import {signer, signerAddress} from '$lib/stores'
 
+
+    export let liquidityReady = false;
 </script>
 
-<div class="box">
-    <p class="title">Liquidity</p>
 
-    <div class="double-token-box">
-        <DoubleTokenBox/>
-    </div>
+{#if $signer && $signerAddress && liquidityReady}
+    <div class="box">
+        <p class="title">Liquidity</p>
 
-    <div class="pool-info">
-        <PoolInfo/>
+        <div class="double-token-box">
+            <DoubleTokenBox signer={$signer} signerAddress={$signerAddress}/>
+        </div>
+
+        <div class="pool-info">
+            <PoolInfo/>
+        </div>
+        <div class="add-button">
+            <TradeButton text="Add liquidity"/>
+        </div>
     </div>
+{:else}
+
     <div class="add-button">
-        <TradeButton text="Add liquidity"/>
+        <TradeButton text="Connect to metamask"/>
     </div>
-</div>
+
+{/if}
+
 
 <style lang="scss">
 	$box-radius: 10px;

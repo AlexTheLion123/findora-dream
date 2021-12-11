@@ -16,9 +16,6 @@ export const signer = writable<null | JsonRpcSigner>(null)
 export const signerAddress = writable<null | string>(null)  
 export const isProvided = writable(false);
 
-// exchange
-export const factory = writable<null | UniswapV2Factory>(null)
-export const router = writable<null | UniswapV2Router02>(null)
 
 // grid or list layout, can probably handle some other way, yeah in context my boi
 export const isGrid = writable(false);

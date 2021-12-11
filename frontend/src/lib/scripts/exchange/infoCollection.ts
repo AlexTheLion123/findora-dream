@@ -3,7 +3,6 @@ import { NoRouteError, SamePairError } from '.';
 import { checkAddressAgainstNative, checkAddressExists } from './utils/utils'
 import type { Signer, BigNumber} from 'ethers'
 import type { UniswapV2Factory, Ierc20 } from '$lib/typesUsed'
-import { factory } from '$lib/stores';
 import {ethers } from 'ethers'
 /**
  * All these exported methods are called from the frontend to update display and component values
@@ -19,7 +18,15 @@ export async function getAll({ addrInput, addrOutput, numInput, factory, nativeA
     signer: Signer
 }) {    
     return getRoute({ addrInput: addrInput, addrOutput: addrOutput, factory: factory, nativeAddr: nativeAddr })
-        .then(res => getNumOutputAndPIFromRoute({ route: res, numInput: numInput, factoryAddr: factory.address, signer: signer }))
+        .then(async res => {
+            const {numOutput, priceImpact} = await getNumOutputAndPIFromRoute({ route: res, numInput: numInput, factoryAddr: factory.address, signer: signer })
+
+            return {
+                numOutput: numOutput,
+                priceImpact: priceImpact,
+                route: res
+            }
+        })
 }
 
 

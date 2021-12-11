@@ -1,47 +1,82 @@
 <script lang="ts">
-	// this component is mainly for setting the factory and router context
-	// better to do it here instead of in both swap and liquidity since they use the same contracts
-
-	import { isConnected, signer, factory, router } from '$lib/stores';
-	import {getFactoryAndRouterObjects, getFactoryAndRouterAddress, getNativeAndDollarAddr}from '$lib/scripts/exchange'
+	import { page } from '$app/stores';
+	import { signer } from '$lib/stores';
+	import {
+		getFactoryAndRouterObjects,
+		getFactoryAndRouterAddress,
+		getNativeAndDollarAddr
+	} from '$lib/scripts/exchange';
 	import { setContext } from 'svelte';
-	import tokens from '$lib/assets/tokens/tokens.json'
+	import tokens from '$lib/assets/tokens/tokens.json';
+	import type { UniswapV2Factory, UniswapV2Router02 } from '$lib/typesUsed';
 
-	// stores not working
-	isConnected.subscribe(async (value) => {
+    import Liquidity from '$lib/components/Exchange/ExchangeLayout/Liquidity.svelte'
+    import Swap from '$lib/components/Exchange/ExchangeLayout/Swap.svelte'
 
-		// TODO this is a bit of a hack, find better way
-		await new Promise((resolve, reject) =>  setTimeout(()=>resolve(""), 0))
+	const { factoryAddress, routerAddress } = getFactoryAndRouterAddress(); 
+	const { nativeAddr, dollarAddr } = getNativeAndDollarAddr(tokens);
 
-		if (value && $signer) {
-			const {factoryAddress, routerAddress} = getFactoryAndRouterAddress()
-			const obj = await getFactoryAndRouterObjects($signer, factoryAddress, routerAddress).catch(
+	let factory: UniswapV2Factory;
+	let router: UniswapV2Router02;
+	let exchangeReady = false;
+
+	setContext('exchange', {
+		nativeAddr: nativeAddr,
+		dollarAddr: dollarAddr,
+		getFactory: () => factory,
+		getRouter: () => router
+	});
+
+	signer.subscribe(async (value) => {
+		await new Promise((resolve) => setTimeout(() => resolve(''), 0)); // TODO this is a bit of a hack, find better way
+
+		if (value) {
+			const obj = await getFactoryAndRouterObjects(value, factoryAddress, routerAddress).catch(
 				(e) => {
 					alert('Broken: unable to get factory and router');
 					throw 'unable to get factory and router';
 				}
 			);
 
-			if(!obj.factory || !obj.router) {
-				alert("unable to get factory and router contracts");
-				throw("unable to get factory and router contracts")
+			if (!obj.factory || !obj.router) {
+				alert('unable to get factory and router contracts');
+				throw 'unable to get factory and router contracts';
 			}
 
-			$factory = obj.factory;
-			$router = obj.router;
-			console.log("factory and router objects ready")
+			factory = obj.factory;
+			router = obj.router;
+
+			exchangeReady = true;
+
+			console.log('factory and router objects ready');
 		} else {
-			$factory = null;
-			$router = null;
+			console.log('no signer')
 		}
 	});
 
-	const {nativeAddr, dollarAddr} = getNativeAndDollarAddr(tokens)
-	setContext("exchange", {
-		nativeAddr: nativeAddr,
-		dollarAddr: dollarAddr
-	}) 
-
 </script>
 
-<slot/>
+<div class="container">
+	<div class="wrapper">
+		{#if $page.path==="/exchange/swap"}
+			<Swap bind:swapReady={exchangeReady}/>
+		{:else if $page.path==="/exchange/liquidity"}
+			<Liquidity bind:liquidityReady={exchangeReady}/>
+		{:else}
+			Something is wrong
+			page: {$page.path}
+		{/if}
+	</div>
+</div>
+
+<style lang="scss">
+	.container {
+		width: 100%;
+
+		.wrapper {
+			display: grid;
+			place-items: center;
+			padding: 100px 0;
+		}
+	}
+</style>

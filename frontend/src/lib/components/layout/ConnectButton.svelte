@@ -21,10 +21,7 @@
 	// TODO use @metamask/detect-provider to detect mobile properly as well
 
 	import { onMount } from 'svelte/internal';
-	import { isConnected } from '$lib/stores';
-	import { currentAccount } from '$lib/stores';
-	import { chainId } from '$lib/stores';
-	import { buttonText } from '$lib/stores';
+	import { isConnected, currentAccount, chainId, buttonText } from '$lib/stores';
 
 	function initialize() {
 		onboarding = new MetaMaskOnboarding();

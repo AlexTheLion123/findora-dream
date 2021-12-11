@@ -3,24 +3,41 @@
 	import TradeButton from '../TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
+	import {signer, signerAddress} from '$lib/stores';
+
 	let callSwapOnChild: () => Promise<void>
+
+	export let swapReady = false;
+
+	console.log("lsdkfjslfkj")
 </script>
 
-<form>
-	<p class="title">Swap</p>
 
-	<div class="double-token-box">
-		<DoubleTokenBox bind:perform={callSwapOnChild}/>
-	</div>
+{#if swapReady && $signer && $signerAddress}
 
-	<div class="slider-box">
-		<RangeSlider id="color-pips" range="min" float pips step={5} />
-	</div>
+	<form>
+		<p class="title">Swap</p>
+
+		<div class="double-token-box">
+			<DoubleTokenBox bind:perform={callSwapOnChild} signer={$signer} signerAddress={$signerAddress}/>
+		</div>
+
+		<div class="slider-box">
+			<RangeSlider id="color-pips" range="min" float pips step={5} />
+		</div>
+
+		<div class="swap-button">
+			<TradeButton text="Swap" on:perfomAction={callSwapOnChild}/>
+		</div>
+	</form>
+
+{:else}
 
 	<div class="swap-button">
-		<TradeButton text="Swap" on:perfomAction={callSwapOnChild}/>
+		<TradeButton text="Connect to metamask" on:perfomAction={() => alert("connect to metamask")}/>
 	</div>
-</form>
+	
+{/if}
 
 <style lang="scss">
 	$box-radius: 10px;
