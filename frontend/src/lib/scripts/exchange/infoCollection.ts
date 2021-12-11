@@ -3,7 +3,9 @@ import { NoRouteError, SamePairError } from '.';
 import { checkAddressAgainstNative, checkAddressExists } from './utils/utils'
 import type { Signer, BigNumber} from 'ethers'
 import type { UniswapV2Factory, Ierc20 } from '$lib/typesUsed'
-import {ethers } from 'ethers'
+import {Contract, utils } from 'ethers'
+import { ERC20ABI } from '$lib/abis';
+
 /**
  * All these exported methods are called from the frontend to update display and component values
  */
@@ -47,7 +49,7 @@ export async function getNumOutputAndPIFromRoute({ route, numInput, factoryAddr,
 }
 
 /// @dev calculates price impact by getting a quote (i.e. no price impact) based on the numInput
-function getPI({ reservesArr, amountsOutArr }: Awaited<ReturnType<typeof getAmountsAndReservesOut>>, numInput: BigNumber, numOutput: BigNumber) {
+function getPI({ reservesArr }: Awaited<ReturnType<typeof getAmountsAndReservesOut>>, numInput: BigNumber, numOutput: BigNumber) {
     console.log("getting price impact")
     const quoteOutput = _quoteFromRerservesArr(numInput, reservesArr)
     return _calcPI({ quoteOutput: quoteOutput, actualOutput: numOutput })
@@ -76,8 +78,8 @@ function _calcPI({ quoteOutput, actualOutput }: { quoteOutput: BigNumber, actual
      * so we simply mod to get fractional part
      */
 
-    const num1 = quoteOutput.mod(actualOutput).div(ethers.utils.parseUnits("10", 10))
-    const num2 = quoteOutput.div(ethers.utils.parseUnits("10", 10))
+    const num1 = quoteOutput.mod(actualOutput).div(utils.parseUnits("10", 10))
+    const num2 = quoteOutput.div(utils.parseUnits("10", 10))
     return num1.toNumber()/num2.toNumber()
     
 }
@@ -109,7 +111,6 @@ export async function getQuote({ addrInput, dollarsAddr, numInput, nativeAddr, f
     factory: UniswapV2Factory,
     signer: Signer
 }) {
-
     return getRoute({ addrInput: addrInput, addrOutput: dollarsAddr, factory: factory, nativeAddr: nativeAddr })
         .then(async _route => getAmountsAndReservesOut({ route: _route, numInput: numInput, factoryAddr: factory.address, signer: signer }))
         .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]; amountsOutArr: BigNumber[]; }) => _quoteFromRerservesArr(numInput, value.reservesArr))
@@ -143,6 +144,12 @@ export async function getRoute({ addrInput, addrOutput, factory, nativeAddr }: {
 }
 
 
+export function getBalance(tokenAddress: string, signer: Signer, signerAddress: string): Promise<BigNumber> {
+    return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).balanceOf(signerAddress);
+}
 
+export async function getDecimals(tokenAddress: string, signer: Signer): Promise<number> {
+    return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).decimals()
+}
 
 

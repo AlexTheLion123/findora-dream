@@ -1,36 +1,41 @@
 <script context="module">
-	import tokens from '$lib/assets/tokens/tokens.json'
+	import tokens from '$lib/assets/tokens/tokens.json';
 </script>
 
 <script lang="ts">
 	// TODO look at other moving stuff to module context
 	import { createEventDispatcher } from 'svelte';
 	import TokenSearchItem from './TokenSearchItem.svelte';
-    
+	
 	export let isShown = false;
 	let current: HTMLElement | undefined;
+
+
 
 	const dispatch = createEventDispatcher();
 	function handleSelection(e: any) {
 		isShown = false;
+
+		if(current === e.detail.element) {
+			return;
+		}
+
 		if (current) {
 			// if another element has already been selected
 			current.style.background = 'none';
 		}
 		current = e.detail.element as HTMLElement; // update current
-        current.style.background = "rgb(255, 255, 255, 0.3)";
+		current.style.background = 'rgb(255, 255, 255, 0.3)';
 
-        dispatch("tokenSelected", e.detail);
+		dispatch('tokenSelected', e.detail);
 	}
-
-
 </script>
 
 {#if isShown}
 	<div class="box">
 		<header>
 			<input type="text" />
-			<i class="fas fa-times" on:click={() => (isShown = false)} />
+			<i class="fas fa-times" on:click={(e) => (isShown = false)} />
 		</header>
 		<main>
 			{#each tokens as token}

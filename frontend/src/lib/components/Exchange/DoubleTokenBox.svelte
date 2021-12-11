@@ -8,18 +8,19 @@
 		getQuote,
 		getRoute,
 		getAll,
-getNumOutputAndPIFromRoute
+		getNumOutputAndPIFromRoute,
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
 	import { BigNumber, Contract } from 'ethers';
-	import type { JsonRpcSigner} from '@ethersproject/providers'
+	import type { JsonRpcSigner } from '@ethersproject/providers';
 	import type { Ierc20, UniswapV2Factory } from '$lib/typesUsed';
+
+	let currentTokenBox
 </script>
 
 <script lang="ts">
 	import TokenBox from './TokenBox.svelte';
 	import { page } from '$app/stores';
-	import { ERC20ABI } from '$lib/abis';
 	import { getContext } from 'svelte';
 
 	let tokenBox1: TokenBox;
@@ -27,64 +28,56 @@ getNumOutputAndPIFromRoute
 	let canSwapLock = false;
 	let currentTokenBox: TokenBox | undefined;
 	let otherTokenBox: TokenBox | undefined;
+	let routeCache: RouteCache;
 
 	export let signer: JsonRpcSigner;
 	export let signerAddress: string;
 
-	const {factory, router} = getContext("exchange")
-
-
-	let routeCache: {
-		route: string[];
-		toAndFrom: [string, string];
-		timestamp: number;
-		swapRate?: number; // 1 to = ? from
-	} = Object.freeze({
-		route: [],
-		toAndFrom: ["",""],
-		timestamp: 0,
-		swapRate: 0
-	});
+	const { factory, router, nativeAddr, dollarAddr } = getContext('exchange');
 
 	type RouteCache = {
-		route: string[],
-		toAndFrom: string[],
-		timestamp: number,
-		swapRate: number,
-		numInput: number
-	}
-
-	async function setRouteCache({
-		route,
-		toAndFrom,
-		timestamp,
-		swapRate,
-		numInput
-	}: {
 		route: string[];
 		toAndFrom: string[];
 		timestamp: number;
-		swapRate?: number;
-		numInput?: number
+		swapRate: BigNumber | Promise<BigNumber>; // 1000000 in = ? out
+	};
+
+	async function setRouteCache({
+		route,
+		toAndFrom
+	}: {
+		route: string[];
+		toAndFrom: [string, string];
 	}) {
-		// first set routeCache regardless of whether rate provided or not
-		routeCache = Object.freeze({
-			route: route,
-			toAndFrom: toAndFrom,
-			timestamp: timestamp,
-			swapRate: swapRate
-		});
+		(routeCache.route = route),
+			(routeCache.toAndFrom = toAndFrom),
+			(routeCache.timestamp = Date.now());
 
-		if(!swapRate) {
-			// if swapRate was not provided, get it and set route cache
-			const {numOutput} = await getNumOutputAndPIFromRoute({route: route, factoryAddr: factory?.address, signer: signer, numInput: BigNumber.from(numInput)})
-
-
+		if (
+			routeCache &&
+			routeCache.toAndFrom === toAndFrom &&
+			Date.now() - routeCache.timestamp < 10000
+		) {
+			// if we've already collected data and its the same, and 10 seconds haven't elapsed since last data collection, return.
+			return;
 		}
+
+		// if swapRate was not provided, get it and set route cache
+		routeCache.swapRate = new Promise(async (resolve) => {
+			const {numOutput} = await getNumOutputAndPIFromRoute({
+				route: route,
+				factoryAddr: factory?.address,
+				signer: signer,
+				numInput: BigNumber.from(1000000)
+			})
+			resolve(numOutput)
+		});
+	}
+
+	function getRouteAgain(): boolean {
 
 	}
 
-	const { nativeAddr, dollarAddr } = getContext('exchange');
 
 	export async function perform() {
 		if ($page.path === '/swap') {
@@ -106,26 +99,10 @@ getNumOutputAndPIFromRoute
 
 		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
 
-		// TODO move to validation function, although typescript didn't enjoy that, try without parameters and use global variables
-		if (!signer || !signerAddress) {
-			alert('Connect to metamask');
-			throw new NoMetaMaskError('Please connect to metamask');
-		}
-
-		const tokenInstance = new Contract(tokenBox.address, ERC20ABI, signer) as Ierc20;
-		// decimals needed for future calculations so must be synchronous
-		const decimals = await tokenInstance
-			.decimals()
-			.then((decimals) => (tokenBox.decimals = decimals));
-
-		// set balance asynchronously
-		tokenInstance
-			.balanceOf(signerAddress)
-			.then((balance) => (tokenBox.balance = removeDecimals(balance, decimals)));
+		
 
 		// TODO use typescript to fix unnessary check for tokenBox.numtokens, because if currentTokenBox exists, it will too
 		if (currentTokenBox === tokenBox) {
-			// Scenario 1 and 2
 			// can't swap yet, can only get dollar value
 
 			// getting dollars can be done asynchronously since other calculations do not need it
@@ -152,9 +129,9 @@ getNumOutputAndPIFromRoute
 					addrInput: tokenBox.address as string,
 					addrOutput: otherTokenBox.address as string,
 					numInput: addDecimals(tokenBox.numTokens as number, decimals),
-					factory: factory as UniswapV2Factory, // have checked factory and signer already
+					factory: factory, // have checked factory and signer already
 					nativeAddr: nativeAddr,
-					signer: signer as Signer
+					signer: signer
 				})
 					.then(({ route, numOutput, priceImpact }) => {
 						if (!otherTokenBox?.decimals) {
@@ -198,8 +175,6 @@ getNumOutputAndPIFromRoute
 				factory: factory,
 				nativeAddr: nativeAddr
 			});
-
-			set;
 
 			if (currentTokenBox.numTokens) {
 				getAll;

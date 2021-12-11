@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { signer } from '$lib/stores';
+	import { signer, signerAddress } from '$lib/stores';
 	import {
 		getFactoryAndRouterObjects,
 		getFactoryAndRouterAddress,
@@ -9,12 +9,13 @@
 	import { setContext } from 'svelte';
 	import tokens from '$lib/assets/tokens/tokens.json';
 	import type { UniswapV2Factory, UniswapV2Router02 } from '$lib/typesUsed';
-
+	import type { Signer} from 'ethers'
     import Liquidity from '$lib/components/Exchange/ExchangeLayout/Liquidity.svelte'
     import Swap from '$lib/components/Exchange/ExchangeLayout/Swap.svelte'
+	import { get } from 'svelte/store'
 
 	const { factoryAddress, routerAddress } = getFactoryAndRouterAddress(); 
-	const { nativeAddr, dollarAddr } = getNativeAndDollarAddr(tokens);
+	const { nativeAddr, dollarsAddr } = getNativeAndDollarAddr(tokens);
 
 	let factory: UniswapV2Factory;
 	let router: UniswapV2Router02;
@@ -22,16 +23,18 @@
 
 	setContext('exchange', {
 		nativeAddr: nativeAddr,
-		dollarAddr: dollarAddr,
+		dollarsAddr: dollarsAddr,
 		getFactory: () => factory,
-		getRouter: () => router
+		getRouter: () => router,
+		getSigner: () => get(signer),
+		getSignerAddress: () => get(signerAddress)
 	});
 
 	signer.subscribe(async (value) => {
 		await new Promise((resolve) => setTimeout(() => resolve(''), 0)); // TODO this is a bit of a hack, find better way
 
 		if (value) {
-			const obj = await getFactoryAndRouterObjects(value, factoryAddress, routerAddress).catch(
+			const obj = await getFactoryAndRouterObjects($signer as Signer, factoryAddress, routerAddress).catch(
 				(e) => {
 					alert('Broken: unable to get factory and router');
 					throw 'unable to get factory and router';
@@ -45,6 +48,8 @@
 
 			factory = obj.factory;
 			router = obj.router;
+
+			$signerAddress = await $signer!.getAddress(); // TODO remove duplicate assingment, layout parent also assigns
 
 			exchangeReady = true;
 

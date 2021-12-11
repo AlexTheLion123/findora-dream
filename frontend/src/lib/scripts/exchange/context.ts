@@ -2,12 +2,12 @@ import { Contract } from 'ethers';
 import deployments from '$lib/assets/deployments.json';
 import { UniswapV2FactoryABI, UniswapV2Router02ABI } from '$lib/abis';
 import type { UniswapV2Router02, UniswapV2Factory } from '$lib/typesUsed';
-import type { JsonRpcSigner } from '@ethersproject/providers';
+import type { Signer } from 'ethers';
 
-export async function getFactoryAndRouterObjects(signer: JsonRpcSigner, factoryAddress: string, routerAddress: string) {
+export async function getFactoryAndRouterObjects(signer: Signer, factoryAddress: string, routerAddress: string) {
     console.log(signer, factoryAddress, routerAddress)
     const {factoryContract, routerContract} = await getSignedFactoryAndRouterContracts(factoryAddress, routerAddress, signer)
-    
+
     return {
         factory: factoryContract,
         router: routerContract
@@ -35,21 +35,27 @@ export function getFactoryAndRouterAddress() {
 
 export function getNativeAndDollarAddr(tokens: {address: string, symbol: string, name: string}[]) {
 
-    let nativeAddr!: string;
-    let dollarAddr!: string;
+    let nativeAddr: string = "";
+    let dollarsAddr: string = "";
 
     tokens.map((item) => {
         if (item.symbol === 'NATIVE') {
             nativeAddr = item.address;
         }
         if (item.symbol === 'USDT') {
-            dollarAddr = item.address;
+            dollarsAddr = item.address;
         }
+        
     });
 
+    if(!nativeAddr && !dollarsAddr) {
+        throw "unable to find native and dollar address"
+           
+    }
+    console.log("real native and dollar address", nativeAddr, dollarsAddr)
     return {
         nativeAddr: nativeAddr,
-        dollarAddr: dollarAddr
+        dollarsAddr: dollarsAddr
     };
 }
 
