@@ -310,7 +310,6 @@ getAll,
 		// check if other tokenBox has address -> get output (route already gotten)
 		// _tokenBox is currentTokenBox
 
-		console.log("updating current with address")
 		updateCurrentTokenBox(_tokenBox)
 
 		if(otherTokenBox?.address) {
@@ -324,13 +323,10 @@ getAll,
 		}
 	}
 	function handleInputWithoutAddress(_tokenBox: TokenBox) {
+		// cannot do anything here except update current
 
-		console.log("updating current without address");
 		updateCurrentTokenBox(_tokenBox)
 
-		if(otherTokenBox?.address) {
-
-		}
 	}
 </script>
 
