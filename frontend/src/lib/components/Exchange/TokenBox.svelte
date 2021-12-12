@@ -6,6 +6,7 @@
 	import { BigNumber } from 'ethers'
 	import type { Signer } from 'ethers';
 	import type { UniswapV2Factory } from '$lib/typesUsed';
+
 </script>
 
 <script lang="ts">
@@ -14,25 +15,17 @@
 	import { createEventDispatcher, getContext } from 'svelte';
 
 	const {
-		getSigner,
-		getSignerAddress,
-		nativeAddr,
-		dollarsAddr,
+		signerObj,
+		nativeToken,
+		dollarsToken,
 		getFactory
-	}: {
-		getSigner: () => Signer;
-		getSignerAddress: () => string;
-		dollarsAddr: string;
-		getFactory: () => UniswapV2Factory;
-		nativeAddr: string;
 	} = getContext('exchange');
 
-	const signer = getSigner();
-	const signerAddress = getSignerAddress();
+	const signer = signerObj.getSigner();
+	const signerAddress = signerObj.getAddress();
+	const nativeAddr = nativeToken.address;
+	const dollarsAddr = dollarsToken.address
 	const factory = getFactory();
-
-	console.log("reality", signer, signerAddress)
-
 
 	export let numTokens: number = 0.0;
 	export let address: string = '';
@@ -58,28 +51,36 @@
 		address = e.detail.address;
 
 		decimals = await getDecimals(e.detail.address, signer);
-
-
 		balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress), decimals); // getBalance asynchronously then wait for decimals
 
 		tokenToDollarRate = await getDollarRate(e)
-		console.log(tokenToDollarRate);
 
-		//dispatch('tokenSelected', e.detail);
+		dispatch('tokenSelected', e.detail);
 	}
 
 	async function handleInput(e: CustomEvent<any>) {
-		// numTokens is already bound to input
+		/**
+		 * Only dispatch event if same box's address exists
+		 * numTokens is already bound to input
+		*/
 
-		//dispatch('getOther', e.detail);
+		if(address) {
+			tokenToDollarRate = await getDollarRate(e)
+			dispatch('tokenNumInputWithAddress', e.detail);
+
+		}
+
 	}
 
 	let getDollarRate = (function () {
 		let timestamp = 0;
 		return async function (e: any): Promise<number> {
 			if (Date.now() - timestamp < CACHE_TIME && tokenToDollarRate) {
+				console.log("using cache")
 				return tokenToDollarRate;
 			}
+
+			console.log("querying blockchain")
 
 			if (!address) {
 				alert('no address');

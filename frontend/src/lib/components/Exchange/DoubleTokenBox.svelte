@@ -15,7 +15,6 @@
 	import type { JsonRpcSigner } from '@ethersproject/providers';
 	import type { Ierc20, UniswapV2Factory } from '$lib/typesUsed';
 
-	let currentTokenBox
 </script>
 
 <script lang="ts">
@@ -26,14 +25,14 @@
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
 	let canSwapLock = false;
-	let currentTokenBox: TokenBox | undefined;
-	let otherTokenBox: TokenBox | undefined;
+	let currentTokenBox: TokenBox | null;
+	let otherTokenBox: typeof currentTokenBox;
 	let routeCache: RouteCache;
 
 	export let signer: JsonRpcSigner;
 	export let signerAddress: string;
 
-	const { factory, router, nativeAddr, dollarAddr } = getContext('exchange');
+	const { factory, nativeAddr, dollarsAddr } = getContext('exchange');
 
 	type RouteCache = {
 		route: string[];
@@ -98,8 +97,6 @@
 		tokenBox.address = e.detail.address as string;
 
 		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
-
-		
 
 		// TODO use typescript to fix unnessary check for tokenBox.numtokens, because if currentTokenBox exists, it will too
 		if (currentTokenBox === tokenBox) {

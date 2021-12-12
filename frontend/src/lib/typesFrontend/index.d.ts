@@ -78,3 +78,23 @@ interface ISwapOutput extends ISwap {
     amountOutExact: number,
     amountInMax: number
 }
+
+
+
+export interface IExchangeContext {
+    nativeToken: {
+        address: string,
+        decimals: 18
+    },
+    dollarsToken: {
+        address: string,
+        decimals: 18
+    },
+    getFactory: () => UniswapV2Factory,
+    getRouter: () => UniswapV2Router02,
+    signerObj: {
+        getSigner: () => Signer,
+        getAddress: () => string
+    }
+
+}
