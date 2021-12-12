@@ -14,6 +14,7 @@
 	import NumTokenInput from './NumTokenInput.svelte';
 	import { createEventDispatcher, getContext } from 'svelte';
 
+	// getContext
 	const {
 		signerObj,
 		nativeToken,
@@ -70,7 +71,8 @@
 		if(address) {
 			tokenToDollarRate = await getDollarRate(e)
 			dispatch('tokenNumInputWithAddress', e.detail);
-
+		} else {
+			dispatch('tokenNumInputWithoutAddress', e.detail)
 		}
 
 	}

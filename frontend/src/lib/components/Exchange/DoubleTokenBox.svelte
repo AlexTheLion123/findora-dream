@@ -11,10 +11,7 @@
 		getNumOutputAndPIFromRoute,
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
-	import { BigNumber, Contract } from 'ethers';
-	import type { JsonRpcSigner } from '@ethersproject/providers';
-	import type { Ierc20, UniswapV2Factory } from '$lib/typesUsed';
-
+	import { BigNumber } from 'ethers';
 </script>
 
 <script lang="ts">
@@ -29,10 +26,19 @@
 	let otherTokenBox: typeof currentTokenBox;
 	let routeCache: RouteCache;
 
-	export let signer: JsonRpcSigner;
-	export let signerAddress: string;
+	// get context
+	const {
+		signerObj,
+		nativeToken,
+		dollarsToken,
+		getFactory
+	} = getContext('exchange');
 
-	const { factory, nativeAddr, dollarsAddr } = getContext('exchange');
+	const signer = signerObj.getSigner();
+	const signerAddress = signerObj.getAddress();
+	const nativeAddr = nativeToken.address;
+	const dollarsAddr = dollarsToken.address
+	const factory = getFactory();
 
 	type RouteCache = {
 		route: string[];
@@ -105,7 +111,7 @@
 			// getting dollars can be done asynchronously since other calculations do not need it
 			const getDollarsProm = getQuote({
 				addrInput: tokenBox.address,
-				dollarsAddr: dollarAddr,
+				dollarsAddr: dollarsAddr,
 				numInput: addDecimals(tokenBox.numTokens as number, decimals),
 				nativeAddr: nativeAddr,
 				factory: factory,
@@ -212,9 +218,11 @@
 
 	function updateCurrentTokenBox(_tokenBox: TokenBox) {
 		if (_tokenBox === tokenBox1) {
+			console.log("is tb1")
 			currentTokenBox = tokenBox1;
 			otherTokenBox = tokenBox2;
 		} else {
+			console.log("is tb2")
 			currentTokenBox = tokenBox2;
 			otherTokenBox = tokenBox1;
 		}
@@ -224,26 +232,48 @@
 		return numInput * (1 - priceImpact);
 	}
 
-	/**
-	 * @dev just gets the swap rate and dollar rates for the tokens, also caches
-	 */
-	function getRates() {
-		console.log('implement get rates');
-	}
+	async function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+		// if other tokenBox also has address -> get route and output
+		// _tokenBox is current
 
-	/**
-	 * @param _currentTokenBox is the token box holding the swap info
-	 * @returns true if allowance is sufficient, otherwise returns false
-	 */
-
-	function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+		if(_tokenBox !== currentTokenBox || !currentTokenBox || !otherTokenBox) {
+			alert("failed to update current token box correctly")
+			throw "failed to update current token box correctly, should never happen"
+		}
 		
+		if(otherTokenBox.address) {
+			console.log("factory:", factory)
+			const {numOutput, priceImpact, route} = await getAll({
+				addrInput: currentTokenBox.address as string,
+				addrOutput: otherTokenBox.address,
+				numInput: addDecimals(currentTokenBox.numTokens as number, currentTokenBox.decimals as number),
+				factory: factory,
+				nativeAddr: nativeAddr,
+				signer: signer
+			})
+			otherTokenBox.numTokens = removeDecimals(numOutput, otherTokenBox.decimals as number) * (1-priceImpact) // if address exists, decimals exist
+		}
+
 	}
 	function handleSelectionWithoutNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+		// if other tokenBox only has address -> get route
+		// else if other tokenBox also has numTokens -> get route and output
+		// _tokenBox may or may not be currentTokenBox. currentTokenBox might not even exist
+
+
 
 	}
 	function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
+		// check if other tokenBox has address -> get output (route already gotten)
+		// _tokenBox is currentTokenBox
 
+		console.log("updating current with address")
+		updateCurrentTokenBox(_tokenBox)
+	}
+	function handleInputWithoutAddress(_tokenBox: TokenBox) {
+
+		console.log("updating current without address");
+		updateCurrentTokenBox(_tokenBox)
 	}
 </script>
 
@@ -253,6 +283,7 @@
 		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens(tokenBox1, e)}
 		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens(tokenBox1, e)}
 		on:tokenNumInputWithAddress={e => handleInputWithAddress(tokenBox1, e)}
+		on:tokenNumInputWithoutAddress={() => handleInputWithoutAddress(tokenBox1)}
 	/>
 </div>
 
@@ -262,6 +293,7 @@
 		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens(tokenBox2, e)}
 		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens(tokenBox2, e)}
 		on:tokenNumInputWithAddress={e => handleInputWithAddress(tokenBox2, e)}
+		on:tokenNumInputWithoutAddress={() => handleInputWithoutAddress(tokenBox2)}
 	/>
 </div>
 

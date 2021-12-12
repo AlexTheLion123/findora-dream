@@ -13,7 +13,7 @@
 
 	const dispatch = createEventDispatcher();
 	const handleInput = function() {
-		updateCurrent();
+		updateCurrentInputElement();
 
 		// TODO just use event timestamp
 		if (isTimeoutLock == true) {
@@ -33,7 +33,7 @@
 		}, INPUT_BUFFER);
 	}
 
-	function updateCurrent() {
+	function updateCurrentInputElement() {
 		if (current && current !== inputElement) {
 			current.value = '';
 		}
