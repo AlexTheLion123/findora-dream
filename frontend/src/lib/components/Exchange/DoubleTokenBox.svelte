@@ -306,17 +306,31 @@ getAll,
 		}
 
 	}
-	function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
+	async function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// check if other tokenBox has address -> get output (route already gotten)
 		// _tokenBox is currentTokenBox
 
 		console.log("updating current with address")
 		updateCurrentTokenBox(_tokenBox)
+
+		if(otherTokenBox?.address) {
+			if(_tokenBox === tokenBox1) {
+				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
+				otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+			} else {
+				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
+				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+			}
+		}
 	}
 	function handleInputWithoutAddress(_tokenBox: TokenBox) {
 
 		console.log("updating current without address");
 		updateCurrentTokenBox(_tokenBox)
+
+		if(otherTokenBox?.address) {
+
+		}
 	}
 </script>
 
