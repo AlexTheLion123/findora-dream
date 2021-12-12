@@ -1,47 +1,90 @@
-import type { BigNumber, ethers, Signer } from "ethers";
+import type { ethers, Signer } from "ethers";
 import { getReservesQuery } from "./utils";
-import {Contract} from 'ethers'
-import {ERC20ABI} from '$lib/abis'
-import type {Ierc20} from '$lib/typesUsed'
+import { Contract, BigNumber } from 'ethers'
+import { ERC20ABI } from '$lib/abis'
+import type { Ierc20 } from '$lib/typesUsed'
+
+// type SomeProps<T extends boolean> =  {
+//     route: string[], 
+//     numInputOrOutput: number, 
+//     factoryAddr: string, 
+//     signer: Signer, 
+//     isInput: T
+// }
+
+// type ReturnProps<T extends boolean> = T extends true ? { 
+//     reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]; 
+//     amountsOutArr: BigNumber[]; 
+// } : string;
+
+// type FuncType<Q extends SomeProps<H>, H extends boolean> = ({ route, numInputOrOutput, factoryAddr, signer, isInput }: Q) => ReturnProps<H>;
 
 // amounts and reserves out are gotten together to save on queries
-export async function getAmountsAndReservesOut({ route, numInput, factoryAddr, signer }: {
+export async function getAmountsAndReservesInOrOut({ route, numInputOrOutput, factoryAddr, signer, isInput }: {
     route: string[],
-    numInput: BigNumber,
+    numInputOrOutput: BigNumber,
     factoryAddr: string,
-    signer: Signer
-}){
+    signer: Signer,
+    isInput: boolean
+}) {
     // TODO ensure route is valid
 
-    let currentNum = numInput
-    
+    let currentNum = numInputOrOutput
+
     let reserves: {
         reserve0: ethers.BigNumber,
         reserve1: ethers.BigNumber
-    }[] = new Array(route.length-1)
+    }[] = new Array()
 
-    let amountsOut: BigNumber[] = new Array(route.length-1)
+    let amounts: BigNumber[] = new Array()
 
-    for (let i = 0; i < route.length - 1; i++) {
-        
-        const [reserve0, reserve1] = await getReservesQuery({ factoryAddr: factoryAddr, addrInput: route[i], addrOutput: route[i+1], signer: signer});
-        const amountOut = getAmountOutManual({amountIn: currentNum, reserveIn: reserve0, reserveOut: reserve1});
-        
-        reserves[i] = ({reserve0: reserve0, reserve1: reserve1})
-        amountsOut[i] = (amountOut)
-    }  
+    if (isInput) {
+        for (let i = 0; i < route.length - 1; i++) {
+            // working towards output
+            const [reserve0, reserve1] = await getReservesQuery({ factoryAddr: factoryAddr, addrInput: route[i], addrOutput: route[i + 1], signer: signer });
+            const amountOut = getAmountOutManual({ amountIn: currentNum, reserveIn: reserve0, reserveOut: reserve1 })
 
+            reserves.push({ reserve0: reserve0, reserve1: reserve1 })
+            amounts.push(amountOut)
+
+            currentNum = amountOut
+        }
+
+    } else {
+        for (let i = route.length - 1; i > 0; i--) {
+            // working towards input
+            console.log(route[i-1], route[i])
+
+            const [reserve0, reserve1] = await getReservesQuery({ factoryAddr: factoryAddr, addrInput: route[i-1], addrOutput: route[i], signer: signer });
+            
+            const amountIn = getAmountInManual({ amountOut: currentNum, reserveOut: reserve1, reserveIn: reserve0 })
+
+            reserves.push({ reserve0: reserve0, reserve1: reserve1 })
+            amounts.push(amountIn)
+
+            currentNum = amountIn
+            console.log(reserves, amounts)
+        }        
+    }
     return {
         reservesArr: reserves,
-        amountsOutArr: amountsOut
+        amountsArr: amounts
     }
 }
 
-function getAmountOutManual({amountIn, reserveIn, reserveOut}: { [k: string]: BigNumber}) {
+function getAmountOutManual({ amountIn, reserveIn, reserveOut }: { [k: string]: BigNumber }) {
     const amountInWithFee = amountIn.mul(997);
     const numerator = amountInWithFee.mul(reserveOut);
     const denominator = reserveIn.mul(1000).add(amountInWithFee);
     return numerator.div(denominator);
+}
+
+function getAmountInManual({ amountOut, reserveOut, reserveIn }: { [k: string]: BigNumber }) {
+    // get amount In from amount out
+    const numerator = amountOut.mul(reserveIn).mul(1000)
+    const denominator = reserveOut.sub(amountOut).mul(997)
+    return numerator.div(denominator)
+
 }
 
 export async function getAllowance({ tokenAddr, ownerAddr, spenderAddr, signer }: {

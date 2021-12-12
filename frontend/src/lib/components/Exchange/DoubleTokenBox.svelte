@@ -7,11 +7,11 @@
 		checkAllowance,
 		getQuote,
 		getRoute,
-		getAll,
-		getNumOutputAndPIFromRoute,
+		getNumInputOrOutputAndPIFromRoute,
+getAll,
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
-	import { BigNumber } from 'ethers';
+	import type { BigNumber } from 'ethers';
 </script>
 
 <script lang="ts">
@@ -68,15 +68,15 @@
 		}
 
 		// if swapRate was not provided, get it and set route cache
-		routeCache.swapRate = new Promise(async (resolve) => {
-			const {numOutput} = await getNumOutputAndPIFromRoute({
-				route: route,
-				factoryAddr: factory?.address,
-				signer: signer,
-				numInput: BigNumber.from(1000000)
-			})
-			resolve(numOutput)
-		});
+		// routeCache.swapRate = new Promise(async (resolve) => {
+		// 	const {numOutput} = await getNumInputOrOutputAndPIFromRoute({
+		// 		route: route,
+		// 		factoryAddr: factory?.address,
+		// 		signer: signer,
+		// 		numInput: BigNumber.from(1000000)
+		// 	})
+		// 	resolve(numOutput)
+		// });
 	}
 
 	function getRouteAgain(): boolean {
@@ -111,7 +111,7 @@
 			// getting dollars can be done asynchronously since other calculations do not need it
 			const getDollarsProm = getQuote({
 				addrInput: tokenBox.address,
-				dollarsAddr: dollarsAddr,
+				addrOutput: dollarsAddr,
 				numInput: addDecimals(tokenBox.numTokens as number, decimals),
 				nativeAddr: nativeAddr,
 				factory: factory,
@@ -232,6 +232,16 @@
 		return numInput * (1 - priceImpact);
 	}
 
+	function calcInputGivenPI(numOutput: number, priceImpact: number) {
+		return numOutput / (1- priceImpact);
+	}
+
+
+	/**
+	 * TODO delete above, new code below
+	 */
+
+
 	async function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// if other tokenBox also has address -> get route and output
 		// _tokenBox is current
@@ -243,15 +253,39 @@
 		
 		if(otherTokenBox.address) {
 			console.log("factory:", factory)
-			const {numOutput, priceImpact, route} = await getAll({
-				addrInput: currentTokenBox.address as string,
-				addrOutput: otherTokenBox.address,
-				numInput: addDecimals(currentTokenBox.numTokens as number, currentTokenBox.decimals as number),
-				factory: factory,
-				nativeAddr: nativeAddr,
-				signer: signer
-			})
-			otherTokenBox.numTokens = removeDecimals(numOutput, otherTokenBox.decimals as number) * (1-priceImpact) // if address exists, decimals exist
+			
+
+
+			if(_tokenBox === tokenBox1) {
+				const {numInputOrOutput, priceImpact, route} = await getAll({
+					addrP: currentTokenBox.address as string,
+					addrQ: otherTokenBox.address,
+					numInputOrOutput: addDecimals(currentTokenBox.numTokens as number, currentTokenBox.decimals as number),
+					factory: factory,
+					nativeAddr: nativeAddr,
+					signer: signer,
+					isInput: true
+				})
+
+				console.log(priceImpact)
+				otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+			} else {
+
+				const {numInputOrOutput, priceImpact, route} = await getAll({
+					addrP: currentTokenBox.address as string,
+					addrQ: otherTokenBox.address,
+					numInputOrOutput: addDecimals(currentTokenBox.numTokens as number, currentTokenBox.decimals as number),
+					factory: factory,
+					nativeAddr: nativeAddr,
+					signer: signer,
+					isInput: false
+				})
+
+				console.log(priceImpact, "price impact")
+				
+				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+			}
+
 		}
 
 	}

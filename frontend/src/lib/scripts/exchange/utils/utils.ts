@@ -6,7 +6,7 @@ import type { Signer, BigNumber } from 'ethers';
 
 
 export function removeDecimals(bigNum: BigNumber, decimals: number): number {
-    return parseInt(utils.formatUnits(bigNum, decimals))
+    return parseFloat(utils.formatUnits(bigNum, decimals))
 }
 
 export function addDecimals(num: number, decimals: number): BigNumber {
@@ -66,4 +66,8 @@ export async function getReservesQuery({factoryAddr, addrInput, addrOutput, sign
 export async function checkAddressAgainstNative(factory: UniswapV2Factory, nativeAddr: string, addr: string) {
     const tk1AgainstNative = await factory.getPair(nativeAddr, addr);
     return checkAddressExists(tk1AgainstNative);
+}
+
+export function bigNumDivWithPrecision() {
+    // TODO complete
 }

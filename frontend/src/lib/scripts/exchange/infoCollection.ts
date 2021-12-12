@@ -1,4 +1,4 @@
-import { getAmountsAndReservesOut, getAllowance } from './utils/swapUtils'
+import { getAmountsAndReservesInOrOut, getAllowance } from './utils/swapUtils'
 import { NoRouteError, SamePairError } from '.';
 import { checkAddressAgainstNative, checkAddressExists } from './utils/utils'
 import type { Signer, BigNumber} from 'ethers'
@@ -10,47 +10,64 @@ import { ERC20ABI } from '$lib/abis';
  * All these exported methods are called from the frontend to update display and component values
  */
 
-/// @dev gets all the data required for a swap, starting from the route and numInput
-export async function getAll({ addrInput, addrOutput, numInput, factory, nativeAddr, signer }: {
-    addrInput: string,
-    addrOutput: string,
-    numInput: BigNumber,
+/**
+ * @dev gets all the data required for a swap, starting from the route and numInput
+ * @param isInput boolean that determines whether the number provided in the input or the output
+ * Routes are reversible, so can calculate either way
+ */
+export async function getAll({ addrP, addrQ, numInputOrOutput, factory, nativeAddr, signer, isInput }: {
+    addrP: string,
+    addrQ: string,
+    numInputOrOutput: BigNumber,
     factory: UniswapV2Factory,
     nativeAddr: string,
-    signer: Signer
-}) {    
-    return getRoute({ addrInput: addrInput, addrOutput: addrOutput, factory: factory, nativeAddr: nativeAddr })
+    signer: Signer,
+    isInput: boolean
+}): Promise<{
+    numInputOrOutput: BigNumber;
+    priceImpact: number;
+    route: string[]}> 
+    {    
+    return getRoute({ addrInput: addrP, addrOutput: addrQ, factory: factory, nativeAddr: nativeAddr })
         .then(async res => {
-            const {numOutput, priceImpact} = await getNumOutputAndPIFromRoute({ route: res, numInput: numInput, factoryAddr: factory.address, signer: signer })
+            const {numInputOrOutput: num, priceImpact} = await getNumInputOrOutputAndPIFromRoute({ route: res, numInputOrOutput: numInputOrOutput, factoryAddr: factory.address, signer: signer, isInput: isInput })
 
             return {
-                numOutput: numOutput,
+                numInputOrOutput: num,
                 priceImpact: priceImpact,
                 route: res
             }
         })
 }
 
-
-export async function getNumOutputAndPIFromRoute({ route, numInput, factoryAddr, signer }: {
+export async function getNumInputOrOutputAndPIFromRoute({ route, numInputOrOutput, factoryAddr, signer, isInput }: {
     route: string[],
-    numInput: BigNumber,
+    numInputOrOutput: BigNumber,
     factoryAddr: string,
-    signer: Signer
+    signer: Signer,
+    isInput: boolean
 }) {
-    const { reservesArr, amountsOutArr } = await getAmountsAndReservesOut({ route: route, numInput: numInput, factoryAddr: factoryAddr, signer: signer })
-    const numOutput = amountsOutArr[amountsOutArr.length - 1];
-    const priceImpact = getPI({ reservesArr, amountsOutArr }, numInput, numOutput)
+    const { reservesArr, amountsArr } = await getAmountsAndReservesInOrOut({ route: route, numInputOrOutput: numInputOrOutput, factoryAddr: factoryAddr, signer: signer, isInput: isInput })
+    const result = amountsArr[amountsArr.length - 1];
+
+    let priceImpact: number;
+    
+    if(isInput) {
+        priceImpact = getPI({ reservesArr, amountsArr }, numInputOrOutput, result)
+
+    } else {
+        priceImpact = getPI({ reservesArr, amountsArr }, result, numInputOrOutput)
+    }
+
     return {
-        numOutput: numOutput,
+        numInputOrOutput: numInputOrOutput,
         priceImpact: priceImpact
     }
 
 }
 
 /// @dev calculates price impact by getting a quote (i.e. no price impact) based on the numInput
-function getPI({ reservesArr }: Awaited<ReturnType<typeof getAmountsAndReservesOut>>, numInput: BigNumber, numOutput: BigNumber) {
-    console.log("getting price impact")
+function getPI({ reservesArr }: Awaited<ReturnType<typeof getAmountsAndReservesInOrOut>>, numInput: BigNumber, numOutput: BigNumber) {
     const quoteOutput = _quoteFromRerservesArr(numInput, reservesArr)
     return _calcPI({ quoteOutput: quoteOutput, actualOutput: numOutput })
 }
@@ -77,14 +94,12 @@ function _calcPI({ quoteOutput, actualOutput }: { quoteOutput: BigNumber, actual
      * assuming quoteOutput < actualOutput, so we know already that division without decimal = 0
      * so we simply mod to get fractional part
      */
+    const PRECISION = 18;
+    const multiplier = utils.parseUnits("1", PRECISION)
 
-    const num1 = quoteOutput.mod(actualOutput).div(utils.parseUnits("10", 10))
-    const num2 = quoteOutput.div(utils.parseUnits("10", 10))
-    return num1.toNumber()/num2.toNumber()
+    return 1 - parseFloat(utils.formatUnits(actualOutput.mul(multiplier).div(quoteOutput), PRECISION))
     
 }
-
-
 
 export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
     toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
@@ -115,14 +130,13 @@ export async function getQuote({ addrInput, addrOutput, numInput, nativeAddr, fa
     return getRoute({ addrInput: addrInput, addrOutput: addrOutput, factory: factory, nativeAddr: nativeAddr })
         .then(async _route => {
             console.log(_route, "route")
-            return getAmountsAndReservesOut({ route: _route, numInput: numInput, factoryAddr: factory.address, signer: signer })
+            return getAmountsAndReservesInOrOut({ route: _route, numInputOrOutput: numInput, factoryAddr: factory.address, signer: signer, isInput: true }) // since don't care about PI here, doesn't matter whether input or output
 
         })
         .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]}) => {
             console.log(value.reservesArr[0].reserve0.toString())
             return _quoteFromRerservesArr(numInput, value.reservesArr)
         })
-
 }
 
 // TODO look at cacheing routes
