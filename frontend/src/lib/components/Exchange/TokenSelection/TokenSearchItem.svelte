@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	
-	export let src = 'src/lib/assets/tokens/logos/eth_logo.svg';
+
+	export let src = '/src/lib/assets/svg/eth_logo.svg';
 	export let name: string;
     export let symbol: string;
     export let address: string;

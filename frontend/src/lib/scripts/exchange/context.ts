@@ -59,7 +59,7 @@ export function getNativeAndDollarAddr(tokens: {address: string, symbol: string,
     };
 }
 
-async function getSignedFactoryAndRouterContracts(factoryAddress: string, routerAddress: string, signer: JsonRpcSigner) {
+async function getSignedFactoryAndRouterContracts(factoryAddress: string, routerAddress: string, signer: Signer) {
     const factoryContract =await new Contract(factoryAddress, UniswapV2FactoryABI, signer) as UniswapV2Factory
     const routerContract = await new Contract(routerAddress, UniswapV2Router02ABI, signer) as UniswapV2Router02
     return {routerContract: routerContract, factoryContract: factoryContract}

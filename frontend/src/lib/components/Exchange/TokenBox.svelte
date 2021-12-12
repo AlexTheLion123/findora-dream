@@ -12,7 +12,6 @@
 	import TokenSelector from './TokenSelection/TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
 	import { createEventDispatcher, getContext } from 'svelte';
-	import type {Writable} from 'svelte/store'
 
 	const {
 		getSigner,
