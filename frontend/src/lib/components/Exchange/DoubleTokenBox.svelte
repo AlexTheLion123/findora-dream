@@ -98,6 +98,10 @@ getAll,
 		}
 	}
 
+	/**
+	 * TODO delete below, new code at bottom
+	 */
+
 	async function handleSelectionGeneric(tokenBox: TokenBox, e: any) {
 		swapGuard = false;
 		tokenBox.address = e.detail.address as string;
@@ -241,7 +245,7 @@ getAll,
 	 * TODO delete above, new code below
 	 */
 
-	async function getAllHelper(isInput: boolean) {
+	async function getAllHelperCurrent(isInput: boolean) {
 		const {numInputOrOutput, priceImpact, route} = isInput ? await getAll({
 					addrP: currentTokenBox!.address as string,
 					addrQ: otherTokenBox!.address as string,
@@ -274,30 +278,32 @@ getAll,
 		
 		if(otherTokenBox.address) {
 			console.log("factory:", factory)
-			
-
 
 			if(_tokenBox === tokenBox1) {
-				const {numInputOrOutput, priceImpact, route} = await getAllHelper(true)
-
-				console.log(priceImpact)
+				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
 				otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
 			} else {
-
-				const {numInputOrOutput, priceImpact, route} = await getAllHelper(false)
-				
+				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
 				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
 			}
 
 		}
-
 	}
-	function handleSelectionWithoutNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+
+	async function handleSelectionWithoutNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// if other tokenBox only has address -> get route
 		// else if other tokenBox also has numTokens -> get route and output
-		// _tokenBox may or may not be currentTokenBox. currentTokenBox might not even exist
+		// _tokenBox cannot be currentTokenBox. currentTokenBox might not even exist
 
-
+		if(currentTokenBox && currentTokenBox.address) {
+			if(currentTokenBox === tokenBox1) {
+				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
+				otherTokenBox!.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, currentTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+			} else {
+				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
+				otherTokenBox!.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, currentTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+			}
+		}
 
 	}
 	function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
