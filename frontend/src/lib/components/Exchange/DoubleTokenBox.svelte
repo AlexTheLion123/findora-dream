@@ -241,6 +241,27 @@ getAll,
 	 * TODO delete above, new code below
 	 */
 
+	async function getAllHelper(isInput: boolean) {
+		const {numInputOrOutput, priceImpact, route} = isInput ? await getAll({
+					addrP: currentTokenBox!.address as string,
+					addrQ: otherTokenBox!.address as string,
+					numInputOrOutput: addDecimals(currentTokenBox!.numTokens as number, currentTokenBox!.decimals as number),
+					factory: factory,
+					nativeAddr: nativeAddr,
+					signer: signer,
+					isInput: true
+				}) : await getAll({
+					addrP: currentTokenBox!.address as string,
+					addrQ: otherTokenBox!.address as string,
+					numInputOrOutput: addDecimals(currentTokenBox!.numTokens as number, currentTokenBox!.decimals as number),
+					factory: factory,
+					nativeAddr: nativeAddr,
+					signer: signer,
+					isInput: false
+				})
+
+		return {numInputOrOutput, priceImpact, route}
+	}
 
 	async function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// if other tokenBox also has address -> get route and output
@@ -257,31 +278,13 @@ getAll,
 
 
 			if(_tokenBox === tokenBox1) {
-				const {numInputOrOutput, priceImpact, route} = await getAll({
-					addrP: currentTokenBox.address as string,
-					addrQ: otherTokenBox.address,
-					numInputOrOutput: addDecimals(currentTokenBox.numTokens as number, currentTokenBox.decimals as number),
-					factory: factory,
-					nativeAddr: nativeAddr,
-					signer: signer,
-					isInput: true
-				})
+				const {numInputOrOutput, priceImpact, route} = await getAllHelper(true)
 
 				console.log(priceImpact)
 				otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
 			} else {
 
-				const {numInputOrOutput, priceImpact, route} = await getAll({
-					addrP: currentTokenBox.address as string,
-					addrQ: otherTokenBox.address,
-					numInputOrOutput: addDecimals(currentTokenBox.numTokens as number, currentTokenBox.decimals as number),
-					factory: factory,
-					nativeAddr: nativeAddr,
-					signer: signer,
-					isInput: false
-				})
-
-				console.log(priceImpact, "price impact")
+				const {numInputOrOutput, priceImpact, route} = await getAllHelper(false)
 				
 				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
 			}
