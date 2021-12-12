@@ -47,7 +47,7 @@ export async function sendToAddress(recipient: string, addresses: Array<ITokensI
 
         let txn = await contract.transfer(recipient, amount)
         await txn.wait()
-        console.log(await getBalance(contract, recipient), `of TK${i + 1} has been sent to`, recipient);
+        console.log(`${await getBalance(contract, recipient)} of ${addresses[i].name} has been sent to ${recipient}`);
     }
 }
 

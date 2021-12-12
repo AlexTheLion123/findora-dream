@@ -1,5 +1,5 @@
 import type { Provider } from '@ethersproject/providers';
-import { ethers, Wallet } from 'ethers';
+import { Contract, ethers, Wallet } from 'ethers';
 import {
     UniswapV2Factory, UniswapV2FactoryFactory, UniswapV2Router02, UniswapV2Router02Factory, MyTokenFactory
 } from '../build/types';
@@ -51,14 +51,10 @@ async function deployUniswapAndWrite() {
 }
 
 async function deployTokensAndWrite() {
+    await deployWithName("Native", "NATIVE")
+    await deployWithName("USDT", "USDT")
+
     for (let i = 0; i < 10; i++) {
-        if (i == 0) {
-            await deployWithName("Native", "NATIVE")
-            continue
-        } else if(i == 1) {
-            await deployWithName("USDT", "USDT")
-            continue
-        }
         await deployWithName(`Token${i + 1}`, `TK${i + 1}`)
     }
 
@@ -72,6 +68,7 @@ async function deployWithName(name: string, symbol: string) {
     await txn.deployed();
     console.log(`${symbol} has been deployed at ${txn.address}`)
     tokensInfo.push({ address: txn.address, name: name, symbol: symbol })
+
 }
 
 
