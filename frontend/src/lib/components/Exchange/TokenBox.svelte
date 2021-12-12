@@ -29,7 +29,7 @@
 
 	export let numTokens: number = 0.0;
 	export let address: string = '';
-	export let decimals: number;
+	export let decimals: number = 0;
 	export let dollars: number = 0;
 	export let balance: number = 0;
 	export let tokenToDollarRate: number = 0; // can be updated 

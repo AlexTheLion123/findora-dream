@@ -24,7 +24,7 @@
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
-	let canSwapLock = false;
+	let swapGuard = false;
 	let currentTokenBox: TokenBox | null;
 	let otherTokenBox: typeof currentTokenBox;
 	let routeCache: RouteCache;
@@ -93,7 +93,7 @@
 	}
 
 	async function handleSelectionGeneric(tokenBox: TokenBox, e: any) {
-		canSwapLock = false;
+		swapGuard = false;
 		tokenBox.address = e.detail.address as string;
 
 		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
@@ -137,7 +137,7 @@
 						}
 						otherTokenBox!.numTokens = removeDecimals(numOutput, otherTokenBox.decimals);
 
-						canSwapLock = true;
+						swapGuard = true;
 						setRouteCache({
 							route: route,
 							toAndFrom: [tokenBox.address as string, otherTokenBox!.address as string],
@@ -187,7 +187,7 @@
 	function getAllWrapper() {}
 
 	async function handleInputGeneric(tokenBox: TokenBox, e: any) {
-		canSwapLock = false;
+		swapGuard = false;
 		updateCurrentTokenBox(tokenBox);
 		tokenBox.numTokens = e.detail.numTokens;
 
@@ -235,21 +235,33 @@
 	 * @param _currentTokenBox is the token box holding the swap info
 	 * @returns true if allowance is sufficient, otherwise returns false
 	 */
+
+	function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+		
+	}
+	function handleSelectionWithoutNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+
+	}
+	function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
+
+	}
 </script>
 
 <div class="token-box">
 	<TokenBox
 		bind:this={tokenBox1}
-		on:tokenSelected={(e) => handleSelectionGeneric(tokenBox1, e)}
-		on:tokenNumInput={(e) => handleInputGeneric(tokenBox1, e)}
+		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens(tokenBox1, e)}
+		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens(tokenBox1, e)}
+		on:tokenNumInputWithAddress={e => handleInputWithAddress(tokenBox1, e)}
 	/>
 </div>
 
 <div class="token-box">
 	<TokenBox
 		bind:this={tokenBox2}
-		on:tokenSelected={(e) => handleSelectionGeneric(tokenBox2, e)}
-		on:tokenNumInput={(e) => handleInputGeneric(tokenBox2, e)}
+		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens(tokenBox2, e)}
+		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens(tokenBox2, e)}
+		on:tokenNumInputWithAddress={e => handleInputWithAddress(tokenBox2, e)}
 	/>
 </div>
 
