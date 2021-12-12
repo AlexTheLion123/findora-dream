@@ -52,10 +52,13 @@
 
 		decimals = await getDecimals(e.detail.address, signer);
 		balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress), decimals); // getBalance asynchronously then wait for decimals
-
 		tokenToDollarRate = await getDollarRate(e)
 
-		dispatch('tokenSelected', e.detail);
+		if(numTokens) {
+			dispatch('tokenSelectedWithNumTokens', e.detail);
+		} else {
+			dispatch('tokenSelectedWithoutNumTokens', e.detail)
+		}
 	}
 
 	async function handleInput(e: CustomEvent<any>) {
