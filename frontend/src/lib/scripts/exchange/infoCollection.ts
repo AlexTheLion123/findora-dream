@@ -99,24 +99,33 @@ export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAdd
 }
 
 /**
- * @dev the way we calculate the route, it should necessarily be possible to calculate dollar value
+ * @dev used to calculate dollar value
+ * the way we calculate the route, it should necessarily be possible to calculate dollar value
  * @returns used to return the exact dollar value of the input parameter, without taking price impact into account.
  */
 
-export async function getQuote({ addrInput, dollarsAddr, numInput, nativeAddr, factory, signer }: {
+export async function getQuote({ addrInput, addrOutput, numInput, nativeAddr, factory, signer }: {
     addrInput: string,
-    dollarsAddr: string,
+    addrOutput: string,
     numInput: BigNumber,
     nativeAddr: string,
     factory: UniswapV2Factory,
     signer: Signer
 }) {
-    return getRoute({ addrInput: addrInput, addrOutput: dollarsAddr, factory: factory, nativeAddr: nativeAddr })
-        .then(async _route => getAmountsAndReservesOut({ route: _route, numInput: numInput, factoryAddr: factory.address, signer: signer }))
-        .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]; amountsOutArr: BigNumber[]; }) => _quoteFromRerservesArr(numInput, value.reservesArr))
+    return getRoute({ addrInput: addrInput, addrOutput: addrOutput, factory: factory, nativeAddr: nativeAddr })
+        .then(async _route => {
+            console.log(_route, "route")
+            return getAmountsAndReservesOut({ route: _route, numInput: numInput, factoryAddr: factory.address, signer: signer })
+
+        })
+        .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]}) => {
+            console.log(value.reservesArr[0].reserve0.toString())
+            return _quoteFromRerservesArr(numInput, value.reservesArr)
+        })
 
 }
 
+// TODO look at cacheing routes
 // TODO change logic to accomodate array of main tokens instead of nativeAddr
 export async function getRoute({ addrInput, addrOutput, factory, nativeAddr }: {
     addrInput: string,

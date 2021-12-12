@@ -61,11 +61,9 @@
 
 
 		balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress), decimals); // getBalance asynchronously then wait for decimals
-		console.log(balance, "balance")
 
-		await getDollarRate(e).then((value) => {
-			return numTokens * value;
-		});
+		tokenToDollarRate = await getDollarRate(e)
+		console.log(tokenToDollarRate);
 
 		//dispatch('tokenSelected', e.detail);
 	}
@@ -88,19 +86,21 @@
 				throw 'no address';
 			}
 
+			if(address=== dollarsAddr) {
+				return 1;
+			}
+
 			timestamp = Date.now();
 
 			return getQuote({
 				addrInput: address,
-				dollarsAddr: dollarsAddr,
-				numInput: BigNumber.from(1000000),
+				addrOutput: dollarsAddr,
+				numInput: BigNumber.from(10).pow(decimals).mul(1000000),
 				nativeAddr: nativeAddr,
 				factory: factory,
 				signer: signer
 			}).then((dollarsBig) => {
-				const value = removeDecimals(dollarsBig, decimals);
-				tokenToDollarRate = 1000000 / value;
-				return value;
+				return 1000000 / removeDecimals(dollarsBig, 18); // TODO assummes dollars has 18 decimals, fix this assumption if needs be.
 			});
 		};
 	})();
