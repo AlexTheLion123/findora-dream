@@ -80,7 +80,7 @@ getAll,
 	}
 
 	function getRouteAgain(): boolean {
-
+		return false
 	}
 
 
@@ -95,128 +95,6 @@ getAll,
 			await performLiquidity();
 		} else {
 			alert('Invalid pageThis should never happen');
-		}
-	}
-
-	/**
-	 * TODO delete below, new code at bottom
-	 */
-
-	async function handleSelectionGeneric(tokenBox: TokenBox, e: any) {
-		swapGuard = false;
-		tokenBox.address = e.detail.address as string;
-
-		if (!tokenBox.address) throw 'address does not exist for selection, this should never happen';
-
-		// TODO use typescript to fix unnessary check for tokenBox.numtokens, because if currentTokenBox exists, it will too
-		if (currentTokenBox === tokenBox) {
-			// can't swap yet, can only get dollar value
-
-			// getting dollars can be done asynchronously since other calculations do not need it
-			const getDollarsProm = getQuote({
-				addrInput: tokenBox.address,
-				addrOutput: dollarsAddr,
-				numInput: addDecimals(tokenBox.numTokens as number, decimals),
-				nativeAddr: nativeAddr,
-				factory: factory,
-				signer: signer
-			})
-				.then((res) => (tokenBox.dollars = removeDecimals(res, decimals)))
-				.catch((error) => {
-					alert('unable to get dollar value');
-					console.log(error);
-					throw 'unable to get dollar value';
-				});
-
-			if (otherTokenBox && otherTokenBox.address) {
-				// otherTokenBox has also been selected, so we can get its corresponding output tokens
-				// currentTokenBox (= tokenBox) is the input
-
-				getAll({
-					addrInput: tokenBox.address as string,
-					addrOutput: otherTokenBox.address as string,
-					numInput: addDecimals(tokenBox.numTokens as number, decimals),
-					factory: factory, // have checked factory and signer already
-					nativeAddr: nativeAddr,
-					signer: signer
-				})
-					.then(({ route, numOutput, priceImpact }) => {
-						if (!otherTokenBox?.decimals) {
-							alert('decimals not retrieved yet for other token box');
-							throw 'decimals not retrieved yet for other token box';
-						}
-						otherTokenBox!.numTokens = removeDecimals(numOutput, otherTokenBox.decimals);
-
-						swapGuard = true;
-						setRouteCache({
-							route: route,
-							toAndFrom: [tokenBox.address as string, otherTokenBox!.address as string],
-							timestamp: Date.now()
-						});
-
-						return Promise.all([getDollarsProm]).then((values) => {
-							otherTokenBox!.dollars = calcOutputGivenPI(tokenBox.dollars as number, priceImpact);
-						});
-					})
-					.catch((e) => {
-						alert('error in getting values for swap');
-						console.log('Error in getting values swap');
-					});
-			}
-		} else if (currentTokenBox && currentTokenBox.address) {
-			/**
-			 * currentTokenBox does exist with an address, but it is not this one
-			 * tokenBox = otherTokenBox
-			 * if not current, but current exists with address,
-			 * can't get dollar value here for tokenBox since no input since not current, and current will sort out its own dollar value
-			 */
-
-			if (!factory) {
-				alert('no factory yet');
-				throw 'no factory';
-			}
-
-			const _route = getRoute({
-				addrInput: currentTokenBox.address,
-				addrOutput: otherTokenBox!.address as string,
-				factory: factory,
-				nativeAddr: nativeAddr
-			});
-
-			if (currentTokenBox.numTokens) {
-				getAll;
-			}
-		} else if (tokenBox1.address && tokenBox2.address) {
-			/**
-			 * currentTokenBox does not exist yet but both are selected
-			 * Can only get route and reserves
-			 */
-		}
-	}
-
-	function getAllWrapper() {}
-
-	async function handleInputGeneric(tokenBox: TokenBox, e: any) {
-		swapGuard = false;
-		updateCurrentTokenBox(tokenBox);
-		tokenBox.numTokens = e.detail.numTokens;
-
-		if (!tokenBox.numTokens) throw 'that value does not exist, this should never happen';
-
-		if (!factory || !nativeAddr || !signer) {
-			alert('Connect to metamask');
-			return;
-		}
-
-		if (tokenBox.address) {
-			getDollarValue(tokenBox.address, tokenBox.numTokens)
-				.then((res) => (tokenBox.dollars = res))
-				.catch(alert);
-
-			if (otherTokenBox && otherTokenBox.address) {
-				// _tokenBox is input
-				getAndSetSwapData(tokenBox);
-			}
 		}
 	}
 
@@ -241,9 +119,7 @@ getAll,
 	}
 
 
-	/**
-	 * TODO delete above, new code below
-	 */
+	
 
 	async function getAllHelperCurrent(isInput: boolean) {
 		const {numInputOrOutput, priceImpact, route} = isInput ? await getAll({
