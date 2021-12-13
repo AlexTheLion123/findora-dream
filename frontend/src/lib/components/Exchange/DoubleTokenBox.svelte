@@ -40,6 +40,7 @@ getAll,
 	const factory = getFactory();
 
 	let routeCache: string[] | null;
+	let canSwapGuard = false;
 
 	export async function action() {
 		if ($page.path === '/swap') {
@@ -108,6 +109,7 @@ getAll,
 	async function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// if other tokenBox also has address -> get route and output
 		// _tokenBox is current
+		canSwapGuard = false;
 		routeCache = null;
 
 		if(_tokenBox !== currentTokenBox || !currentTokenBox || !otherTokenBox) {
@@ -127,7 +129,7 @@ getAll,
 				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
 				routeCache = route;
 			}
-
+			canSwapGuard = true;
 		}
 	}
 
@@ -135,6 +137,7 @@ getAll,
 		// if other tokenBox only has address -> get route
 		// else if other tokenBox also has numTokens -> get route and output
 		// _tokenBox cannot be currentTokenBox. currentTokenBox might not even exist
+		canSwapGuard = false;
 		routeCache = null;
 
 		if(currentTokenBox && currentTokenBox.address) {
@@ -147,13 +150,14 @@ getAll,
 				otherTokenBox!.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, currentTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
 				routeCache = route;
 			}
+			canSwapGuard = true
 		}
 
 	}
 	async function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// check if other tokenBox has address -> get output (route already gotten)
 		// _tokenBox is currentTokenBox
-
+		canSwapGuard = false;
 		updateCurrentTokenBox(_tokenBox)
 
 		if(otherTokenBox?.address) {
@@ -178,6 +182,7 @@ getAll,
 					otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact)
 				}
 			}
+			canSwapGuard= true
 		}
 	}
 	function handleInputWithoutAddress(_tokenBox: TokenBox) {
