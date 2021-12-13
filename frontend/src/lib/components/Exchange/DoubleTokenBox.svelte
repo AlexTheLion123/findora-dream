@@ -24,7 +24,6 @@ getAll,
 	let swapGuard = false;
 	let currentTokenBox: TokenBox | null;
 	let otherTokenBox: typeof currentTokenBox;
-	let routeCache: RouteCache;
 
 	// get context
 	const {
@@ -40,51 +39,9 @@ getAll,
 	const dollarsAddr = dollarsToken.address
 	const factory = getFactory();
 
-	type RouteCache = {
-		route: string[];
-		toAndFrom: string[];
-		timestamp: number;
-		swapRate: BigNumber | Promise<BigNumber>; // 1000000 in = ? out
-	};
+	let routeCache: string[] | null;
 
-	async function setRouteCache({
-		route,
-		toAndFrom
-	}: {
-		route: string[];
-		toAndFrom: [string, string];
-	}) {
-		(routeCache.route = route),
-			(routeCache.toAndFrom = toAndFrom),
-			(routeCache.timestamp = Date.now());
-
-		if (
-			routeCache &&
-			routeCache.toAndFrom === toAndFrom &&
-			Date.now() - routeCache.timestamp < 10000
-		) {
-			// if we've already collected data and its the same, and 10 seconds haven't elapsed since last data collection, return.
-			return;
-		}
-
-		// if swapRate was not provided, get it and set route cache
-		// routeCache.swapRate = new Promise(async (resolve) => {
-		// 	const {numOutput} = await getNumInputOrOutputAndPIFromRoute({
-		// 		route: route,
-		// 		factoryAddr: factory?.address,
-		// 		signer: signer,
-		// 		numInput: BigNumber.from(1000000)
-		// 	})
-		// 	resolve(numOutput)
-		// });
-	}
-
-	function getRouteAgain(): boolean {
-		return false
-	}
-
-
-	export async function perform() {
+	export async function action() {
 		if ($page.path === '/swap') {
 			if (!(await checkAllowance())) {
 				approveMax();
@@ -118,9 +75,6 @@ getAll,
 		return numOutput / (1- priceImpact);
 	}
 
-
-	
-
 	async function getAllHelperCurrent(isInput: boolean) {
 		const {numInputOrOutput, priceImpact, route} = isInput ? await getAll({
 					addrP: currentTokenBox!.address as string,
@@ -143,9 +97,18 @@ getAll,
 		return {numInputOrOutput, priceImpact, route}
 	}
 
+	function getFromRouteHelper(isInput: boolean) {
+		if(!routeCache) {
+			alert("route cache not available")
+			throw "this should never happen"
+		}
+		return getNumInputOrOutputAndPIFromRoute({ route: routeCache, numInputOrOutput: addDecimals(currentTokenBox?.numTokens as number, currentTokenBox?.decimals as number), factoryAddr: factory.address, signer: signer, isInput: isInput })
+	}
+
 	async function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// if other tokenBox also has address -> get route and output
 		// _tokenBox is current
+		routeCache = null;
 
 		if(_tokenBox !== currentTokenBox || !currentTokenBox || !otherTokenBox) {
 			alert("failed to update current token box correctly")
@@ -158,9 +121,11 @@ getAll,
 			if(_tokenBox === tokenBox1) {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
 				otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				routeCache = route;
 			} else {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
 				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				routeCache = route;
 			}
 
 		}
@@ -170,14 +135,17 @@ getAll,
 		// if other tokenBox only has address -> get route
 		// else if other tokenBox also has numTokens -> get route and output
 		// _tokenBox cannot be currentTokenBox. currentTokenBox might not even exist
+		routeCache = null;
 
 		if(currentTokenBox && currentTokenBox.address) {
 			if(currentTokenBox === tokenBox1) {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
 				otherTokenBox!.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, currentTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				routeCache = route;
 			} else {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
 				otherTokenBox!.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, currentTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				routeCache = route;
 			}
 		}
 
@@ -190,17 +158,30 @@ getAll,
 
 		if(otherTokenBox?.address) {
 			if(_tokenBox === tokenBox1) {
-				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
-				otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				if(!routeCache){
+					const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
+					otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+					routeCache = route;
+				} else {
+					console.log('using route cache')
+					const {numInputOrOutput, priceImpact} = await getFromRouteHelper(true);
+					otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				}
 			} else {
-				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
-				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				if(!routeCache) {
+					const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
+					otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+					routeCache = route;
+				} else {
+					console.log('using route cache')
+					const {numInputOrOutput, priceImpact} = await getFromRouteHelper(false);
+					otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact)
+				}
 			}
 		}
 	}
 	function handleInputWithoutAddress(_tokenBox: TokenBox) {
 		// cannot do anything here except update current
-
 		updateCurrentTokenBox(_tokenBox)
 
 	}
