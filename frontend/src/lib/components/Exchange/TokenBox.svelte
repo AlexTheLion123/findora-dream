@@ -77,12 +77,13 @@
 	}
 
 	let getDollarRate = (function () {
+		// TODO fix cache to take addresses into account
 		let timestamp = 0;
 		return async function (e: any): Promise<number> {
-			if (Date.now() - timestamp < CACHE_TIME && tokenToDollarRate) {
-				console.log("using cache")
-				return tokenToDollarRate;
-			}
+			// if (Date.now() - timestamp < CACHE_TIME && tokenToDollarRate) {
+			// 	console.log("using cache")
+			// 	return tokenToDollarRate;
+			// }
 
 
 			if (!address) {
