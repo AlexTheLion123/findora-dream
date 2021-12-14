@@ -68,7 +68,6 @@ async function deployWithName(name: string, symbol: string) {
     await txn.deployed();
     console.log(`${symbol} has been deployed at ${txn.address}`)
     tokensInfo.push({ address: txn.address, name: name, symbol: symbol })
-
 }
 
 
@@ -108,7 +107,7 @@ async function sendMeGasMoney() {
     });
     await txn.wait()
 
-    console.log("my eth balance", await checkMybalance())
+    //console.log("my eth balance", await checkMybalance())
 }
 
 async function checkMybalance() {
