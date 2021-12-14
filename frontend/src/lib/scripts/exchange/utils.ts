@@ -72,3 +72,7 @@ export function precisionDivision(numerator: BigNumber, denom: BigNumber, precis
     const multiplier = utils.parseUnits("1", precision)
     return parseFloat(utils.formatUnits(numerator.mul(multiplier).div(denom), precision))
 }
+
+export function formatBoxOutput(num: number) {
+    return Math.round(num*10000)/10000
+}

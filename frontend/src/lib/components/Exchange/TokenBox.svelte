@@ -87,7 +87,7 @@
 <div class="box">
 	<div class="selector"><TokenSelector on:tokenSelected={handleSelection} /></div>
 	<p class="balance">
-		Balance: {formatNumber(balance, 2)}
+		Balance: {formatNumber(balance, 5)}
 	</p>
 	<div class="input-component">
 		<NumTokenInput bind:value={numTokens} bind:updateCurrent={updateCurrentInput} on:tokenNumInput={handleInput} />
@@ -112,8 +112,8 @@
 
 		display: grid;
 		grid-template:
-			'selector input' 1fr
-			'balance .' 1fr / 1fr 2fr;
+			'selector input input' 1fr
+			'balance balance .' 1fr / 1fr 2fr;
 		align-items: center;
 	}
 
@@ -123,7 +123,6 @@
 
 	.balance {
 		grid-area: balance;
-		font-size: 0.8rem;
 		letter-spacing: 0.76px;
 	}
 
@@ -131,8 +130,6 @@
 		grid-area: input;
 		justify-self: end;
 	}
-
-
 
 	// .dollars {
 	// 	grid-area: dollars;
