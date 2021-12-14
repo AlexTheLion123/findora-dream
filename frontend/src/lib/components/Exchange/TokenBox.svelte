@@ -2,11 +2,10 @@
 
 <script context="module" lang="ts">
 	import { getBalance, getDecimals, getQuote } from '$lib/scripts/exchange';
-	import { removeDecimals } from '$lib/scripts/exchange/utils/utils'
-	import { BigNumber } from 'ethers'
+	import { precisionDivision, removeDecimals } from '$lib/scripts/exchange/utils/utils';
+	import { BigNumber, utils } from 'ethers';
 	import type { Signer } from 'ethers';
 	import type { UniswapV2Factory } from '$lib/typesUsed';
-
 </script>
 
 <script lang="ts">
@@ -85,7 +84,6 @@
 				return tokenToDollarRate;
 			}
 
-			console.log("querying blockchain")
 
 			if (!address) {
 				alert('no address');
@@ -97,19 +95,22 @@
 			}
 
 			timestamp = Date.now();
-
-			return getQuote({
-				addrInput: address,
-				addrOutput: dollarsAddr,
-				numInput: BigNumber.from(10).pow(decimals).mul(1000000),
-				nativeAddr: nativeAddr,
-				factory: factory,
-				signer: signer
-			}).then((dollarsBig) => {
-				return 1000000 / removeDecimals(dollarsBig, 18); // TODO assummes dollars has 18 decimals, fix this assumption if needs be.
-			});
+			return removeDecimals(await getDollarsQuote(address), decimals)
 		};
 	})();
+
+	function getDollarsQuote(addrInput: string) {
+		const input = utils.parseUnits("1", decimals)
+		console.log("getting dollars quote from blockchain")
+		return getQuote({
+					addrInput: addrInput,
+					addrOutput: dollarsAddr,
+					numInput: input, // TODO assummes dollars has 18 decimals, fix this assumption if needs be.
+					nativeAddr: nativeAddr,
+					factory: factory,
+					signer: signer
+				})
+	}
 
 	function formatNumber(num: number | string, decimals: number) {
 		if (typeof num === 'string') {

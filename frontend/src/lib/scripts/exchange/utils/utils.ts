@@ -68,6 +68,7 @@ export async function checkAddressAgainstNative(factory: UniswapV2Factory, nativ
     return checkAddressExists(tk1AgainstNative);
 }
 
-export function bigNumDivWithPrecision() {
-    // TODO complete
+export function precisionDivision(numerator: BigNumber, denom: BigNumber, precision = 18): number {
+    const multiplier = utils.parseUnits("1", precision)
+    return parseFloat(utils.formatUnits(numerator.mul(multiplier).div(denom), precision))
 }

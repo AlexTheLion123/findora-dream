@@ -1,6 +1,6 @@
 import { getAmountsAndReservesInOrOut, getAllowance } from './utils/swapUtils'
 import { NoRouteError, SamePairError } from '.';
-import { checkAddressAgainstNative, checkAddressExists } from './utils/utils'
+import { checkAddressAgainstNative, checkAddressExists, removeDecimals, precisionDivision } from './utils/utils'
 import type { Signer, BigNumber} from 'ethers'
 import type { UniswapV2Factory, Ierc20 } from '$lib/typesUsed'
 import {Contract, utils } from 'ethers'
@@ -49,7 +49,7 @@ export async function getNumInputOrOutputAndPIFromRoute({ route, numInputOrOutpu
 }) {
     const { reservesArr, amountsArr } = await getAmountsAndReservesInOrOut({ route: route, numInputOrOutput: numInputOrOutput, factoryAddr: factoryAddr, signer: signer, isInput: isInput })
     const result = amountsArr[amountsArr.length - 1];
-
+    console.log("amountsArr: ", amountsArr.map(item => removeDecimals(item, 18)))
     let priceImpact: number;
     
     if(isInput) {
@@ -60,7 +60,7 @@ export async function getNumInputOrOutputAndPIFromRoute({ route, numInputOrOutpu
     }
 
     return {
-        numInputOrOutput: numInputOrOutput,
+        numInputOrOutput: result,
         priceImpact: priceImpact
     }
 
@@ -94,11 +94,7 @@ function _calcPI({ quoteOutput, actualOutput }: { quoteOutput: BigNumber, actual
      * assuming quoteOutput < actualOutput, so we know already that division without decimal = 0
      * so we simply mod to get fractional part
      */
-    const PRECISION = 18;
-    const multiplier = utils.parseUnits("1", PRECISION)
-
-    return 1 - parseFloat(utils.formatUnits(actualOutput.mul(multiplier).div(quoteOutput), PRECISION))
-    
+    return 1 - precisionDivision(actualOutput, quoteOutput)
 }
 
 /// @returns true if sufficient allowance
@@ -118,7 +114,7 @@ export async function checkSufficientAllowance({ toSpend, ownerAddr, spenderAddr
  * the way we calculate the route, it should necessarily be possible to calculate dollar value
  * @returns used to return the exact dollar value of the input parameter, without taking price impact into account.
  */
-
+// TODO fix so that uses route as input
 export async function getQuote({ addrInput, addrOutput, numInput, nativeAddr, factory, signer }: {
     addrInput: string,
     addrOutput: string,
@@ -129,12 +125,9 @@ export async function getQuote({ addrInput, addrOutput, numInput, nativeAddr, fa
 }) {
     return getRoute({ addrInput: addrInput, addrOutput: addrOutput, factory: factory, nativeAddr: nativeAddr })
         .then(async _route => {
-            console.log(_route, "route")
             return getAmountsAndReservesInOrOut({ route: _route, numInputOrOutput: numInput, factoryAddr: factory.address, signer: signer, isInput: true }) // since don't care about PI here, doesn't matter whether input or output
-
         })
         .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]}) => {
-            console.log(value.reservesArr[0].reserve0.toString())
             return _quoteFromRerservesArr(numInput, value.reservesArr)
         })
 }

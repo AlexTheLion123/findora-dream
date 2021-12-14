@@ -1,5 +1,5 @@
 import type { ethers, Signer } from "ethers";
-import { getReservesQuery } from "./utils";
+import { getReservesQuery, removeDecimals } from "./utils";
 import { Contract, BigNumber } from 'ethers'
 import { ERC20ABI } from '$lib/abis'
 import type { Ierc20 } from '$lib/typesUsed'
@@ -19,7 +19,7 @@ import type { Ierc20 } from '$lib/typesUsed'
 
 // type FuncType<Q extends SomeProps<H>, H extends boolean> = ({ route, numInputOrOutput, factoryAddr, signer, isInput }: Q) => ReturnProps<H>;
 
-// amounts and reserves out are gotten together to save on queries
+// amounts and reserves out are gotten together to save on queries, dumb?
 export async function getAmountsAndReservesInOrOut({ route, numInputOrOutput, factoryAddr, signer, isInput }: {
     route: string[],
     numInputOrOutput: BigNumber,
@@ -46,26 +46,24 @@ export async function getAmountsAndReservesInOrOut({ route, numInputOrOutput, fa
 
             reserves.push({ reserve0: reserve0, reserve1: reserve1 })
             amounts.push(amountOut)
-
+            
             currentNum = amountOut
         }
 
     } else {
         for (let i = route.length - 1; i > 0; i--) {
             // working towards input
-            console.log(route[i-1], route[i])
 
             const [reserve0, reserve1] = await getReservesQuery({ factoryAddr: factoryAddr, addrInput: route[i-1], addrOutput: route[i], signer: signer });
-            
             const amountIn = getAmountInManual({ amountOut: currentNum, reserveOut: reserve1, reserveIn: reserve0 })
 
             reserves.push({ reserve0: reserve0, reserve1: reserve1 })
             amounts.push(amountIn)
 
             currentNum = amountIn
-            console.log(reserves, amounts)
         }        
     }
+    console.log("route: ", route, "amountsArr: ", amounts.map(item => removeDecimals(item, 18)), "reservesArr", removeDecimals(reserves[0].reserve0, 18), removeDecimals(reserves[0].reserve1, 18))
     return {
         reservesArr: reserves,
         amountsArr: amounts
@@ -76,7 +74,7 @@ function getAmountOutManual({ amountIn, reserveIn, reserveOut }: { [k: string]: 
     const amountInWithFee = amountIn.mul(997);
     const numerator = amountInWithFee.mul(reserveOut);
     const denominator = reserveIn.mul(1000).add(amountInWithFee);
-    return numerator.div(denominator);
+    return numerator.div(denominator)
 }
 
 function getAmountInManual({ amountOut, reserveOut, reserveIn }: { [k: string]: BigNumber }) {
