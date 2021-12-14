@@ -7,7 +7,7 @@
 		getRoute
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
-	import type { BigNumber } from 'ethers';
+	import { BigNumber, utils } from 'ethers';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
 
@@ -33,9 +33,9 @@
 	const dollarsAddr = dollarsToken.address;
 	const factory = getFactory();
 	const router = getRouter();
+	let canSwapGuard = false;
 
 	let routeCache: string[] | null;
-	let canSwapGuard = false;
 
 	export let slippage = 0.03;
 
@@ -113,50 +113,50 @@
 		}
 	}
 
-	async function getSwapTopCurrent(checkRouteCache = false) {
+	async function getRouteIfCache() {
+		if (!routeCache) {
+			return getRoute({
+				addrIn: tokenBox1.address as string,
+				addrOut: tokenBox2.address as string,
+				factory: factory,
+				nativeAddr: nativeAddr
+			});
+		} else {
+			return routeCache
+		}
+	}
+
+	async function getSwapTopCurrent() {
 		if (!currentTokenBox || !otherTokenBox) {
 			alert('failed to update current token box correctly');
 			throw 'failed to update current token box correctly, should never happen';
 		}
 
 		const amountInBig = addDecimals(tokenBox1.numTokens as number, tokenBox1.decimals as number);
-
-		const route = checkRouteCache ? routeCache as string[] : await getRoute({
-			addrIn: tokenBox1.address as string,
-			addrOut: tokenBox2.address as string,
-			factory: factory,
-			nativeAddr: nativeAddr
-		});
+		const route = await getRouteIfCache()
 		const amountsOut = await router.getAmountsOut(amountInBig, route);
 		const amountOut = amountsOut[amountsOut.length - 1];
 		otherTokenBox.numTokens = removeDecimals(amountOut, otherTokenBox.decimals as number); // if address exists, decimals exist
-		routeCache = route;
 	}
 
-	async function getSwapBottomCurrent(checkRouteCache = false) {
+	async function getSwapBottomCurrent() {
 		if (!currentTokenBox || !otherTokenBox) {
 			alert('failed to update current token box correctly');
 			throw 'failed to update current token box correctly, should never happen';
 		}
 
 		const amountOutBig = addDecimals(tokenBox2.numTokens as number, tokenBox2.decimals as number);
-		const route = checkRouteCache ? routeCache as string[]: await getRoute({
-			addrIn: tokenBox1.address as string,
-			addrOut: tokenBox2.address as string,
-			factory: factory,
-			nativeAddr: nativeAddr
-		});
+		const route = await getRouteIfCache()
 		const amountsIn = await router.getAmountsIn(amountOutBig, route);
-		const amountIn = amountsIn[amountsIn.length - 1];
+		const amountIn = amountsIn[0];
 		otherTokenBox.numTokens = removeDecimals(amountIn, otherTokenBox.decimals as number); // if address exists, decimals exist
-		routeCache = route;
 	}
 
-	async function getSwap(checkRouteCache = false) {
+	async function getSwap() {
 		if (currentTokenBox === tokenBox1) {
-			await getSwapTopCurrent(checkRouteCache);
+			await getSwapTopCurrent();
 		} else {
-			await getSwapBottomCurrent(checkRouteCache);
+			await getSwapBottomCurrent();
 		}
 	}
 
@@ -202,7 +202,7 @@
 		updateCurrentTokenBox(_tokenBox);
 
 		if (otherTokenBox?.address) {
-			await getSwap(true)
+			await getSwap();
 			canSwapGuard = true;
 		}
 	}
