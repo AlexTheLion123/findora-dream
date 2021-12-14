@@ -63,11 +63,15 @@
 
         let tx = await router.addLiquidity(address1, address2, amountADesired, amountBDesired,amountAMin, amountBMin, signerAddress, amountADesired) // TODO change deadline to realistic number
         await tx.wait();
-
+        updateBoxAfterSwap()
         alert("liquidity successfully added")
     }
 
-    
+    function updateBoxAfterSwap() {
+		tokenBox1.updateBalance();
+		tokenBox2.updateBalance();
+		tokenBox1.handleInput()
+	}
 
     async function getAll(_tokenBox: TokenBox) {
         const pairAddress = await factory.getPair(address1, address2);
@@ -92,7 +96,8 @@
             }
 
 			rate = reserve1/reserve2;
-            share = amount1/reserve1;
+            console.log(amount1, reserve1)
+            share = amount1/reserve1 * 100;
             updateCurrent = true;
 		}
     }
