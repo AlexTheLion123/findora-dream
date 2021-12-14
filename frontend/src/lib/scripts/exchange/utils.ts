@@ -76,3 +76,10 @@ export function precisionDivision(numerator: BigNumber, denom: BigNumber, precis
 export function formatBoxOutput(num: number) {
     return Math.round(num*10000)/10000
 }
+
+export function formatNumber(num: number | string, decimals: number) {
+    if (typeof num === 'string') {
+        return Math.round(parseInt(num) * 10 ** decimals) / 10 ** decimals;
+    }
+    return Math.round(num * 10 ** decimals) / 10 ** decimals;
+}

@@ -1,13 +1,20 @@
 <script lang="ts">
-	export let rate: number;
-	export let share: number;
+	import {formatNumber} from '$lib/scripts/exchange'
+
+	export let rate: number = 0;
+	export let share: number = 0;
+	export let symbol1 = "";
+	export let symbol2 = "";
 </script>
 
 <div class="box">
 	<header>Prices and Pool Share</header>
 	<div class="info">
-		<span class="rate1">{rate}</span>
-		<span class="pool-share">{share}%</span>
+		<article>
+			<p class="rate1">{formatNumber(rate, 6)}</p>
+			<span>{symbol2} per {symbol1}</span>
+		</article>
+		<p class="pool-share">{formatNumber(share, 4)}%</p>
 	</div>
 </div>
 

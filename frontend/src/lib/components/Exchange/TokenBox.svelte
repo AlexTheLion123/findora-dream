@@ -1,12 +1,12 @@
 <svelte:options accessors={true} />
 
 <script context="module" lang="ts">
-	import { getBalance, getDecimals, RouterAddressNotSetError } from '$lib/scripts/exchange';
+	import { getBalance, getDecimals, RouterAddressNotSetError, formatNumber } from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import { BigNumber, utils } from 'ethers';
 	import { getRoute} from '$lib/scripts/exchange'
 	import type {IExchangeContext} from '$lib/typesFrontend';
-
+	
 </script>
 
 <script lang="ts">
@@ -32,7 +32,7 @@
 
 	export let numTokens: number;
 	export let address: string;
-	export let decimals: number;
+	export let decimals: number = 18;
 	export let balance: number = 0;
 	export let updateCurrentInput = true;
 
@@ -44,17 +44,16 @@
 	}
 
 	async function handleSelection(e: CustomEvent<any>) {
-
 		if (typeof e.detail.address !== 'string') {
 			alert('no address for selection');
 			throw 'no address for selection';
 		}
 
 		address = e.detail.address;
-
 		decimals = await getDecimals(e.detail.address, signer);
 		balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress), decimals); // getBalance asynchronously then wait for decimals
 
+		dispatch('tokenSelected', e.detail)
 		if(numTokens) {
 			dispatch('tokenSelectedWithNumTokens', e.detail);
 		} else {
@@ -75,13 +74,6 @@
 		}
 
 	}
-
-	function formatNumber(num: number | string, decimals: number) {
-		if (typeof num === 'string') {
-			return Math.round(parseInt(num) * 10 ** decimals) / 10 ** decimals;
-		}
-		return Math.round(num * 10 ** decimals) / 10 ** decimals;
-	}
 </script>
 
 <div class="box">
@@ -90,7 +82,7 @@
 		Balance: {formatNumber(balance, 5)}
 	</p>
 	<div class="input-component">
-		<NumTokenInput bind:value={numTokens} bind:updateCurrent={updateCurrentInput} on:tokenNumInput={handleInput} />
+		<NumTokenInput bind:value={numTokens} updateCurrent={updateCurrentInput} on:tokenNumInput={handleInput} />
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}

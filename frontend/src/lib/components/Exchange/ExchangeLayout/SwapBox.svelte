@@ -5,7 +5,7 @@
 		approveMax,
 		checkSufficientAllowance,
 		getRoute,
-		formatBoxOutput
+		formatBoxOutput, formatNumber
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import type { IExchangeContext } from '$lib/typesFrontend';
@@ -139,7 +139,7 @@
 		const route = await getRouteIfCache();
 		const amountsOut = await router.getAmountsOut(amountInBig, route);
 		const amountOut = amountsOut[amountsOut.length - 1];
-		amount2 = formatBoxOutput(removeDecimals(amountOut, decimals2 as number)); // if address exists, decimals exist
+		amount2 = formatNumber(removeDecimals(amountOut, decimals2), 4); // if address exists, decimals exist
 	}
 
 	async function getSwapBottomCurrent() {
@@ -147,7 +147,7 @@
 		const route = await getRouteIfCache();
 		const amountsIn = await router.getAmountsIn(amountOutBig, route);
 		const amountIn = amountsIn[0];
-		amount1 = formatBoxOutput(removeDecimals(amountIn, decimals1 as number)); // if address exists, decimals exist
+		amount1 = formatNumber(removeDecimals(amountIn, decimals1), 4); // if address exists, decimals exist
 	}
 
 	async function getSwap() {
