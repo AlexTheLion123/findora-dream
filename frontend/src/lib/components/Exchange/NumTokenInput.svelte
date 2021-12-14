@@ -9,6 +9,7 @@
 	let INPUT_BUFFER = 1000; // i.e. only dispatch input event every 2 seconds (2000 milliseconds)
 	let isTimeoutLock = false;
 
+	export let updateCurrent: boolean = true;
 	export let value: number;
 
 	const dispatch = createEventDispatcher();
@@ -34,6 +35,9 @@
 	}
 
 	function updateCurrentInputElement() {
+		if(!updateCurrent) {
+			return;
+		}
 		if (current && current !== inputElement) {
 			current.value = '';
 		}

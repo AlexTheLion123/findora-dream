@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DoubleTokenBox from '../DoubleTokenBox.svelte';
+	import SwapBox from './SwapBox.svelte';
 	import TradeButton from '../TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 
@@ -19,7 +19,7 @@
 		<p class="title">Swap</p>
 
 		<div class="double-token-box">
-			<DoubleTokenBox bind:action={callActionOnChild}/>
+			<SwapBox bind:action={callActionOnChild}/>
 		</div>
 
 		<div class="slider-box">

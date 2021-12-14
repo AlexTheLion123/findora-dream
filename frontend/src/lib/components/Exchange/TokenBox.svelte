@@ -2,7 +2,7 @@
 
 <script context="module" lang="ts">
 	import { getBalance, getDecimals, RouterAddressNotSetError } from '$lib/scripts/exchange';
-	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
+	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import { BigNumber, utils } from 'ethers';
 	import { getRoute} from '$lib/scripts/exchange'
 	import type {IExchangeContext} from '$lib/typesFrontend';
@@ -30,15 +30,13 @@
 	const factory = getFactory();
 	const router = getRouter();
 
-	export let numTokens: number = 0.0;
-	export let address: string = '';
-	export let decimals: number = 0;
+	export let numTokens: number;
+	export let address: string;
+	export let decimals: number;
 	export let balance: number = 0;
-	export let tokenToDollarRate: number = 0; // can be updated 
+	export let updateCurrentInput = true;
 
 	const dispatch = createEventDispatcher();
-
-
 
 
 	export async function updateBalance() {
@@ -46,7 +44,6 @@
 	}
 
 	async function handleSelection(e: CustomEvent<any>) {
-		tokenToDollarRate = 0;
 
 		if (typeof e.detail.address !== 'string') {
 			alert('no address for selection');
@@ -79,23 +76,6 @@
 
 	}
 
-
-	// async function getDollarValue(amount: number) {
-	// 	if(address === dollarsAddr) {
-	// 		return numTokens;
-	// 	}
-
-	// 	const route = await getRoute({addrIn: address, addrOut: dollarsAddr, factory: factory, nativeAddr: nativeAddr})
-		
-	// 	let currentNum = addDecimals(amount, decimals)
-	// 	for(let i=0; i<route.length-1; i++) {
-	// 		const reserves = await router.getReserves(address, dollarsAddr)
-	// 		const quoteOut = await router.quote(currentNum, reserves[0], reserves[1])
-	// 		currentNum = quoteOut
-	// 	}
-	// 	return removeDecimals(currentNum, 18) //TODO assumes dollars has 18 decimals, check assumption
-	// }
-
 	function formatNumber(num: number | string, decimals: number) {
 		if (typeof num === 'string') {
 			return Math.round(parseInt(num) * 10 ** decimals) / 10 ** decimals;
@@ -107,10 +87,10 @@
 <div class="box">
 	<div class="selector"><TokenSelector on:tokenSelected={handleSelection} /></div>
 	<p class="balance">
-		Balance: {formatNumber(balance, 4)}
+		Balance: {formatNumber(balance, 2)}
 	</p>
 	<div class="input-component">
-		<NumTokenInput on:tokenNumInput={handleInput} bind:value={numTokens} />
+		<NumTokenInput bind:value={numTokens} bind:updateCurrent={updateCurrentInput} on:tokenNumInput={handleInput} />
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}
@@ -143,12 +123,16 @@
 
 	.balance {
 		grid-area: balance;
+		font-size: 0.8rem;
+		letter-spacing: 0.76px;
 	}
 
 	.input-component {
 		grid-area: input;
 		justify-self: end;
 	}
+
+
 
 	// .dollars {
 	// 	grid-area: dollars;

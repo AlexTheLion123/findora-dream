@@ -1,5 +1,5 @@
 import { NoRouteError, SamePairError } from '.';
-import { checkAddressAgainstNative, checkAddressExists, getPairAddress, removeDecimals, precisionDivision } from './utils/utils'
+import { checkAddressAgainstNative, checkAddressExists, getPairAddress, removeDecimals, precisionDivision } from '.'
 import { Contract } from 'ethers'
 import { ERC20ABI } from '$lib/abis';
 import type { UniswapV2Factory, Ierc20, UniswapV2Router02 } from '$lib/typesUsed'

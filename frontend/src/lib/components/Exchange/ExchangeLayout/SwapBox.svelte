@@ -6,20 +6,17 @@
 		checkSufficientAllowance,
 		getRoute
 	} from '$lib/scripts/exchange';
-	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
-	import { BigNumber, utils } from 'ethers';
+	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
-	import TokenBox from './TokenBox.svelte';
+	import TokenBox from '../TokenBox.svelte';
 	import { page } from '$app/stores';
 	import { getContext } from 'svelte';
-	import PoolInfo from '$lib/components/Exchange/PoolInfo.svelte';
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
-	let swapGuard = false;
 	let currentTokenBox: TokenBox | null;
 	let otherTokenBox: typeof currentTokenBox;
 
@@ -34,33 +31,39 @@
 	const factory = getFactory();
 	const router = getRouter();
 
+	let amount1: number;
+	let amount2: number;
+	let address1: string;
+	let address2: string;
+	let decimals1: number;
+	let decimals2: number;
+
 	let routeCache: string[] | null;
 
 
 	export let slippage = 0.03;
 
 	export async function action() {
-		if(!tokenBox1.numTokens || !tokenBox2.numTokens || !tokenBox1.address || !tokenBox2.address) {
+		if(!amount1 || !amount2 || !address1 || !address2) {
 			alert("not enough info for swap")
 			throw "not enough info for swap"
 		}
 
 		if (!routeCache) {
-			console.log(routeCache);
 			alert('route not set yet');
 			throw 'route not set yet';
 		}
 
 		if ($page.path === '/exchange/swap') {
 			const amountInExact = addDecimals(
-				tokenBox1.numTokens as number,
-				tokenBox1.decimals as number
+				amount1 as number,
+				decimals1 as number
 			);
-			const inputAddress = tokenBox1.address as string;
+			const inputAddress = address1 as string;
 
 			const amountOutMin = addDecimals(
-				(tokenBox2.numTokens as number) * (1 - slippage),
-				tokenBox2.decimals as number
+				(amount2 as number) * (1 - slippage),
+				decimals2 as number
 			);
 			console.log(amountOutMin);
 
@@ -73,10 +76,8 @@
 					signer: signer
 				}))
 			) {
-				console.log('not enough allowance, approving max now');
-
 				const tx = await approveMax({
-					tokenAddress: tokenBox1.address as string,
+					tokenAddress: address1 as string,
 					spenderAddress: router.address,
 					signer: signer
 				});
@@ -94,7 +95,6 @@
 			await tx.wait();
 			updateBoxAfterSwap()
 
-			alert('swap successfully performed');
 		} else if ($page.path === '/exchange/liquidity') {
 			await performLiquidity();
 		} else {
@@ -111,11 +111,9 @@
 
 	function updateCurrentTokenBox(_tokenBox: TokenBox) {
 		if (_tokenBox === tokenBox1) {
-			console.log('is tb1');
 			currentTokenBox = tokenBox1;
 			otherTokenBox = tokenBox2;
 		} else {
-			console.log('is tb2');
 			currentTokenBox = tokenBox2;
 			otherTokenBox = tokenBox1;
 		}
@@ -124,8 +122,8 @@
 	async function getRouteIfCache() {
 		if (!routeCache) {
 			routeCache = await getRoute({
-				addrIn: tokenBox1.address as string,
-				addrOut: tokenBox2.address as string,
+				addrIn: address1 as string,
+				addrOut: address2 as string,
 				factory: factory,
 				nativeAddr: nativeAddr
 			});
@@ -136,29 +134,19 @@
 	}
 
 	async function getSwapTopCurrent() {
-		if (!currentTokenBox || !otherTokenBox) {
-			alert('failed to update current token box correctly');
-			throw 'failed to update current token box correctly, should never happen';
-		}
-
-		const amountInBig = addDecimals(tokenBox1.numTokens as number, tokenBox1.decimals as number);
+		const amountInBig = addDecimals(amount1 as number, decimals1 as number);
 		const route = await getRouteIfCache();
 		const amountsOut = await router.getAmountsOut(amountInBig, route);
 		const amountOut = amountsOut[amountsOut.length - 1];
-		otherTokenBox.numTokens = removeDecimals(amountOut, otherTokenBox.decimals as number); // if address exists, decimals exist
+		amount2 = removeDecimals(amountOut, decimals2 as number); // if address exists, decimals exist
 	}
 
 	async function getSwapBottomCurrent() {
-		if (!currentTokenBox || !otherTokenBox) {
-			alert('failed to update current token box correctly');
-			throw 'failed to update current token box correctly, should never happen';
-		}
-
-		const amountOutBig = addDecimals(tokenBox2.numTokens as number, tokenBox2.decimals as number);
+		const amountOutBig = addDecimals(amount2 as number, decimals2 as number);
 		const route = await getRouteIfCache();
 		const amountsIn = await router.getAmountsIn(amountOutBig, route);
 		const amountIn = amountsIn[0];
-		otherTokenBox.numTokens = removeDecimals(amountIn, otherTokenBox.decimals as number); // if address exists, decimals exist
+		amount1 = removeDecimals(amountIn, decimals1 as number); // if address exists, decimals exist
 	}
 
 	async function getSwap() {
@@ -173,14 +161,7 @@
 		// if other tokenBox also has address -> get route and output
 		routeCache = null;
 
-		if (!currentTokenBox || !otherTokenBox) {
-			alert('failed to update current token box correctly');
-			throw 'failed to update current token box correctly, should never happen';
-		}
-
-		if (otherTokenBox.address) {
-			console.log('factory:', factory);
-
+		if (otherTokenBox?.address) {
 			await getSwap();
 		}
 	}
@@ -192,17 +173,13 @@
 		routeCache = null;
 
 		if (currentTokenBox && currentTokenBox.address) {
-			if (!currentTokenBox || !otherTokenBox) {
-				alert('failed to update current token box correctly');
-				throw 'failed to update current token box correctly, should never happen';
-			}
-
 			await getSwap();
 		}
 	}
 	async function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// check if other tokenBox has address -> get output (route already gotten)
 		// _tokenBox is currentTokenBox
+
 		updateCurrentTokenBox(_tokenBox);
 
 		if (otherTokenBox?.address) {
@@ -218,6 +195,9 @@
 <div class="token-box">
 	<TokenBox
 		bind:this={tokenBox1}
+		bind:numTokens={amount1}
+		bind:address={address1}
+		bind:decimals={decimals1}
 		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens()}
 		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens()}
 		on:tokenNumInputWithAddress={(e) => handleInputWithAddress(tokenBox1, e)}
@@ -228,12 +208,12 @@
 <div class="token-box">
 	<TokenBox
 		bind:this={tokenBox2}
+		bind:numTokens={amount2}
+		bind:address={address2}
+		bind:decimals={decimals2}
 		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens()}
 		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens()}
 		on:tokenNumInputWithAddress={(e) => handleInputWithAddress(tokenBox2, e)}
 		on:tokenNumInputWithoutAddress={() => handleInputWithoutAddress(tokenBox2)}
 	/>
 </div>
-
-<style>
-</style>

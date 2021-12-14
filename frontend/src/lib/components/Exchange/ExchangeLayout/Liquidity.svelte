@@ -1,5 +1,5 @@
 <script>
-    import DoubleTokenBox from '../DoubleTokenBox.svelte';
+    import LiquidityBox from './LiquidityBox.svelte';
     import TradeButton from '../TradeButton.svelte'
     import PoolInfo from '../PoolInfo.svelte'
     import {signer, signerAddress} from '$lib/stores'
@@ -13,12 +13,8 @@
     <div class="box">
         <p class="title">Liquidity</p>
 
-        <div class="double-token-box">
-            <DoubleTokenBox/>
-        </div>
-
-        <div class="pool-info">
-            <PoolInfo/>
+        <div class="tokensAndInfoBox">
+            <LiquidityBox/>
         </div>
         <div class="add-button">
             <TradeButton text="Add liquidity"/>
@@ -55,8 +51,8 @@
 			'. title  ...... ...... ...... .' 1fr
 			'. tokens tokens tokens tokens .' 3fr
 			'. tokens tokens tokens tokens .' 3fr
-			'. ...... ...... ...... ...... .' 0.5fr
-			'. info   info   info   info   .' 3fr
+			'. tokens tokens tokens tokens .' 0.5fr
+			'. tokens tokens tokens tokens .' 3fr
 			'. ...... ...... ...... ...... .' 0.5fr
 			'. btn    btn    btn    btn    .' 2fr
 			/ 2fr 3fr 3fr 3fr 3fr 2fr;
@@ -65,12 +61,10 @@
             grid-area: title;
             align-self: center;
         }
-        .double-token-box {
+        .tokensAndInfoBox {
             grid-area: tokens;
         }
-        .pool-info {
-            grid-area: info;
-        }
+    
         .add-button {
             grid-area: btn;
         }

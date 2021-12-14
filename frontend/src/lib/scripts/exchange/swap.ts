@@ -1,7 +1,6 @@
 import { Contract, constants } from 'ethers'
-import { addDecimals } from './utils/utils';
 import type { Signer, } from 'ethers'
-import type { ISwapInput, ISwapOutput } from '$lib/typesFrontend'
+import type { ISwapOutput } from '$lib/typesFrontend'
 import { ERC20ABI } from '$lib/abis';
 import type { Ierc20, UniswapV2Router02 } from '$lib/typesUsed';
 import type { BigNumber, ContractTransaction } from 'ethers';
