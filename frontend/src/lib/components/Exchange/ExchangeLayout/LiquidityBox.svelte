@@ -23,9 +23,12 @@
 	const router = getRouter();
 
 	let pairCache: {
-		address: string;
+		addresses: [string, string];
 		reserves: [number, number];
-	};
+	} = {
+        addresses: ["", ""],
+        reserves: [0,0]
+    };
 
 	// tokenbox props
 	let updateCurrent = true;
@@ -42,12 +45,19 @@
 	let symbol1: string;
 	let symbol2: string;
 
-	async function handleInput() {
+	async function handleInput(_tokenBox: TokenBox) {
         if(!address1 || !address2) {
             // nothing to be done
             return;
         }
 		
+        if(address1 && address2) {
+            getAll(_tokenBox)
+        }
+        
+	}
+
+    async function getAll(_tokenBox: TokenBox) {
         const pairAddress = await factory.getPair(address1, address2);
 		if (!checkAddressExists(pairAddress)) {
 			console.log('Pair does not exist, you will be the first to create liquidity');
@@ -60,22 +70,35 @@
 		} else {
 			// pair exists
             console.log("Pair exists")
-			updateCurrent = true;
 
-            // get quote from reserves!!!!!!!
+            const [reserve1, reserve2] =  await getReserves(pairAddress);
 
-			const [reserve1, reserve2] = await getReserves(pairAddress);
+            if(_tokenBox === tokenBox1) {
+                amount2 = formatNumber(amount1 * reserve1/reserve2,5)
+            } else {
+                amount1 = formatNumber(amount2 * reserve2/reserve1,5)
+            }
+
 			rate = reserve1/reserve2;
             share = amount1/reserve1;
+            updateCurrent = true;
 		}
-	}
+    }
 
-	async function handleSelection1(e: CustomEvent) {
-		symbol2 = await getSymbol(e);
-	}
-
-	async function handleSelection2(e: CustomEvent) {
+	async function handleSelection1(_tokenBox: TokenBox, e: CustomEvent) {
 		symbol1 = await getSymbol(e);
+
+        if(address1 && address2) {
+            getAll(_tokenBox)
+        }
+	}
+
+	async function handleSelection2(_tokenBox: TokenBox, e: CustomEvent) {
+		symbol2 = await getSymbol(e);
+
+        if(address1 && address2) {
+            getAll(_tokenBox)
+        }
 	}
 
 	async function getSymbol(e: CustomEvent) {
@@ -87,8 +110,13 @@
 		}
 	}
 
-	async function getReserves(pairAddress: string): Promise<[number, number]> {
-		const tokenInstance = new Contract(pairAddress, UniswapV2PairABI, signer) as UniswapV2Pair;
+	async function getReserves(pairAddress: string): Promise<number[]> {
+		if(address1 && address2 && pairCache.addresses.includes(address1) && pairCache.addresses.includes(address2)) {
+            console.log("using reserves cache")
+            return pairCache.reserves
+        }
+        
+        const tokenInstance = new Contract(pairAddress, UniswapV2PairABI, signer) as UniswapV2Pair;
 
 		let reserves: [BigNumber, BigNumber];
 		const result = await tokenInstance.getReserves();
@@ -98,10 +126,15 @@
 			reserves = [result[1], result[0]];
 		}
 
-		return [
+		const noDecimals = [
 			removeDecimals(reserves[0], tokenBox1.decimals as number),
 			removeDecimals(reserves[1], tokenBox2.decimals as number)
 		];
+        console.log("setting pair cache")
+        pairCache.addresses = [address1, address2]
+        pairCache.reserves = [noDecimals[0], noDecimals[1]]
+
+        return noDecimals;
 	}
 
 </script>
@@ -114,8 +147,8 @@
 			bind:numTokens={amount1}
 			bind:address={address1}
 			bind:decimals={decimals1}
-			on:tokenNumInputWithAddress={() => handleInput()}
-            on:tokenSelected={e => handleSelection1(e)}
+			on:tokenNumInputWithAddress={() => handleInput(tokenBox1)}
+            on:tokenSelected={e => handleSelection1(tokenBox1, e)}
 		/>
 	</div>
 
@@ -126,8 +159,8 @@
 			bind:numTokens={amount2}
 			bind:address={address2}
 			bind:decimals={decimals2}
-			on:tokenNumInputWithAddress={() => handleInput()}
-            on:tokenSelected={e => handleSelection2(e)}
+			on:tokenNumInputWithAddress={() => handleInput(tokenBox2)}
+            on:tokenSelected={e => handleSelection2(tokenBox2, e)}
 		/>
 	</div>
 	<div class="pool-info">
