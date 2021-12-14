@@ -5,7 +5,7 @@
 
 	import {signer, signerAddress} from '$lib/stores';
 
-	let callActionOnChild: () => Promise<void>
+	let callSwap: () => Promise<void>
 
 	export let swapReady = false;
 
@@ -19,7 +19,7 @@
 		<p class="title">Swap</p>
 
 		<div class="double-token-box">
-			<SwapBox bind:action={callActionOnChild}/>
+			<SwapBox bind:action={callSwap}/>
 		</div>
 
 		<div class="slider-box">
@@ -27,7 +27,7 @@
 		</div>
 
 		<div class="swap-button">
-			<TradeButton text="Swap" on:perfomAction={callActionOnChild}/>
+			<TradeButton text="Swap" on:perfomAction={callSwap}/>
 		</div>
 	</form>
 

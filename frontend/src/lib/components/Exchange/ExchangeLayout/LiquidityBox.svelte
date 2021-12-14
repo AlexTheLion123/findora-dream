@@ -2,11 +2,13 @@
 	import TokenBox from '../TokenBox.svelte';
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
-	import { checkAddressExists, removeDecimals, formatNumber } from '$lib/scripts/exchange';
+	import { checkAddressExists, removeDecimals, formatNumber, checkAllowanceAndApproveMax, addDecimals } from '$lib/scripts/exchange';
 	import { ERC20ABI, UniswapV2PairABI } from '$lib/abis';
 	import PoolInfo from '../PoolInfo.svelte';
 	import { BigNumber, Contract } from 'ethers';
 	import type { Ierc20, UniswapV2Pair } from '$lib/typesUsed';
+
+    const SLIPPAGE = 0.01 // slippage also applies in context of liquidity
 
 	let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
@@ -45,17 +47,27 @@
 	let symbol1: string;
 	let symbol2: string;
 
-	async function handleInput(_tokenBox: TokenBox) {
-        if(!address1 || !address2) {
-            // nothing to be done
-            return;
+    export async function addLiquidity() {
+        if(!(address1 || address2 || amount1 || amount2)) {
+            alert("not enough info")
+            throw "not enough info to add liquidity"
         }
-		
-        if(address1 && address2) {
-            getAll(_tokenBox)
-        }
+        await checkAllowanceAndApproveMax({toSpend: addDecimals(amount1, decimals1), ownerAddr: signerAddress, spenderAddr:router.address, tokenAddr:address1, signer: signer })
+        await checkAllowanceAndApproveMax({toSpend: addDecimals(amount2, decimals1), ownerAddr: signerAddress, spenderAddr:router.address, tokenAddr:address2, signer: signer })
+        console.log("adding liquidity")
         
-	}
+        const amountADesired = addDecimals(amount1, decimals1)
+        const amountBDesired = addDecimals(amount2, decimals2)
+        const amountAMin = addDecimals(amount1*(1-SLIPPAGE), decimals1)
+        const amountBMin = addDecimals(amount2*(1-SLIPPAGE), decimals2);
+
+        let tx = await router.addLiquidity(address1, address2, amountADesired, amountBDesired,amountAMin, amountBMin, signerAddress, amountADesired) // TODO change deadline to realistic number
+        await tx.wait();
+
+        alert("liquidity successfully added")
+    }
+
+    
 
     async function getAll(_tokenBox: TokenBox) {
         const pairAddress = await factory.getPair(address1, address2);
@@ -84,6 +96,20 @@
             updateCurrent = true;
 		}
     }
+
+	async function handleInput(_tokenBox: TokenBox) {
+        if(!address1 || !address2) {
+            // nothing to be done
+            return;
+        }
+		
+        if(address1 && address2) {
+            getAll(_tokenBox)
+        }
+        
+	}
+
+    
 
 	async function handleSelection1(_tokenBox: TokenBox, e: CustomEvent) {
 		symbol1 = await getSymbol(e);

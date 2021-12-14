@@ -42,6 +42,7 @@ export async function checkSufficientAllowance({ toSpend, ownerAddr, spenderAddr
     return (await tokenInstance.allowance(ownerAddr, spenderAddr)).lt(toSpend) ? false : true;
 }
 
+
 // TODO look at cacheing routes
 // TODO change logic to accomodate array of main tokens instead of nativeAddr
 export async function getRoute({ addrIn, addrOut, factory, nativeAddr }: {

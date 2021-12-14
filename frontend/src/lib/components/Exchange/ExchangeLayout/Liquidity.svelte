@@ -1,9 +1,11 @@
-<script>
+<script lang="ts">
     import LiquidityBox from './LiquidityBox.svelte';
     import TradeButton from '../TradeButton.svelte'
     import PoolInfo from '../PoolInfo.svelte'
     import {signer, signerAddress} from '$lib/stores'
 
+    
+    let callLiquidity: () => Promise<void>
 
     export let liquidityReady = false;
 </script>
@@ -14,10 +16,10 @@
         <p class="title">Liquidity</p>
 
         <div class="tokensAndInfoBox">
-            <LiquidityBox/>
+            <LiquidityBox bind:addLiquidity={callLiquidity}/>
         </div>
         <div class="add-button">
-            <TradeButton text="Add liquidity"/>
+            <TradeButton text="Add liquidity" on:perfomAction={callLiquidity}/>
         </div>
     </div>
 {:else}

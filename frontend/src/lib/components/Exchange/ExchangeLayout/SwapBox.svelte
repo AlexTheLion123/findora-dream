@@ -1,11 +1,10 @@
 <script context="module" lang="ts">
 	import {
 		swapExactInput,
-		performLiquidity,
 		approveMax,
 		checkSufficientAllowance,
 		getRoute,
-		formatBoxOutput, formatNumber
+		formatBoxOutput, formatNumber, checkAllowanceAndApproveMax
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import type { IExchangeContext } from '$lib/typesFrontend';
@@ -55,7 +54,6 @@
 			throw 'route not set yet';
 		}
 
-		if ($page.path === '/exchange/swap') {
 			const amountInExact = addDecimals(
 				amount1 as number,
 				decimals1 as number
@@ -66,24 +64,14 @@
 				(amount2 as number) * (1 - slippage),
 				decimals2 as number
 			);
-			console.log(amountOutMin);
 
-			if (
-				!(await checkSufficientAllowance({
+			await checkAllowanceAndApproveMax({
 					toSpend: amountInExact,
 					ownerAddr: signerAddress,
 					spenderAddr: router.address,
 					tokenAddr: inputAddress,
 					signer: signer
-				}))
-			) {
-				const tx = await approveMax({
-					tokenAddress: address1 as string,
-					spenderAddress: router.address,
-					signer: signer
-				});
-				await tx.wait();
-			}
+			})
 
 			const tx = await swapExactInput({
 				amountInExact: amountInExact,
@@ -96,12 +84,6 @@
 			await tx.wait();
 			updateBoxAfterSwap()
 
-		} else if ($page.path === '/exchange/liquidity') {
-			await performLiquidity();
-		} else {
-			alert('Invalid page: This should never happen');
-			throw 'bad page';
-		}
 	}
 
 	function updateBoxAfterSwap() {

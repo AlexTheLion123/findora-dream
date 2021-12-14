@@ -25,6 +25,12 @@ export async function approveMax({ tokenAddress, spenderAddress, signer }: { tok
     return tokenInstance.connect(signer).approve(spenderAddress, constants.MaxUint256)
 }
 
-export async function performLiquidity() {
-    alert("perform liquidity")
+export async function checkAllowanceAndApproveMax({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
+    toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
+}) {
+    const tokenInstance = new Contract(tokenAddr, ERC20ABI, signer) as Ierc20
+    if((await tokenInstance.allowance(ownerAddr, spenderAddr)).lt(toSpend)) {
+        let tx = await approveMax({tokenAddress: tokenAddr, spenderAddress: spenderAddr, signer: signer})
+        await tx.wait();
+    }
 }
