@@ -102,7 +102,7 @@
 
 	function getDollarsQuote(addrInput: string) {
 		const input = utils.parseUnits("1", decimals)
-		console.log("getting dollars quote from blockchain")
+
 		return getQuote({
 					addrInput: addrInput,
 					addrOutput: dollarsAddr,

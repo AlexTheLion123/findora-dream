@@ -128,6 +128,7 @@ export async function getQuote({ addrInput, addrOutput, numInput, nativeAddr, fa
             return getAmountsAndReservesInOrOut({ route: _route, numInputOrOutput: numInput, factoryAddr: factory.address, signer: signer, isInput: true }) // since don't care about PI here, doesn't matter whether input or output
         })
         .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]}) => {
+            console.log(removeDecimals(value.reservesArr[0].reserve0, 18), removeDecimals(value.reservesArr[0].reserve1, 18))
             return _quoteFromRerservesArr(numInput, value.reservesArr)
         })
 }

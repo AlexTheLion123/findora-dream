@@ -168,7 +168,7 @@ SignerError,
 				routeCache = route;
 			} else {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
-				otherTokenBox.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				otherTokenBox.numTokens = removeDecimals(numInputOrOutput, otherTokenBox.decimals as number) // if address exists, decimals exist
 				routeCache = route;
 			}
 			canSwapGuard = true;
@@ -185,11 +185,11 @@ SignerError,
 		if(currentTokenBox && currentTokenBox.address) {
 			if(currentTokenBox === tokenBox1) {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
-				otherTokenBox!.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, currentTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				otherTokenBox!.numTokens = removeDecimals(numInputOrOutput, currentTokenBox.decimals as number) // if address exists, decimals exist
 				routeCache = route;
 			} else {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(false)
-				otherTokenBox!.numTokens = calcInputGivenPI(removeDecimals(numInputOrOutput, currentTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
+				otherTokenBox!.numTokens = removeDecimals(numInputOrOutput, currentTokenBox.decimals as number) // if address exists, decimals exist
 				routeCache = route;
 			}
 			canSwapGuard = true
@@ -237,8 +237,8 @@ SignerError,
 <div class="token-box">
 	<TokenBox
 		bind:this={tokenBox1}
-		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens(tokenBox1, e)}
-		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens(tokenBox1, e)}
+		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens()}
+		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens()}
 		on:tokenNumInputWithAddress={e => handleInputWithAddress(tokenBox1, e)}
 		on:tokenNumInputWithoutAddress={() => handleInputWithoutAddress(tokenBox1)}
 	/>
@@ -247,8 +247,8 @@ SignerError,
 <div class="token-box">
 	<TokenBox
 		bind:this={tokenBox2}
-		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens(tokenBox2, e)}
-		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens(tokenBox2, e)}
+		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens()}
+		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens()}
 		on:tokenNumInputWithAddress={e => handleInputWithAddress(tokenBox2, e)}
 		on:tokenNumInputWithoutAddress={() => handleInputWithoutAddress(tokenBox2)}
 	/>
