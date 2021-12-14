@@ -14,7 +14,7 @@
         <p class="title">Liquidity</p>
 
         <div class="double-token-box">
-            <DoubleTokenBox signer={$signer} signerAddress={$signerAddress}/>
+            <DoubleTokenBox/>
         </div>
 
         <div class="pool-info">

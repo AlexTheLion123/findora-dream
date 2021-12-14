@@ -94,5 +94,5 @@ export async function getAllowance({ tokenAddr, ownerAddr, spenderAddr, signer }
     signer: Signer
 }): Promise<BigNumber> {
     const erc20Instance = new Contract(tokenAddr, ERC20ABI, signer) as Ierc20
-    return await erc20Instance.allowance(ownerAddr, spenderAddr);
+    return erc20Instance.allowance(ownerAddr, spenderAddr);
 }

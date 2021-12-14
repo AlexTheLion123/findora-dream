@@ -4,14 +4,17 @@
 		performLiquidity,
 		approveMax,
 		NoMetaMaskError,
-		checkAllowance,
+		checkSufficientAllowance,
 		getQuote,
 		getRoute,
 		getNumInputOrOutputAndPIFromRoute,
 getAll,
+RouterAddressNotSetError,
+SignerError,
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
 	import type { BigNumber } from 'ethers';
+	import type { IExchangeContext} from '$lib/typesFrontend'
 </script>
 
 <script lang="ts">
@@ -30,29 +33,58 @@ getAll,
 		signerObj,
 		nativeToken,
 		dollarsToken,
-		getFactory
-	} = getContext('exchange');
+		getFactory,
+		getRouter,
+	}: IExchangeContext = getContext('exchange');
 
 	const signer = signerObj.getSigner();
 	const signerAddress = signerObj.getAddress();
 	const nativeAddr = nativeToken.address;
 	const dollarsAddr = dollarsToken.address
 	const factory = getFactory();
+	const router = getRouter();
 
 	let routeCache: string[] | null;
 	let canSwapGuard = false;
 
+	export let slippage = 0.03
+
 	export async function action() {
-		if ($page.path === '/swap') {
-			if (!(await checkAllowance())) {
-				approveMax();
+		if(!canSwapGuard) {
+			alert("swap guard is on")
+			throw "the swap cannot be completed right now"
+		}
+
+		if(!routeCache){
+			alert("route not set yet")
+			throw "route not set yet"
+		}
+
+
+		if ($page.path === '/exchange/swap') {
+			const amountInExact = addDecimals(tokenBox1.numTokens as number, tokenBox1.decimals as number);
+			const inputAddress = tokenBox1.address as string;
+			console.log("amountOutMint", (tokenBox2.numTokens as number)*(1-slippage))
+			const amountOutMin = addDecimals((tokenBox2.numTokens as number)*(1-slippage),tokenBox2.decimals as number)
+
+			if (!(await checkSufficientAllowance({toSpend: amountInExact, ownerAddr: signerAddress, spenderAddr: router.address, tokenAddr: inputAddress, signer: signer}))) {
+				
+				console.log('not enough allowance, approving max now')
+				console.log(tokenBox1.address, router.address, signer)
+
+				const tx = await approveMax({tokenAddress: tokenBox1.address as string, spenderAddress: router.address, signer: signer});
+				await tx.wait()
 			}
 
-			await performSwap();
-		} else if ($page.path === '/liquidity') {
+			const tx = await swapExactInput({amountInExact: amountInExact, amountOutMin: amountOutMin, route: routeCache, to: signerAddress, router: router, deadline: amountInExact}); // TODO change deadline to realistic number
+			await tx.wait();
+
+			alert("swap successfully performed")
+		} else if ($page.path === '/exchange/liquidity') {
 			await performLiquidity();
 		} else {
-			alert('Invalid pageThis should never happen');
+			alert('Invalid page: This should never happen');
+			throw "bad page"
 		}
 	}
 
@@ -77,18 +109,23 @@ getAll,
 	}
 
 	async function getAllHelperCurrent(isInput: boolean) {
+		if(!currentTokenBox || !currentTokenBox.numTokens || !currentTokenBox.decimals || !currentTokenBox.address || !otherTokenBox?.address) {
+			alert("not all info to make swap is available")
+			throw "not enough info for swap, should never happen"
+		}
+
 		const {numInputOrOutput, priceImpact, route} = isInput ? await getAll({
-					addrP: currentTokenBox!.address as string,
-					addrQ: otherTokenBox!.address as string,
-					numInputOrOutput: addDecimals(currentTokenBox!.numTokens as number, currentTokenBox!.decimals as number),
+					addrP: currentTokenBox.address,
+					addrQ: otherTokenBox.address,
+					numInputOrOutput: addDecimals(currentTokenBox.numTokens, currentTokenBox.decimals),
 					factory: factory,
 					nativeAddr: nativeAddr,
 					signer: signer,
 					isInput: true
 				}) : await getAll({
-					addrP: currentTokenBox!.address as string,
-					addrQ: otherTokenBox!.address as string,
-					numInputOrOutput: addDecimals(currentTokenBox!.numTokens as number, currentTokenBox!.decimals as number),
+					addrP: currentTokenBox.address,
+					addrQ: otherTokenBox.address,
+					numInputOrOutput: addDecimals(currentTokenBox.numTokens, currentTokenBox.decimals),
 					factory: factory,
 					nativeAddr: nativeAddr,
 					signer: signer,
@@ -99,20 +136,25 @@ getAll,
 	}
 
 	function getFromRouteHelper(isInput: boolean) {
+		if(!currentTokenBox || !currentTokenBox.numTokens || !currentTokenBox.decimals) {
+			alert("not enough info to get route");
+			throw "not enough info to get route, should never happen"
+		}
+
 		if(!routeCache) {
 			alert("route cache not available")
-			throw "this should never happen"
+			throw "route cache not available, this should never happen"
 		}
-		return getNumInputOrOutputAndPIFromRoute({ route: routeCache, numInputOrOutput: addDecimals(currentTokenBox?.numTokens as number, currentTokenBox?.decimals as number), factoryAddr: factory.address, signer: signer, isInput: isInput })
+		return getNumInputOrOutputAndPIFromRoute({ route: routeCache, numInputOrOutput: addDecimals(currentTokenBox.numTokens, currentTokenBox.decimals), factoryAddr: factory.address, signer: signer, isInput: isInput })
 	}
 
-	async function handleSelectionWithNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+	async function handleSelectionWithNumTokens() {
 		// if other tokenBox also has address -> get route and output
-		// _tokenBox is current
+
 		canSwapGuard = false;
 		routeCache = null;
 
-		if(_tokenBox !== currentTokenBox || !currentTokenBox || !otherTokenBox) {
+		if(!currentTokenBox || !otherTokenBox) {
 			alert("failed to update current token box correctly")
 			throw "failed to update current token box correctly, should never happen"
 		}
@@ -120,7 +162,7 @@ getAll,
 		if(otherTokenBox.address) {
 			console.log("factory:", factory)
 
-			if(_tokenBox === tokenBox1) {
+			if(currentTokenBox === tokenBox1) {
 				const {numInputOrOutput, priceImpact, route} = await getAllHelperCurrent(true)
 				otherTokenBox.numTokens = calcOutputGivenPI(removeDecimals(numInputOrOutput, otherTokenBox.decimals as number), priceImpact) // if address exists, decimals exist
 				routeCache = route;
@@ -133,7 +175,7 @@ getAll,
 		}
 	}
 
-	async function handleSelectionWithoutNumTokens(_tokenBox: TokenBox, e: CustomEvent<any>) {
+	async function handleSelectionWithoutNumTokens() {
 		// if other tokenBox only has address -> get route
 		// else if other tokenBox also has numTokens -> get route and output
 		// _tokenBox cannot be currentTokenBox. currentTokenBox might not even exist

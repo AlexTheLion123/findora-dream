@@ -101,16 +101,16 @@ function _calcPI({ quoteOutput, actualOutput }: { quoteOutput: BigNumber, actual
     
 }
 
-export async function checkAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
+/// @returns true if sufficient allowance
+export async function checkSufficientAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
     toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
 }): Promise<boolean> {
-    return await getAllowance({
+    return ((await getAllowance({
         tokenAddr: tokenAddr,
         ownerAddr: ownerAddr,
         spenderAddr: spenderAddr,
         signer: signer
-    }) < toSpend ? false : true;
-
+    })).lt(toSpend)) ? false : true;
 }
 
 /**
