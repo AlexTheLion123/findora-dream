@@ -10,6 +10,7 @@
     "deploy": "rimraf frontend/src/lib/assets/tokens/tokens.json && rimraf frontend/src/lib/assets/deployments.json && ts-node src/deploy.ts"
   },
   "devDependencies": {
+    "@openzeppelin/contracts": "^4.4.0",
     "@types/chai": "^4.2.22",
     "@types/mocha": "^9.0.0",
     "chai": "^4.3.4",
@@ -21,7 +22,9 @@
     "mocha": "^9.1.3",
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
-    "typescript": "^4.5.2",
-    "@openzeppelin/contracts": "^4.4.0"
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "tslib": "^2.3.1"
   }
 }

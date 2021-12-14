@@ -38,6 +38,13 @@
 
 	const dispatch = createEventDispatcher();
 
+
+
+
+	export async function updateBalance() {
+		balance = removeDecimals(await getBalance(address, signer, signerAddress), decimals)
+	}
+
 	async function handleSelection(e: CustomEvent<any>) {
 		tokenToDollarRate = 0;
 
@@ -58,16 +65,16 @@
 		}
 	}
 
-	async function handleInput(e: CustomEvent<any>) {
+	export async function handleInput() {
 		/**
 		 * Only dispatch event if same box's address exists
 		 * numTokens is already bound to input
 		*/
 
 		if(address) {
-			dispatch('tokenNumInputWithAddress', e.detail);
+			dispatch('tokenNumInputWithAddress');
 		} else {
-			dispatch('tokenNumInputWithoutAddress', e.detail)
+			dispatch('tokenNumInputWithoutAddress')
 		}
 
 	}

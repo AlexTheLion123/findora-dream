@@ -33,19 +33,20 @@
 	const dollarsAddr = dollarsToken.address;
 	const factory = getFactory();
 	const router = getRouter();
-	let canSwapGuard = false;
 
 	let routeCache: string[] | null;
+
 
 	export let slippage = 0.03;
 
 	export async function action() {
-		if (!canSwapGuard) {
-			alert('swap guard is on');
-			throw 'the swap cannot be completed right now';
+		if(!tokenBox1.numTokens || !tokenBox2.numTokens || !tokenBox1.address || !tokenBox2.address) {
+			alert("not enough info for swap")
+			throw "not enough info for swap"
 		}
 
 		if (!routeCache) {
+			console.log(routeCache);
 			alert('route not set yet');
 			throw 'route not set yet';
 		}
@@ -56,11 +57,12 @@
 				tokenBox1.decimals as number
 			);
 			const inputAddress = tokenBox1.address as string;
-			console.log('amountOutMint', (tokenBox2.numTokens as number) * (1 - slippage));
+
 			const amountOutMin = addDecimals(
 				(tokenBox2.numTokens as number) * (1 - slippage),
 				tokenBox2.decimals as number
 			);
+			console.log(amountOutMin);
 
 			if (
 				!(await checkSufficientAllowance({
@@ -72,7 +74,6 @@
 				}))
 			) {
 				console.log('not enough allowance, approving max now');
-				console.log(tokenBox1.address, router.address, signer);
 
 				const tx = await approveMax({
 					tokenAddress: tokenBox1.address as string,
@@ -91,6 +92,7 @@
 				deadline: amountInExact
 			}); // TODO change deadline to realistic number
 			await tx.wait();
+			updateBoxAfterSwap()
 
 			alert('swap successfully performed');
 		} else if ($page.path === '/exchange/liquidity') {
@@ -99,6 +101,12 @@
 			alert('Invalid page: This should never happen');
 			throw 'bad page';
 		}
+	}
+
+	function updateBoxAfterSwap() {
+		tokenBox1.updateBalance();
+		tokenBox2.updateBalance();
+		tokenBox1.handleInput()
 	}
 
 	function updateCurrentTokenBox(_tokenBox: TokenBox) {
@@ -115,14 +123,15 @@
 
 	async function getRouteIfCache() {
 		if (!routeCache) {
-			return getRoute({
+			routeCache = await getRoute({
 				addrIn: tokenBox1.address as string,
 				addrOut: tokenBox2.address as string,
 				factory: factory,
 				nativeAddr: nativeAddr
 			});
+			return routeCache;
 		} else {
-			return routeCache
+			return routeCache;
 		}
 	}
 
@@ -133,7 +142,7 @@
 		}
 
 		const amountInBig = addDecimals(tokenBox1.numTokens as number, tokenBox1.decimals as number);
-		const route = await getRouteIfCache()
+		const route = await getRouteIfCache();
 		const amountsOut = await router.getAmountsOut(amountInBig, route);
 		const amountOut = amountsOut[amountsOut.length - 1];
 		otherTokenBox.numTokens = removeDecimals(amountOut, otherTokenBox.decimals as number); // if address exists, decimals exist
@@ -146,7 +155,7 @@
 		}
 
 		const amountOutBig = addDecimals(tokenBox2.numTokens as number, tokenBox2.decimals as number);
-		const route = await getRouteIfCache()
+		const route = await getRouteIfCache();
 		const amountsIn = await router.getAmountsIn(amountOutBig, route);
 		const amountIn = amountsIn[0];
 		otherTokenBox.numTokens = removeDecimals(amountIn, otherTokenBox.decimals as number); // if address exists, decimals exist
@@ -154,15 +163,14 @@
 
 	async function getSwap() {
 		if (currentTokenBox === tokenBox1) {
-			await getSwapTopCurrent();
+			await getSwapTopCurrent()
 		} else {
-			await getSwapBottomCurrent();
+			await getSwapBottomCurrent()
 		}
 	}
 
 	async function handleSelectionWithNumTokens() {
 		// if other tokenBox also has address -> get route and output
-		canSwapGuard = false;
 		routeCache = null;
 
 		if (!currentTokenBox || !otherTokenBox) {
@@ -173,8 +181,7 @@
 		if (otherTokenBox.address) {
 			console.log('factory:', factory);
 
-			getSwap();
-			canSwapGuard = true;
+			await getSwap();
 		}
 	}
 
@@ -182,7 +189,6 @@
 		// if other tokenBox only has address -> get route
 		// else if other tokenBox also has numTokens -> get route and output
 		// _tokenBox cannot be currentTokenBox. currentTokenBox might not even exist
-		canSwapGuard = false;
 		routeCache = null;
 
 		if (currentTokenBox && currentTokenBox.address) {
@@ -192,18 +198,15 @@
 			}
 
 			await getSwap();
-			canSwapGuard = true;
 		}
 	}
 	async function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		// check if other tokenBox has address -> get output (route already gotten)
 		// _tokenBox is currentTokenBox
-		canSwapGuard = false;
 		updateCurrentTokenBox(_tokenBox);
 
 		if (otherTokenBox?.address) {
 			await getSwap();
-			canSwapGuard = true;
 		}
 	}
 	function handleInputWithoutAddress(_tokenBox: TokenBox) {
