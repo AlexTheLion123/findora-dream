@@ -476,8 +476,8 @@ export class UniswapV2Router02 extends Contract {
       tokenB: string,
       overrides?: CallOverrides
     ): Promise<{
-      a: BigNumber;
-      b: BigNumber;
+      ReserveA: BigNumber;
+      ReserveB: BigNumber;
       0: BigNumber;
       1: BigNumber;
     }>;
@@ -487,8 +487,8 @@ export class UniswapV2Router02 extends Contract {
       tokenB: string,
       overrides?: CallOverrides
     ): Promise<{
-      a: BigNumber;
-      b: BigNumber;
+      ReserveA: BigNumber;
+      ReserveB: BigNumber;
       0: BigNumber;
       1: BigNumber;
     }>;
@@ -945,8 +945,8 @@ export class UniswapV2Router02 extends Contract {
     tokenB: string,
     overrides?: CallOverrides
   ): Promise<{
-    a: BigNumber;
-    b: BigNumber;
+    ReserveA: BigNumber;
+    ReserveB: BigNumber;
     0: BigNumber;
     1: BigNumber;
   }>;
@@ -956,8 +956,8 @@ export class UniswapV2Router02 extends Contract {
     tokenB: string,
     overrides?: CallOverrides
   ): Promise<{
-    a: BigNumber;
-    b: BigNumber;
+    ReserveA: BigNumber;
+    ReserveB: BigNumber;
     0: BigNumber;
     1: BigNumber;
   }>;
@@ -1432,8 +1432,8 @@ export class UniswapV2Router02 extends Contract {
       tokenB: string,
       overrides?: CallOverrides
     ): Promise<{
-      a: BigNumber;
-      b: BigNumber;
+      ReserveA: BigNumber;
+      ReserveB: BigNumber;
       0: BigNumber;
       1: BigNumber;
     }>;
@@ -1443,8 +1443,8 @@ export class UniswapV2Router02 extends Contract {
       tokenB: string,
       overrides?: CallOverrides
     ): Promise<{
-      a: BigNumber;
-      b: BigNumber;
+      ReserveA: BigNumber;
+      ReserveB: BigNumber;
       0: BigNumber;
       1: BigNumber;
     }>;

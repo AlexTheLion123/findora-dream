@@ -1,10 +1,9 @@
-import { getAmountsAndReservesInOrOut, getAllowance } from './utils/swapUtils'
 import { NoRouteError, SamePairError } from '.';
-import { checkAddressAgainstNative, checkAddressExists, removeDecimals, precisionDivision } from './utils/utils'
-import type { Signer, BigNumber} from 'ethers'
-import type { UniswapV2Factory, Ierc20 } from '$lib/typesUsed'
-import {Contract, utils } from 'ethers'
+import { checkAddressAgainstNative, checkAddressExists, getPairAddress, removeDecimals, precisionDivision } from './utils/utils'
+import { Contract } from 'ethers'
 import { ERC20ABI } from '$lib/abis';
+import type { UniswapV2Factory, Ierc20, UniswapV2Router02 } from '$lib/typesUsed'
+import type { Signer, BigNumber } from 'ethers'
 
 /**
  * All these exported methods are called from the frontend to update display and component values
@@ -13,152 +12,68 @@ import { ERC20ABI } from '$lib/abis';
 /**
  * @dev gets all the data required for a swap, starting from the route and numInput
  * @param isInput boolean that determines whether the number provided in the input or the output
- * Routes are reversible, so can calculate either way
  */
-export async function getAll({ addrP, addrQ, numInputOrOutput, factory, nativeAddr, signer, isInput }: {
-    addrP: string,
-    addrQ: string,
-    numInputOrOutput: BigNumber,
+export async function getAllInOrOut({ addrIn, addrOut, amount, nativeAddr, factory, router, isInput }: {
+    addrIn: string,
+    addrOut: string,
+    amount: BigNumber,
     factory: UniswapV2Factory,
     nativeAddr: string,
-    signer: Signer,
+    router: UniswapV2Router02
     isInput: boolean
-}): Promise<{
-    numInputOrOutput: BigNumber;
-    priceImpact: number;
-    route: string[]}> 
-    {    
-    return getRoute({ addrInput: addrP, addrOutput: addrQ, factory: factory, nativeAddr: nativeAddr })
-        .then(async res => {
-            const {numInputOrOutput: num, priceImpact} = await getNumInputOrOutputAndPIFromRoute({ route: res, numInputOrOutput: numInputOrOutput, factoryAddr: factory.address, signer: signer, isInput: isInput })
-
-            return {
-                numInputOrOutput: num,
-                priceImpact: priceImpact,
-                route: res
+}) {
+    return getRoute({ addrIn: addrIn, addrOut: addrOut, factory: factory, nativeAddr: nativeAddr })
+        .then(async _route => {
+            let amounts: BigNumber[];
+            if (isInput) {
+                amounts = await router.getAmountsOut(amount, _route)
+            } else {
+                amounts = await router.getAmountsIn(amount, _route)
             }
-        })
-}
-
-export async function getNumInputOrOutputAndPIFromRoute({ route, numInputOrOutput, factoryAddr, signer, isInput }: {
-    route: string[],
-    numInputOrOutput: BigNumber,
-    factoryAddr: string,
-    signer: Signer,
-    isInput: boolean
-}) {
-    const { reservesArr, amountsArr } = await getAmountsAndReservesInOrOut({ route: route, numInputOrOutput: numInputOrOutput, factoryAddr: factoryAddr, signer: signer, isInput: isInput })
-    const result = amountsArr[amountsArr.length - 1];
-    console.log("amountsArr: ", amountsArr.map(item => removeDecimals(item, 18)))
-    let priceImpact: number;
-    
-    if(isInput) {
-        priceImpact = getPI({ reservesArr, amountsArr }, numInputOrOutput, result)
-
-    } else {
-        priceImpact = getPI({ reservesArr, amountsArr }, result, numInputOrOutput)
-    }
-
-    return {
-        numInputOrOutput: result,
-        priceImpact: priceImpact
-    }
-
-}
-
-/// @dev calculates price impact by getting a quote (i.e. no price impact) based on the numInput
-function getPI({ reservesArr }: Awaited<ReturnType<typeof getAmountsAndReservesInOrOut>>, numInput: BigNumber, numOutput: BigNumber) {
-    const quoteOutput = _quoteFromRerservesArr(numInput, reservesArr)
-    return _calcPI({ quoteOutput: quoteOutput, actualOutput: numOutput })
-}
-
-function _quoteFromRerservesArr(numInput: BigNumber, reservesArr: { reserve0: BigNumber, reserve1: BigNumber }[]) {
-    let currentNum = numInput
-    for (let i = 0; i < reservesArr.length; i++) {
-        const quote = _quote({ amountIn: currentNum, reserveIn: reservesArr[i].reserve0, reserveOut: reservesArr[i].reserve1 })
-        currentNum = quote;
-    }
-    return currentNum
-}
-
-function _quote({ amountIn, reserveIn, reserveOut }: { // TODO fix numbers, loses decimals
-    amountIn: BigNumber,
-    reserveIn: BigNumber,
-    reserveOut: BigNumber
-}) {
-    return amountIn.mul(reserveOut).div(reserveIn)
-}
-
-function _calcPI({ quoteOutput, actualOutput }: { quoteOutput: BigNumber, actualOutput: BigNumber }) {
-    /**
-     * assuming quoteOutput < actualOutput, so we know already that division without decimal = 0
-     * so we simply mod to get fractional part
-     */
-    return 1 - precisionDivision(actualOutput, quoteOutput)
+            return amounts[amounts.length - 1]
+        });
 }
 
 /// @returns true if sufficient allowance
 export async function checkSufficientAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
     toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
 }): Promise<boolean> {
-    return ((await getAllowance({
-        tokenAddr: tokenAddr,
-        ownerAddr: ownerAddr,
-        spenderAddr: spenderAddr,
-        signer: signer
-    })).lt(toSpend)) ? false : true;
-}
-
-/**
- * @dev used to calculate dollar value
- * the way we calculate the route, it should necessarily be possible to calculate dollar value
- * @returns used to return the exact dollar value of the input parameter, without taking price impact into account.
- */
-// TODO fix so that uses route as input
-export async function getQuote({ addrInput, addrOutput, numInput, nativeAddr, factory, signer }: {
-    addrInput: string,
-    addrOutput: string,
-    numInput: BigNumber,
-    nativeAddr: string,
-    factory: UniswapV2Factory,
-    signer: Signer
-}) {
-    return getRoute({ addrInput: addrInput, addrOutput: addrOutput, factory: factory, nativeAddr: nativeAddr })
-        .then(async _route => {
-            return getAmountsAndReservesInOrOut({ route: _route, numInputOrOutput: numInput, factoryAddr: factory.address, signer: signer, isInput: true }) // since don't care about PI here, doesn't matter whether input or output
-        })
-        .then((value: { reservesArr: { reserve0: BigNumber; reserve1: BigNumber; }[]}) => {
-            console.log(removeDecimals(value.reservesArr[0].reserve0, 18), removeDecimals(value.reservesArr[0].reserve1, 18))
-            return _quoteFromRerservesArr(numInput, value.reservesArr)
-        })
+    const tokenInstance = new Contract(tokenAddr, ERC20ABI, signer) as Ierc20
+    return (await tokenInstance.allowance(ownerAddr, spenderAddr)).lt(toSpend) ? false : true;
 }
 
 // TODO look at cacheing routes
 // TODO change logic to accomodate array of main tokens instead of nativeAddr
-export async function getRoute({ addrInput, addrOutput, factory, nativeAddr }: {
-    addrInput: string,
-    addrOutput: string,
+export async function getRoute({ addrIn, addrOut, factory, nativeAddr }: {
+    addrIn: string,
+    addrOut: string,
     factory: UniswapV2Factory,
     nativeAddr: string
 }): Promise<string[]> {
-    if (addrInput === addrOutput) {
+    if (addrIn === addrOut) {
         throw new SamePairError();
     }
 
-    const pairAddress = await factory.getPair(addrInput, addrOutput); // we have to query blockchain, and can't use pairfor, because pair might not exist
+    const pairAddress = await factory.getPair(addrIn, addrOut); // we have to query blockchain, and can't use pairfor, because pair might not exist
 
     if (checkAddressExists(pairAddress)) {
-        return [addrInput, addrOutput]
+        return [addrIn, addrOut]
     }
 
-    if (await checkAddressAgainstNative(factory, nativeAddr, addrInput) && await checkAddressAgainstNative(factory, nativeAddr, addrOutput)) {
+    if (await checkAddressAgainstNative(factory, nativeAddr, addrIn) && await checkAddressAgainstNative(factory, nativeAddr, addrOut)) {
         // check indirect pair against native, throws if no pair
-        return [addrInput, nativeAddr, addrOutput];
+        return [addrIn, nativeAddr, addrOut];
     }
 
     // if this point is reached, no route exists and returns empty array
     throw new NoRouteError();
 }
+
+// export async function getQuoteFromRoute({route, router}: {route: string[], router: UniswapV2Router02}) {
+//     for(let i=0; i<route.length-1; i++) {
+//         router.getReserves()
+//     }
+// }
 
 
 export function getBalance(tokenAddress: string, signer: Signer, signerAddress: string): Promise<BigNumber> {

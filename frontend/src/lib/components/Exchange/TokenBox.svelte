@@ -1,11 +1,12 @@
 <svelte:options accessors={true} />
 
 <script context="module" lang="ts">
-	import { getBalance, getDecimals, getQuote } from '$lib/scripts/exchange';
-	import { precisionDivision, removeDecimals } from '$lib/scripts/exchange/utils/utils';
+	import { getBalance, getDecimals, RouterAddressNotSetError } from '$lib/scripts/exchange';
+	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils/utils';
 	import { BigNumber, utils } from 'ethers';
-	import type { Signer } from 'ethers';
-	import type { UniswapV2Factory } from '$lib/typesUsed';
+	import { getRoute} from '$lib/scripts/exchange'
+	import type {IExchangeContext} from '$lib/typesFrontend';
+
 </script>
 
 <script lang="ts">
@@ -13,30 +14,27 @@
 	import NumTokenInput from './NumTokenInput.svelte';
 	import { createEventDispatcher, getContext } from 'svelte';
 
-	// getContext
+	// get context
 	const {
 		signerObj,
 		nativeToken,
 		dollarsToken,
-		getFactory
-	} = getContext('exchange');
+		getFactory,
+		getRouter,
+	}: IExchangeContext = getContext('exchange');
 
 	const signer = signerObj.getSigner();
 	const signerAddress = signerObj.getAddress();
 	const nativeAddr = nativeToken.address;
 	const dollarsAddr = dollarsToken.address
 	const factory = getFactory();
+	const router = getRouter();
 
 	export let numTokens: number = 0.0;
 	export let address: string = '';
 	export let decimals: number = 0;
-	export let dollars: number = 0;
 	export let balance: number = 0;
 	export let tokenToDollarRate: number = 0; // can be updated 
-
-	$: dollars = numTokens * tokenToDollarRate;
-
-	const CACHE_TIME = 10000; // milliseconds
 
 	const dispatch = createEventDispatcher();
 
@@ -52,7 +50,6 @@
 
 		decimals = await getDecimals(e.detail.address, signer);
 		balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress), decimals); // getBalance asynchronously then wait for decimals
-		tokenToDollarRate = await getDollarRate(e)
 
 		if(numTokens) {
 			dispatch('tokenSelectedWithNumTokens', e.detail);
@@ -68,7 +65,6 @@
 		*/
 
 		if(address) {
-			tokenToDollarRate = await getDollarRate(e)
 			dispatch('tokenNumInputWithAddress', e.detail);
 		} else {
 			dispatch('tokenNumInputWithoutAddress', e.detail)
@@ -76,42 +72,22 @@
 
 	}
 
-	let getDollarRate = (function () {
-		// TODO fix cache to take addresses into account
-		let timestamp = 0;
-		return async function (e: any): Promise<number> {
-			// if (Date.now() - timestamp < CACHE_TIME && tokenToDollarRate) {
-			// 	console.log("using cache")
-			// 	return tokenToDollarRate;
-			// }
 
+	// async function getDollarValue(amount: number) {
+	// 	if(address === dollarsAddr) {
+	// 		return numTokens;
+	// 	}
 
-			if (!address) {
-				alert('no address');
-				throw 'no address';
-			}
-
-			if(address=== dollarsAddr) {
-				return 1;
-			}
-
-			timestamp = Date.now();
-			return removeDecimals(await getDollarsQuote(address), decimals)
-		};
-	})();
-
-	function getDollarsQuote(addrInput: string) {
-		const input = utils.parseUnits("1", decimals)
-
-		return getQuote({
-					addrInput: addrInput,
-					addrOutput: dollarsAddr,
-					numInput: input, // TODO assummes dollars has 18 decimals, fix this assumption if needs be.
-					nativeAddr: nativeAddr,
-					factory: factory,
-					signer: signer
-				})
-	}
+	// 	const route = await getRoute({addrIn: address, addrOut: dollarsAddr, factory: factory, nativeAddr: nativeAddr})
+		
+	// 	let currentNum = addDecimals(amount, decimals)
+	// 	for(let i=0; i<route.length-1; i++) {
+	// 		const reserves = await router.getReserves(address, dollarsAddr)
+	// 		const quoteOut = await router.quote(currentNum, reserves[0], reserves[1])
+	// 		currentNum = quoteOut
+	// 	}
+	// 	return removeDecimals(currentNum, 18) //TODO assumes dollars has 18 decimals, check assumption
+	// }
 
 	function formatNumber(num: number | string, decimals: number) {
 		if (typeof num === 'string') {
@@ -129,9 +105,9 @@
 	<div class="input-component">
 		<NumTokenInput on:tokenNumInput={handleInput} bind:value={numTokens} />
 	</div>
-	<p class="dollars">
+	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}
-	</p>
+	</p> -->
 </div>
 
 <style lang="scss">
@@ -150,7 +126,7 @@
 		display: grid;
 		grid-template:
 			'selector input' 1fr
-			'balance dollars' 1fr / 1fr 2fr;
+			'balance .' 1fr / 1fr 2fr;
 		align-items: center;
 	}
 
@@ -167,8 +143,8 @@
 		justify-self: end;
 	}
 
-	.dollars {
-		grid-area: dollars;
-		justify-self: end;
-	}
+	// .dollars {
+	// 	grid-area: dollars;
+	// 	justify-self: end;
+	// }
 </style>
