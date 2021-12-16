@@ -60,6 +60,8 @@
 			);
 			const inputAddress = address1 as string;
 
+			console.log(inputAddress, "input address")
+			
 			const amountOutMin = addDecimals(
 				(amount2 as number) * (1 - slippage),
 				decimals2 as number

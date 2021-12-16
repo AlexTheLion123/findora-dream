@@ -54,17 +54,19 @@
         }
         await checkAllowanceAndApproveMax({toSpend: addDecimals(amount1, decimals1), ownerAddr: signerAddress, spenderAddr:router.address, tokenAddr:address1, signer: signer })
         await checkAllowanceAndApproveMax({toSpend: addDecimals(amount2, decimals1), ownerAddr: signerAddress, spenderAddr:router.address, tokenAddr:address2, signer: signer })
-        console.log("adding liquidity")
-        
+		console.log("approved");
+		
+
         const amountADesired = addDecimals(amount1, decimals1)
         const amountBDesired = addDecimals(amount2, decimals2)
         const amountAMin = addDecimals(amount1*(1-SLIPPAGE), decimals1)
         const amountBMin = addDecimals(amount2*(1-SLIPPAGE), decimals2);
 
+		console.log(address1, address2, amountADesired, amountBDesired, amountAMin, amountBMin, signerAddress)
+
         let tx = await router.addLiquidity(address1, address2, amountADesired, amountBDesired,amountAMin, amountBMin, signerAddress, amountADesired) // TODO change deadline to realistic number
         await tx.wait();
         updateBoxAfterSwap()
-        alert("liquidity successfully added")
     }
 
     function updateBoxAfterSwap() {

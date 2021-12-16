@@ -30,7 +30,6 @@ export async function checkAllowanceAndApproveMax({ toSpend, ownerAddr, spenderA
 }) {
     const tokenInstance = new Contract(tokenAddr, ERC20ABI, signer) as Ierc20
     if((await tokenInstance.allowance(ownerAddr, spenderAddr)).lt(toSpend)) {
-        let tx = await approveMax({tokenAddress: tokenAddr, spenderAddress: spenderAddr, signer: signer})
-        await tx.wait();
+        return approveMax({tokenAddress: tokenAddr, spenderAddress: spenderAddr, signer: signer})
     }
 }
