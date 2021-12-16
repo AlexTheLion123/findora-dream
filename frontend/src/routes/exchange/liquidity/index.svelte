@@ -1,32 +1,21 @@
 <script lang="ts">
-    import YourLiquidityBox from '$lib/components/Exchange/Liquidity/YourPositions/YourLiquidityBox.svelte';
-	import AddLiquidityBox from '$lib/components/Exchange/Liquidity/AddLiquidity/AddLiquidityBox.svelte';
-    
-    import {page} from '$app/stores'
+	import TradeButton from '$lib/components/Misc/TradeButton.svelte';
+	import Positions from '$lib/components/Exchange/Liquidity/YourPositions/Positions.svelte'
+	import ImportTokens from '$lib/components/Exchange/Liquidity/YourPositions/ImportTokens.svelte';
 
-	type Option = {
-		header: string,
-		backButton: boolean
-		component: any,
-	};
+	import {page} from '$app/stores'
 
-	const options: Array<Option> = [
-		{component: YourLiquidityBox, header: "Your Liquidity", backButton:false},
-		{component: AddLiquidityBox, header: "Add liquidity", backButton:true}
-	]
-
-	let selected: Option = options[0];
-
-	if($page.path === '/exchange/liquidity/positions') {
-		selected = options[1]
-	} else if($page.path === '/exchange/liquidity/add') {
-		selected = options[2]
+	function handleClick() {
+		$page.path = '/exchange/liquidity/add.svelte'
 	}
-    
+
 </script>
 
-<svelte:component this={selected.component}/>
+<Positions/>	
+<ImportTokens/>
+<TradeButton text="Add Liquidity" on:perfomAction={handleClick}/>
 
-<style>
 
-</style>
+
+
+

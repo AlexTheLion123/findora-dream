@@ -1,10 +1,10 @@
 <script>
-	import Link from '../../../Misc/Link.svelte';
+	import Link from '$lib/components/Misc/Link.svelte';
 </script>
 
 <main class="import">
 	<p>Don't see a pool you joined?</p>
-	<Link link="/exchage/sdlfkjslfk" text="Find other tokens" />
+	<Link link="/exchage/liquidity/add" text="Find other tokens" />
 </main>
 
 <style>

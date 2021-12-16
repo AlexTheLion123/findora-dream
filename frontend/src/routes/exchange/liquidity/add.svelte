@@ -212,7 +212,7 @@
 
 	<div class="wrapper">
 		<header>
-			<ExchangeHeader title="Add Liquidity" showBack={true} backPath={'/exchange/liquidity/positions'}/>
+			<ExchangeHeader title="Add Liquidity" showBack={true} backPath={'/exchange/liquidity'}/>
 		</header>
 		<div class="token-box box1">
 			<TokenBox

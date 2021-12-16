@@ -13,8 +13,6 @@
 	import type { IExchangeContext } from '$lib/typesFrontend';
 	import type { Web3Provider } from '@ethersproject/providers';
 
-	import ExchangeContainer from '$lib/components/Exchange/ExchangeContainer.svelte';
-
 	const { factoryAddress, routerAddress } = getFactoryAndRouterAddress();
 	const { nativeAddr, dollarsAddr } = getNativeAndDollarAddr(tokens);
 
@@ -77,7 +75,11 @@
 
 <div class="container">
 	<div class="wrapper">
-		<slot />
+		{#if exchangeReady}
+			<slot />
+		{:else}
+			<p>Connect to metmask</p>
+		{/if}
 	</div>
 </div>
 
