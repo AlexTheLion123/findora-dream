@@ -22,7 +22,7 @@
 	</div>
 
 	<div class="swap-button">
-		<TradeButton text="Swap" on:perfomAction={callSwap}/>
+		<TradeButton text="Swap" on:click={callSwap}/>
 	</div>
 </main>
 

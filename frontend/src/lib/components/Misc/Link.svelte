@@ -11,6 +11,7 @@
 		color: rgb(128, 247, 251);
 		&:hover {
 			text-decoration: underline;
+			cursor: pointer;
 		}
 	}
 </style>

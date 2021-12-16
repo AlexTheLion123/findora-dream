@@ -6,13 +6,10 @@
 	export let text: string;
 
 	const dispatch = createEventDispatcher();
-	function dispatchEvent() {
-		dispatch("perfomAction")
-	}
 
 </script>
 
-<button on:click|preventDefault={dispatchEvent} >
+<button on:click|preventDefault>
 	{text}
 </button>
 

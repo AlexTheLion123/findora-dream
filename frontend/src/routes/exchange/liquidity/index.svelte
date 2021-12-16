@@ -1,21 +1,19 @@
 <script lang="ts">
-	import TradeButton from '$lib/components/Misc/TradeButton.svelte';
-	import Positions from '$lib/components/Exchange/Liquidity/YourPositions/Positions.svelte'
+	import ExchangeHeader from '$lib/components/Exchange/Layout/ExchangeHeader.svelte';
+	import Positions from '$lib/components/Exchange/Liquidity/YourPositions/Positions.svelte';
 	import ImportTokens from '$lib/components/Exchange/Liquidity/YourPositions/ImportTokens.svelte';
-
-	import {page} from '$app/stores'
-
-	function handleClick() {
-		$page.path = '/exchange/liquidity/add.svelte'
-	}
-
+	import LinkBright from '$lib/components/Misc/LinkBright.svelte';
 </script>
 
-<Positions/>	
-<ImportTokens/>
-<TradeButton text="Add Liquidity" on:perfomAction={handleClick}/>
+<main>
+	<ExchangeHeader title="Your liquidity"/>
+	<Positions />
+	<ImportTokens />
+	<LinkBright text="Add liquidity" link="/exchange/liquidity/add" />
+</main>
 
-
-
-
-
+<style>
+	main {
+		width: 300px;
+	}
+</style>

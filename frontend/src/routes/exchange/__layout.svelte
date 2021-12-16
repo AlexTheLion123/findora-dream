@@ -89,17 +89,16 @@
 	$box-border: 1px solid rgba(255, 255, 255, 0.2);
 
 	.container {
-		width: 100%;
+		display: flex;
+		justify-content: center;
 	}
-
+	
 	.wrapper {
-		display: grid;
-		place-items: center;
-		padding: 100px;
-
-		padding: 0 30px;
 		background: $box-background;
 		border-radius: $box-radius;
 		border: $box-border;
+		padding: 20px;
+		width: fit-content;
+		height: fit-content;
 	}
 </style>
