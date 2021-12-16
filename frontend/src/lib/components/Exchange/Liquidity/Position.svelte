@@ -1,7 +1,13 @@
+
 <script lang="ts">
+	import Button2 from '../Button2.svelte'
+	import Link from '../Link.svelte'
+
 	import { getBalance, removeDecimals } from '$lib/scripts/exchange';
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
+
+	
 
 	export let symbolA: string;
 	export let symbolB: string;
@@ -30,25 +36,37 @@
 	})();
 </script>
 
-<div class="container">
+<main>
 	<li on:click={toggle}>
 		<span class="pair"> {symbolA} - {symbolB} </span>
 		<span class="balance"> {pairBalance} <i class="fas fa-chevron-down" /> </span>
 	</li>
 
 	{#if showFull}
-		<li><span>Pooled {symbolA}</span><span>{balanceA}</span></li>
-		<li><span>Pooled {symbolB}</span><span>{balanceB}</span></li>
-		<li><span>Pool share:</span>{#await poolShare}...{:then share}{share}%{/await}</li>
+		<section class="full-content">
+			<li><span>{symbolA}</span><span>{balanceA}</span></li>
+			<li><span>{symbolB}</span><span>{balanceB}</span></li>
+			<li><span>Pool share:</span>{#await poolShare}...{:then share}{share}%{/await}</li>
+		</section>
+		<div class="addMoreLink">
+			<Link text="+ Add more instead" link="exchange/lskdjfsjlk"/>
+		</div>
+		<div class="button">
+			<Button2 text="Remove Liquidity"/>
+		</div>
 	{/if}
-</div>
+</main>
 
 <style>
-	.container {
+	main {
 		background: rgba(255, 255, 255, 0.2);
-		margin: 13px 0;
 		padding: 10px;
 		border-radius: 10px;
+	}
+
+	.full-content {
+		padding-top: 10px;
+		font-weight: 400;
 	}
 
 	li {
@@ -60,4 +78,10 @@
 	li:hover {
 		cursor: pointer;
 	}
+
+	.addMoreLink {
+		text-align: center;
+		margin: 10px 0;
+	}
+
 </style>

@@ -4,10 +4,17 @@
 
 <button on:click|preventDefault>{text}</button>
 
-<style>
+<style lang="scss">
+    $background: rgba(0, 0, 0, 0.2);
+
     button {
-        background: lightseagreen;
-        padding: 5px;
+        background: $background;
+        padding: 8px;
         border-radius: 5px;
+        width: 100%;
+
+        &:hover {
+            background: lighten($background, 10%);
+        }
     }
 </style>
