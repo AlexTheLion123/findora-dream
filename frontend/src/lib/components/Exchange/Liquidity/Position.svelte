@@ -23,9 +23,11 @@
 		console.log('hello');
 	}
 
-	let poolShare = (async function() {
-        return pairBalance/removeDecimals(await getBalance(pairAddress, signer, signerAddr), 18)*100;
-    })()
+	let poolShare = (async function () {
+		return (
+			(pairBalance / removeDecimals(await getBalance(pairAddress, signer, signerAddr), 18)) * 100
+		);
+	})();
 </script>
 
 <div class="container">

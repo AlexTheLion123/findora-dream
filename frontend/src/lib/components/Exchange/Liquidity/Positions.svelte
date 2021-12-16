@@ -94,6 +94,7 @@
 	<header>
 		<p>Your liquidity</p>
 	</header>
+
 	<ul class="positions">
 		{#await positionsProm}
 			Loading positions
@@ -110,7 +111,15 @@
 			{/each}
 		{/await}
 	</ul>
+
+	<section class="importTokens">
+		<p>Don't see a pool you joined?</p>
+		<a href="/exchage/sdlfkjslfk">Find other tokens</a>
+	</section>
+
 	<TradeButton text="Add Liquidity" on:perfomAction={() => (showAddLiquidity = true)} />
+
+
 </div>
 
 <style lang="scss">
@@ -140,23 +149,30 @@
 		padding: 5px;
 	}
 
-	.positions {
-		height: 100%;
-		margin: 10px 0;
-	}
-
-	ul {
-		overflow: hidden;
-	}
-
 	li {
 		list-style: none;
 		display: flex;
 		justify-content: space-between;
-		margin: 13px 0;
+		margin: 15px 0;
 		padding: 10px;
 		border-radius: 10px;
 
 		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.importTokens {
+		text-align: center;
+
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: $box-radius;
+		padding: 20px;
+
+		a {
+			text-decoration: none;
+			color: rgb(128, 247, 251);
+			&:hover {
+				text-decoration: underline;
+			}
+		}
 	}
 </style>

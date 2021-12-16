@@ -92,7 +92,17 @@
 		all: unset;
 	}
 
-	input[type='number'] {
+	:global(::-webkit-scrollbar) {
+		width: 10px;
+		background: rgb(15, 15, 15);
+	}
+
+	:global(::-webkit-scrollbar-thumb) {
+		background: rgb(7, 187, 178);
+		border-radius: 5px;
+	}
+
+	input[type='number'] { // TODO delete since not global?
 		-moz-appearance: textfield; /* Firefox */
 	}
 

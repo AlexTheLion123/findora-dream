@@ -10,8 +10,6 @@
 	export let isShown = false;
 	let current: HTMLElement | undefined;
 
-
-
 	const dispatch = createEventDispatcher();
 	function handleSelection(e: any) {
 		isShown = false;
