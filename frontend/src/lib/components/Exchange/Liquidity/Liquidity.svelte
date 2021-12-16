@@ -2,7 +2,7 @@
 	import AddLiquidity from './AddLiquidity.svelte';
 	import TradeButton from '../TradeButton.svelte';
 	import { signer, signerAddress } from '$lib/stores';
-	import YourPositions from '$lib/components/Exchange/Layout/YourPositions.svelte';
+	import YourPositions from '$lib/components/Exchange/Liquidity/YourPositions.svelte';
 
 	export let liquidityReady = false;
 

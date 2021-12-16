@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { signer, signerAddress } from '$lib/stores';
+	import { signer, signerAddress, provider } from '$lib/stores';
 	import {
 		getFactoryAndRouterObjects,
 		getFactoryAndRouterAddress,
@@ -8,12 +8,13 @@
 	} from '$lib/scripts/exchange';
 	import { setContext } from 'svelte';
 	import tokens from '$lib/assets/tokens/tokens.json';
-	import Liquidity from '$lib/components/Exchange/Layout/Liquidity.svelte';
-	import Swap from '$lib/components/Exchange/Layout/Swap.svelte';
+	import Liquidity from '$lib/components/Exchange/Liquidity/Liquidity.svelte';
+	import Swap from '$lib/components/Exchange/Swap/Swap.svelte';
 	import { get } from 'svelte/store';
 	import type { Signer } from 'ethers';
 	import type { UniswapV2Factory, UniswapV2Router02 } from '$lib/typesUsed';
 	import type { IExchangeContext} from '$lib/typesFrontend'
+	import type {Web3Provider} from '@ethersproject/providers'
 
 	const { factoryAddress, routerAddress } = getFactoryAndRouterAddress();
 	const { nativeAddr, dollarsAddr } = getNativeAndDollarAddr(tokens);
@@ -33,12 +34,13 @@
 		},
 		getFactory: () => factory,
 		getRouter: () => router,
+		getProvider: () => get(provider) as Web3Provider,
 		signerObj: {
 			getSigner: () => get(signer) as Signer,
 			getAddress: () => get(signerAddress) as string
 		}
 	}
-
+	
 	setContext('exchange', contextObj);
 
 	signer.subscribe(async (value) => {

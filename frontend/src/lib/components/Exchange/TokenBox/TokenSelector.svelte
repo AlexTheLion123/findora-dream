@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import TokenSearchDialog from './TokenSearchDialog.svelte';
+	import TokenSearchDialog from '../TokenSearchDialog/TokenSearchDialog.svelte';
 
 	let showSearch = false; // bound to child
     let logoSrc: string;

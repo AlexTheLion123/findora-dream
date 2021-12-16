@@ -90,6 +90,7 @@ export interface IExchangeContext {
         address: string,
         decimals: 18
     },
+    getProvider: () => Web3Provider,
     getFactory: () => UniswapV2Factory,
     getRouter: () => UniswapV2Router02,
     signerObj: {

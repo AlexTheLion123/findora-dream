@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TokenBox from '../TokenBox.svelte';
+	import TokenBox from '../TokenBox/TokenBox.svelte';
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 	import {
@@ -10,7 +10,7 @@
 		addDecimals
 	} from '$lib/scripts/exchange';
 	import { ERC20ABI, UniswapV2PairABI } from '$lib/abis';
-	import PoolInfo from '../PoolInfo.svelte';
+	import PoolInfo from './PoolInfo.svelte';
 	import { BigNumber, Contract } from 'ethers';
 	import TradeButton from '../TradeButton.svelte';
 	import type { Ierc20, UniswapV2Pair } from '$lib/typesUsed';

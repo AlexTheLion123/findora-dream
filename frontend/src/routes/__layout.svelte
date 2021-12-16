@@ -15,7 +15,7 @@
 			// connected
 			$provider = new providers.Web3Provider(window.ethereum);
 			$isProvided = true;
-
+			
 			$signer = $provider!.getSigner();
 			$signerAddress = await $signer!.getAddress();
 

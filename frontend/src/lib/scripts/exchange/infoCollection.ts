@@ -85,4 +85,7 @@ export async function getDecimals(tokenAddress: string, signer: Signer): Promise
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).decimals()
 }
 
+export async function getSymbol(tokenAddress: string, signer: Signer): Promise<string> {
+    return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).symbol();
+}
 

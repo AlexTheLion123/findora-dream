@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-	import TokenSelector from './TokenSelection/TokenSelector.svelte';
+	import TokenSelector from './TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
 	import { createEventDispatcher, getContext } from 'svelte';
 

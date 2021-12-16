@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts">
-	import TokenBox from '../TokenBox.svelte';
+	import TokenBox from '../TokenBox/TokenBox.svelte';
 	import { page } from '$app/stores';
 	import { getContext } from 'svelte';
 
