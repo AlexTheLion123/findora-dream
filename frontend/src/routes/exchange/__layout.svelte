@@ -8,8 +8,8 @@
 	} from '$lib/scripts/exchange';
 	import { setContext } from 'svelte';
 	import tokens from '$lib/assets/tokens/tokens.json';
-	import Liquidity from '$lib/components/Exchange/ExchangeLayout/Liquidity.svelte';
-	import Swap from '$lib/components/Exchange/ExchangeLayout/Swap.svelte';
+	import Liquidity from '$lib/components/Exchange/Layout/Liquidity.svelte';
+	import Swap from '$lib/components/Exchange/Layout/Swap.svelte';
 	import { get } from 'svelte/store';
 	import type { Signer } from 'ethers';
 	import type { UniswapV2Factory, UniswapV2Router02 } from '$lib/typesUsed';
