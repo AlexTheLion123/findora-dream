@@ -5,9 +5,6 @@
 	import { getPairAddress, getBalance, removeDecimals, getSymbol, getDecimals } from '$lib/scripts/exchange';
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
-	import TokenBox from '$lib/components/Exchange/TokenBox/TokenBox.svelte';
-	import TokenSearchDialog from '$lib/components/Exchange/TokenSearchDialog/TokenSearchDialog.svelte';
-	import TokenSearchItem from '$lib/components/Exchange/TokenSearchDialog/TokenSearchItem.svelte';
 
 	// get context
 	const {
@@ -106,6 +103,7 @@
 					symbolA={position.tokenA.symbol}
 					symbolB={position.tokenB.symbol}
 					pairBalance={position.pair.balance}
+					pairAddress={position.pair.address}
 					balanceA={position.tokenA.balance}
 					balanceB={position.tokenB.balance}
 				/>
