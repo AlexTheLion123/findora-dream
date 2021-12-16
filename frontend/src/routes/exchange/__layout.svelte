@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { signer, signerAddress, provider } from '$lib/stores';
 	import {
 		getFactoryAndRouterObjects,
@@ -8,13 +7,13 @@
 	} from '$lib/scripts/exchange';
 	import { setContext } from 'svelte';
 	import tokens from '$lib/assets/tokens/tokens.json';
-	import Liquidity from '$lib/components/Exchange/Liquidity/Liquidity.svelte';
-	import Swap from '$lib/components/Exchange/Swap/Swap.svelte';
 	import { get } from 'svelte/store';
 	import type { Signer } from 'ethers';
 	import type { UniswapV2Factory, UniswapV2Router02 } from '$lib/typesUsed';
-	import type { IExchangeContext} from '$lib/typesFrontend'
-	import type {Web3Provider} from '@ethersproject/providers'
+	import type { IExchangeContext } from '$lib/typesFrontend';
+	import type { Web3Provider } from '@ethersproject/providers';
+
+	import ExchangeContainer from '$lib/components/Exchange/ExchangeContainer.svelte';
 
 	const { factoryAddress, routerAddress } = getFactoryAndRouterAddress();
 	const { nativeAddr, dollarsAddr } = getNativeAndDollarAddr(tokens);
@@ -39,8 +38,8 @@
 			getSigner: () => get(signer) as Signer,
 			getAddress: () => get(signerAddress) as string
 		}
-	}
-	
+	};
+
 	setContext('exchange', contextObj);
 
 	signer.subscribe(async (value) => {
@@ -71,30 +70,29 @@
 			console.log('factory and router objects ready');
 		} else {
 			console.log('no signer');
+			exchangeReady = false;
 		}
 	});
 </script>
 
 <div class="container">
 	<div class="wrapper">
-		{#if $page.path === '/exchange/swap'}
-			<Swap bind:swapReady={exchangeReady} />
-		{:else if $page.path === '/exchange/liquidity'}
-			<Liquidity bind:liquidityReady={exchangeReady} />
-		{:else}
-			Something is wrong page: {$page.path}
-		{/if}
+			<ExchangeContainer {exchangeReady}/>
 	</div>
 </div>
 
 <style lang="scss">
+	
+	
 	.container {
 		width: 100%;
-
-		.wrapper {
-			display: grid;
-			place-items: center;
-			padding: 100px 0;
-		}
 	}
+
+	.wrapper {
+		display: grid;
+		place-items: center;
+		padding: 100px 0;
+	}
+
+	
 </style>

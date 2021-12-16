@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TokenBox from '../TokenBox/TokenBox.svelte';
+	import TokenBox from '../../TokenBox/TokenBox.svelte';
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 	import {
@@ -12,7 +12,7 @@
 	import { ERC20ABI, UniswapV2PairABI } from '$lib/abis';
 	import PoolInfo from './PoolInfo.svelte';
 	import { BigNumber, Contract } from 'ethers';
-	import TradeButton from '../TradeButton.svelte';
+	import TradeButton from '../../TradeButton.svelte';
 	import type { Ierc20, UniswapV2Pair } from '$lib/typesUsed';
 
 	export let showAddLiquidity: boolean;
@@ -210,13 +210,7 @@
 	}
 </script>
 
-<div class="box">
 	<div class="wrapper">
-		<header>
-				<i class="fas fa-arrow-left" on:click={() => showAddLiquidity = false}/>
-				<p class="title">Add Liquidity</p>
-				<div class="placeholder"></div>
-		</header>
 		<div class="token-box box1">
 			<TokenBox
 				bind:this={tokenBox1}
@@ -247,34 +241,13 @@
 			<TradeButton text="Add liquidity" on:perfomAction={addLiquidity} />
 		</div>
 	</div>
-</div>
 
 <style lang="scss">
-	$box-radius: 10px;
-	$box-background: rgba(172, 172, 172, 0.1);
-	$box-border: 1px solid rgba(255, 255, 255, 0.2);
-
-	.box {
-		height: 550px;
-		width: 500px;
-		padding: 0 30px;
-		background: $box-background;
-
-		border-radius: $box-radius;
-		border: $box-border;
-	}
-
-	i {
-		&:hover {
-			cursor: pointer;
-		}
-	}
 
 	.wrapper {
 		height: 100%;
 		display: grid;
 		grid-template:
-			'header' 1fr
 			'box1' 1fr
 			'box2' 1fr
 			'gap' 0.2fr
@@ -283,15 +256,6 @@
 			'btn' 1fr 
 			/ 1fr;
 
-	}
-
-	header {
-		grid-area: header;
-		display: flex;
-		align-items: center;
-
-		display: flex;
-		justify-content: space-between;
 	}
 
 	.box1 {

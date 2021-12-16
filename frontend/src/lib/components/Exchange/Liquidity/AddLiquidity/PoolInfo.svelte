@@ -19,7 +19,7 @@
 </div>
 
 <style lang="scss">
-	$box-background: rgba(255, 255, 255, 0.068);
+	$info-background: rgba(255, 255, 255, 0.068);
 
 	span {
 		text-align: center;
@@ -36,7 +36,7 @@
 		.info {
 			height: 100%;
 			margin-top: 5px;
-			background: $box-background;
+			background: $info-background;
 			border-radius: 8px;
 			display: flex;
 			align-items: center;
