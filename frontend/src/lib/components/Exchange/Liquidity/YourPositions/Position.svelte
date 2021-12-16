@@ -1,7 +1,7 @@
 
 <script lang="ts">
-	import Button2 from '../../Button2.svelte'
-	import Link from '../../Link.svelte'
+	import Button2 from '../../../Misc/Button2.svelte'
+	import Link from '../../../Misc/Link.svelte'
 
 	import { getBalance, removeDecimals } from '$lib/scripts/exchange';
 	import { getContext } from 'svelte';

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import DoubleTokenBox from './DoubleTokenBox.svelte';
-	import TradeButton from '../../Misc/TradeButton.svelte';
+	import DoubleTokenBox from '$lib/components/Exchange/Swap/DoubleTokenBox.svelte';
+	import TradeButton from '$lib/components/Misc/TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 	import ExchangeHeader from '$lib/components/Exchange/Layout/ExchangeHeader.svelte';
 

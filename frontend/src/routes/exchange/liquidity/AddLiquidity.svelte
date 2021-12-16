@@ -1,21 +1,21 @@
 <script lang="ts">
-	import TokenBox from '../../TokenBox/TokenBox.svelte';
-	import { getContext } from 'svelte';
+    import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 	import {
-		checkAddressExists,
+        checkAddressExists,
 		removeDecimals,
 		formatNumber,
 		checkAllowanceAndApproveMax,
 		addDecimals
 	} from '$lib/scripts/exchange';
 	import { ERC20ABI, UniswapV2PairABI } from '$lib/abis';
-	import PoolInfo from './PoolInfo.svelte';
 	import { BigNumber, Contract } from 'ethers';
-	import TradeButton from '../../TradeButton.svelte';
 	import type { Ierc20, UniswapV2Pair } from '$lib/typesUsed';
-
-	export let showAddLiquidity: boolean;
+	
+    import TokenBox from '$lib/components/TokenBox/TokenBox.svelte';
+	import PoolInfo from './PoolInfo.svelte';
+    import TradeButton from '$lib/components/Misc/TradeButton.svelte';
+	import ExchangeHeader from '$lib/components/Exchange/Layout/ExchangeHeader.svelte';
 
 	const SLIPPAGE = 0.01; // slippage also applies in context of liquidity
 
@@ -211,6 +211,9 @@
 </script>
 
 	<div class="wrapper">
+		<header>
+			<ExchangeHeader title="Add Liquidity" showBack={true} backPath={'/exchange/liquidity/positions'}/>
+		</header>
 		<div class="token-box box1">
 			<TokenBox
 				bind:this={tokenBox1}

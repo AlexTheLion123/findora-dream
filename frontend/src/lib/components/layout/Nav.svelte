@@ -20,7 +20,7 @@
 			<i class="fab fa-instagram-square" />
 			Swap
 		</a>
-		<a class="item" href="/exchange/liquidity" class:selected={$page.path == '/liquidity'}>
+		<a class="item" href="/exchange/liquidity/positions" class:selected={$page.path == '/liquidity'}>
 			<i class="fab fa-instagram-square" />
 			Liquidity
 		</a>

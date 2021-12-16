@@ -1,6 +1,5 @@
 import { writable} from 'svelte/store'
 import type { Web3Provider, JsonRpcSigner } from '@ethersproject/providers';
-import type { UniswapV2Factory, UniswapV2Router02 } from '$lib/typesUsed';
 
 // metamask
 export const isConnected = writable(false);

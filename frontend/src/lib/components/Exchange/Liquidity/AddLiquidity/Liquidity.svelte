@@ -1,6 +1,6 @@
 <script lang="ts">
 	import AddLiquidity from './AddLiquidityBox.svelte';
-	import TradeButton from '../../TradeButton.svelte';
+	import TradeButton from '../../../Misc/TradeButton.svelte';
 	import { signer, signerAddress } from '$lib/stores';
 	import Positions from '$lib/components/Exchange/Liquidity/YourPositions/YourLiquidityBox.svelte';
 

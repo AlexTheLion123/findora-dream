@@ -77,13 +77,15 @@
 
 <div class="container">
 	<div class="wrapper">
-			<ExchangeContainer {exchangeReady}/>
+		<slot />
 	</div>
 </div>
 
 <style lang="scss">
-	
-	
+	$box-radius: 10px;
+	$box-background: rgba(172, 172, 172, 0.1);
+	$box-border: 1px solid rgba(255, 255, 255, 0.2);
+
 	.container {
 		width: 100%;
 	}
@@ -91,8 +93,11 @@
 	.wrapper {
 		display: grid;
 		place-items: center;
-		padding: 100px 0;
-	}
+		padding: 100px;
 
-	
+		padding: 0 30px;
+		background: $box-background;
+		border-radius: $box-radius;
+		border: $box-border;
+	}
 </style>
