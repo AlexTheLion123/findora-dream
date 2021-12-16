@@ -239,3 +239,9 @@
 <div class="pool-info">
     <PoolInfo {share} {rate} {symbol1} {symbol2} />
 </div>
+
+<style>
+	.pool-info {
+		margin-top: 15px;
+	}
+</style>

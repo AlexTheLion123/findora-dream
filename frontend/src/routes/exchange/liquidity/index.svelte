@@ -8,12 +8,18 @@
 <main>
 	<ExchangeHeader title="Your liquidity"/>
 	<Positions />
-	<ImportTokens />
+	<div class="import">
+		<ImportTokens />
+	</div>
 	<LinkBright text="Add liquidity" link="/exchange/liquidity/add" />
 </main>
 
 <style>
 	main {
 		width: 300px;
+	}
+
+	.import {
+		margin: 20px 0;
 	}
 </style>

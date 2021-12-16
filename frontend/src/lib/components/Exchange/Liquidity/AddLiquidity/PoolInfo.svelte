@@ -34,7 +34,7 @@
 		}
 
 		.info {
-			height: 100%;
+			height: 70px;
 			margin-top: 5px;
 			background: $info-background;
 			border-radius: 8px;

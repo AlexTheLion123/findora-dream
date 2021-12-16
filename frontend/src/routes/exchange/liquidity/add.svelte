@@ -11,7 +11,7 @@
 	<header>
 		<ExchangeHeader title="Add Liquidity" showBack={true} path={'/exchange/liquidity'}/>
 	</header>
-	<div class="double-token-box">
+	<div class="token-box">
 		<TripleTokenBox bind:addLiquidity={callAdd}/>
 	</div>
 	<div class="button">
@@ -19,3 +19,12 @@
 	</div>
 </main>
 
+<style>
+	main {
+		width: 500px;
+	}
+
+	.token-box {
+		margin-bottom: 20px;
+	}
+</style>

@@ -37,17 +37,17 @@
 </script>
 
 <main>
-	<li on:click={toggle}>
+	<li on:click={toggle} class="item-header">
 		<span class="pair"> {symbolA} - {symbolB} </span>
 		<span class="balance"> {pairBalance} <i class="fas fa-chevron-down" /> </span>
 	</li>
 
 	{#if showFull}
-		<section class="full-content">
+		<ul class="sub-content">
 			<li><span>{symbolA}</span><span>{balanceA}</span></li>
 			<li><span>{symbolB}</span><span>{balanceB}</span></li>
 			<li><span>Pool share:</span>{#await poolShare}...{:then share}{share}%{/await}</li>
-		</section>
+		</ul>
 		<div class="addMoreLink">
 			<Link text="+ Add more instead" link="exchange/lskdjfsjlk"/>
 		</div>
@@ -64,9 +64,13 @@
 		border-radius: 10px;
 	}
 
-	.full-content {
+	.sub-content {
 		padding-top: 10px;
-		font-weight: 400;
+		font-weight: 300;
+	}
+
+	.sub-content li {
+			margin: 12px 0;
 	}
 
 	li {
@@ -75,7 +79,7 @@
 		justify-content: space-between;
 	}
 
-	li:hover {
+	.item-header:hover {
 		cursor: pointer;
 	}
 

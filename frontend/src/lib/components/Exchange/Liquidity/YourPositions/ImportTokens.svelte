@@ -13,6 +13,5 @@
 		background: rgba(255, 255, 255, 0.2);
 		border-radius: 10px;
 		padding: 20px;
-		margin: 20px 0;
 	}
 </style>

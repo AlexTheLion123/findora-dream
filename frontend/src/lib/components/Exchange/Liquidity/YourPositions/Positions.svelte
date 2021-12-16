@@ -108,3 +108,10 @@
 	{/await}
 </main>
 
+
+<style>
+	.position:not(:first-of-type) {
+		margin-top: 10px;
+	}
+</style>
+
