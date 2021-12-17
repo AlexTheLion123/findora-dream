@@ -29,7 +29,10 @@
 	export let address2: string;
 	export let decimals1: number;
 	export let decimals2: number;
-	
+
+	export let status: string;
+	$: console.log("double token box", status)
+
     let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
 
@@ -74,10 +77,25 @@
 		}
 	}
 
+	function updateStatus() {
+		if(!address1 || !address2) {
+			status = "select token"
+			return;
+		}
+		if((address1 && address2 && !amount1) || (address2 && address1 && !amount2)) {
+			status = "enter amount"
+			return;
+		}
+		if((address1 && address2 && amount1) || (address2 && address1 && amount2)) {
+			status = "swap"
+		}	
+	}
+
 	async function handleSelectionWithNumTokens() {
 		routeCache = null;
         routeCache = await getRouteIfCache();
 
+		updateStatus();
 		dispatch('selectionWithTokens', {
 			num: getCurrentBox()
 		});
@@ -87,6 +105,7 @@
 		routeCache = null;
         routeCache = await getRouteIfCache();
 
+		updateStatus();
 		dispatch('selectionWithoutTokens', {
             num: getCurrentBox()
         });
@@ -94,12 +113,14 @@
 	async function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		routeCache = await getRouteIfCache();
 		updateCurrentTokenBox(_tokenBox);
+		updateStatus();
 		dispatch('inputWithAddress', {
             num: getCurrentBox()
         });
 	}
 	async function handleInputWithoutAddress(_tokenBox: TokenBox) {
 		routeCache = await getRouteIfCache();
+		updateStatus();
 		updateCurrentTokenBox(_tokenBox);
 	}
 </script>

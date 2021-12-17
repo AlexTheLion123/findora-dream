@@ -1,11 +1,8 @@
 <script context="module" lang="ts">
-	import {
-		swapExactInput,
-		formatNumber,
-		checkAllowanceAndApproveMax
-	} from '$lib/scripts/exchange';
+	import { formatNumber } from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
-	import type { IExchangeContext } from '$lib/typesFrontend';
+	import type { IExchangeContext, ISwapData } from '$lib/typesFrontend';
+	import type {BigNumber} from 'ethers'
 </script>
 
 <script lang="ts">
@@ -20,50 +17,28 @@
 	let decimals2: number;
 	let route: string[] | null;
 
-	export let slippage = 0.01;
+	export let swapData: ISwapData;
+	export let status: string;
 
 	// get context
-	const { getRouter, signerObj }: IExchangeContext =
-		getContext('exchange');
+	const { getRouter }: IExchangeContext = getContext('exchange');
 	const router = getRouter();
-	const signer = signerObj.getSigner();
-	const signerAddress = signerObj.getAddress();
 
-	export async function callSwap() {
-		if (!amount1 || !amount2 || !address1 || !address2) {
-			alert('not enough info for swap');
-			return;
+	function setSwapData({amountIn, amountOutDesired}: {amountIn: BigNumber, amountOutDesired: BigNumber}) {
+		if(!address1 || !address2 || !decimals1 || !decimals2 || !route) {
+			alert("swap data not set, not enough swap info")
+			throw "not enough swap info"
 		}
 
-		if (!route) {
-			alert('route not set yet');
-			return;
+		swapData = {
+			amountIn: amountIn,
+			amountOutDesired: amountOutDesired,
+			address1: address1,
+			address2: address2,
+			decimals1: decimals1,
+			decimals2: decimals2,
+			route: route
 		}
-
-		const amountInExact = addDecimals(amount1, decimals1);
-		const amountOutMin = addDecimals(amount2 * (1 - slippage), decimals2);
-
-		let tx = await checkAllowanceAndApproveMax({
-			toSpend: amountInExact,
-			ownerAddr: signerAddress,
-			spenderAddr: router.address,
-			tokenAddr: address1,
-			signer: signer
-		});
-		await tx?.wait();
-
-		tx = await swapExactInput({
-			amountInExact: amountInExact,
-			amountOutMin: amountOutMin,
-			route: route,
-			to: signerAddress,
-			router: router,
-			deadline: amountInExact
-		}); // TODO change deadline to realistic number
-		await tx.wait();
-		alert("swap performed")
-
-		// TODO find a way to do this updateBoxAfterSwap();
 	}
 
 	async function getSwapTopCurrent() {
@@ -71,6 +46,9 @@
 		const amountsOut = await router.getAmountsOut(amountInBig, route as string[]);
 		const amountOut = amountsOut[amountsOut.length - 1];
 		amount2 = formatNumber(removeDecimals(amountOut, decimals2), 6); // if address exists, decimals exist
+
+		setSwapData({amountIn: amountInBig, amountOutDesired: amountOut})
+
 	}
 
 	async function getSwapBottomCurrent() {
@@ -78,6 +56,9 @@
 		const amountsIn = await router.getAmountsIn(amountOutBig, route as string[]);
 		const amountIn = amountsIn[0];
 		amount1 = formatNumber(removeDecimals(amountIn, decimals1), 6); // if address exists, decimals exist
+
+		setSwapData({amountIn: amountIn, amountOutDesired: amountOutBig})
+
 	}
 
 	/// @dev extra checks are simply sanity checks that should always be true for that event
@@ -136,5 +117,6 @@
 	bind:decimals2
 	bind:address1
 	bind:address2
+	bind:status
 	bind:routeCache={route}
 />

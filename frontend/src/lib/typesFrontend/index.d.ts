@@ -1,5 +1,5 @@
 import type { UniswapV2Factory, UniswapV2Router02 } from "../typesUsed"
-import type { Signer} from 'ethers';
+import type { Signer } from 'ethers';
 
 // Exchange
 export interface ICallbackReturn {
@@ -23,7 +23,7 @@ export interface ITokenInfo {
 export interface IStores {
     nativeAddr: string,
     signerAddr: string,
-    signer: Signer, 
+    signer: Signer,
     factory: UniswapV2Factory,
     router: UniswapV2Router02
 }
@@ -34,7 +34,7 @@ export type TySwapData = ({
 } | {
     numInput?: never,
     numOutput: number
-}) & {route: string[], sufficientAllowance: boolean};
+}) & { route: string[], sufficientAllowance: boolean };
 
 
 export interface IGetAllowance {
@@ -70,7 +70,7 @@ export interface ISwap {
 }
 
 interface ISwapInput extends ISwap {
-    amountInExact: number, 
+    amountInExact: number,
     amountOutMin: number
 }
 
@@ -98,4 +98,15 @@ export interface IExchangeContext {
         getAddress: () => string
     }
 
+}
+
+
+export interface ISwapData {
+    amountIn: BigNumber;
+    amountOutDesired: BigNumber;
+    address1: string;
+    address2: string;
+    decimals1: number;
+    decimals2: number;
+    route: string[];
 }

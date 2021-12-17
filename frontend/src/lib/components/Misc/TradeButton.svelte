@@ -1,8 +1,9 @@
 <script lang="ts">
 	export let text: string;
+	export let disabled = false;
 </script>
 
-<button on:click|preventDefault>
+<button on:click|preventDefault {disabled}>
 	{text}
 </button>
 
