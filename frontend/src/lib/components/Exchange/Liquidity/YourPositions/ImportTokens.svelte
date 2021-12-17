@@ -4,7 +4,7 @@
 
 <main class="import">
 	<p>Don't see a pool you joined?</p>
-	<Link link="/exchage/liquidity/add" text="Find other tokens" />
+	<Link link="/exchange/liquidity/import" text="Find other tokens" />
 </main>
 
 <style>

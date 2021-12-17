@@ -4,10 +4,12 @@
 
 	let showSearch = false; // bound to child
     let logoSrc: string;
-    let symbol = "Select";
+    export let symbol = "Select";
+	export let address = "";
 
 	const dispatch = createEventDispatcher();
 	function handleSelection(e: any) {
+		address = e.detail.address;
 		logoSrc = e.detail.src;
 		symbol = e.detail.symbol;
 		dispatch('tokenSelected', e.detail);
@@ -31,9 +33,10 @@
 	button {
 		border: 1px solid rgba(255, 255, 255, 0.2);
 		border-radius: 20px;
-		width: 140px;
 		height: 50px;
 		padding: 15px 15px 15px 5px;
+
+		width: 100%;
 
 		display: flex;
 		justify-content: space-between;

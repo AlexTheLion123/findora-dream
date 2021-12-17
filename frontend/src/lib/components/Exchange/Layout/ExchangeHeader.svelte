@@ -3,7 +3,6 @@
 	export let showBack = false;
 	export let path = '';
 
-	import { page } from '$app/stores';
 </script>
 
 <header>

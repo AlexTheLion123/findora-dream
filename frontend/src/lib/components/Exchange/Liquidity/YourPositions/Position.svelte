@@ -1,9 +1,9 @@
 
 <script lang="ts">
-	import Button2 from '../../../Misc/Button2.svelte'
-	import Link from '../../../Misc/Link.svelte'
+	import Button2 from '$lib/components/Misc/Button2.svelte'
+	import Link from '$lib/components/Misc/Link.svelte'
 
-	import { getBalance, removeDecimals } from '$lib/scripts/exchange';
+	import { getBalance, removeDecimals, formatNumber } from '$lib/scripts/exchange';
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 
@@ -37,7 +37,7 @@
 <main>
 	<li on:click={toggle} class="item-header">
 		<span class="pair"> {symbolA} - {symbolB} </span>
-		<span class="balance"> {pairBalance} <i class="fas fa-chevron-down" /> </span>
+		<span class="balance"> {formatNumber(pairBalance, 5)} <i class="fas fa-chevron-down" /> </span>
 	</li>
 
 	{#if showFull}

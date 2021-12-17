@@ -81,6 +81,10 @@ export function getBalance(tokenAddress: string, signer: Signer, signerAddress: 
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).balanceOf(signerAddress);
 }
 
+export function getTotalSupply(tokenAddress: string, signer: Signer, signerAddress: string): Promise<BigNumber> {
+    return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).totalSupply();
+}
+
 export async function getDecimals(tokenAddress: string, signer: Signer): Promise<number> {
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).decimals()
 }

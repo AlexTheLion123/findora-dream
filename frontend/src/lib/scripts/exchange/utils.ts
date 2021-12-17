@@ -46,6 +46,11 @@ export function getPairAddress(factoryAddr: string, addr1: string, addr2: string
     }
 }
 
+export async function checkPairExists(factory: UniswapV2Factory, addr1: string, addr2: string): Promise<boolean> {
+    const result = await factory.getPair(addr1, addr2);
+    return (checkAddressExists(result)) ? true : false;
+}
+
 export async function getReservesQuery({factoryAddr, addrInput, addrOutput, signer}: {
     factoryAddr: string,
     addrInput: string,
