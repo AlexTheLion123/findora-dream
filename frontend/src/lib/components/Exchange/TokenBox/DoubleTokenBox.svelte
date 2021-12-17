@@ -78,7 +78,9 @@
 		routeCache = null;
         routeCache = await getRouteIfCache();
 
-		dispatch('selectionWithTokens', {});
+		dispatch('selectionWithTokens', {
+			num: getCurrentBox()
+		});
 	}
 
 	async function handleSelectionWithoutNumTokens() {
