@@ -13,6 +13,12 @@
 	const dispatch = createEventDispatcher();
 	const handleInput = function () {
 		updateCurrentInputElement();
+
+		if(!value) {
+			// deleted all
+			return
+		}
+
 		dispatch('tokenNumInput', { numTokens: inputElement.value });
 	};
 

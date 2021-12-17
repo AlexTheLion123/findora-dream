@@ -115,14 +115,14 @@
 	}
 
 	async function handleSelection(e: CustomEvent) {
-		if (e.detail.num === 1) {
-			symbol1 = await getSymbolWrapper(e);
-		} else {
-			symbol2 = await getSymbolWrapper(e);
-		}
-
 		if (address1 && address2) {
-			getAll(e.detail.num);
+			if (e.detail.num === 1) {
+				symbol1 = await getSymbolWrapper(e);
+				getAll(1);
+			} else if(e.detail.num === 2) {
+				symbol2 = await getSymbolWrapper(e);
+				getAll(2);
+			}
 		}
 	}
 
