@@ -14,7 +14,6 @@
 	let otherTokenBox: typeof currentTokenBox;
 
 	export let status: string;
-    export let routeCache: string[] | null = null;
 	export let amount1: number;
 	export let amount2: number;
 	export let address1: string;
@@ -60,53 +59,25 @@
         else return 0;
     }
 
-	async function getRouteIfCache() {
-		if (!address1 || !address2) {
-			return null;
-		}
-
-		if (!routeCache) {
-			return await getRoute({
-				addrIn: address1 as string,
-				addrOut: address2 as string,
-				factory: factory,
-				nativeAddr: nativeAddr
-			});
-		} else {
-			return routeCache;
-		}
-	}
-
-	
-
-	async function handleSelectionWithNumTokens() {
-		routeCache = null;
-        routeCache = await getRouteIfCache();
-
+	function handleSelectionWithNumTokens() {
 		dispatch('selectionWithTokens', {
 			num: getCurrentBox()
 		});
 	}
 
-	async function handleSelectionWithoutNumTokens() {
-		routeCache = null;
-        routeCache = await getRouteIfCache();
-
+	function handleSelectionWithoutNumTokens() {
 		dispatch('selectionWithoutTokens', {
             num: getCurrentBox()
         });
 	}
-	async function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
-		routeCache = await getRouteIfCache();
+	function handleInputWithAddress(_tokenBox: TokenBox, e: CustomEvent<any>) {
 		updateCurrentTokenBox(_tokenBox);
 
 		dispatch('inputWithAddress', {
             num: getCurrentBox()
         });
 	}
-	async function handleInputWithoutAddress(_tokenBox: TokenBox) {
-		routeCache = await getRouteIfCache();
-
+	function handleInputWithoutAddress(_tokenBox: TokenBox) {
 		updateCurrentTokenBox(_tokenBox);
 	}
 </script>

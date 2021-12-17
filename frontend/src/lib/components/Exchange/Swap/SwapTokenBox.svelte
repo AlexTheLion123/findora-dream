@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { formatNumber } from '$lib/scripts/exchange';
+	import { formatNumber, getRoute } from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import type { IExchangeContext, ISwapData } from '$lib/typesFrontend';
 	import type {BigNumber} from 'ethers'
@@ -15,17 +15,19 @@
 	let address2: string;
 	let decimals1: number;
 	let decimals2: number;
-	let route: string[] | null;
 
 	export let swapData: ISwapData;
 	export let status: string;
+    let routeCache: string[] | null = null;
 
 	// get context
-	const { getRouter }: IExchangeContext = getContext('exchange');
+	const { getRouter, getFactory, nativeToken }: IExchangeContext = getContext('exchange');
 	const router = getRouter();
+	const factory = getFactory();
+	const nativeAddr = nativeToken.address;
 
 	function setSwapData({amountIn, amountOutDesired}: {amountIn: BigNumber, amountOutDesired: BigNumber}) {
-		if(!address1 || !address2 || !decimals1 || !decimals2 || !route) {
+		if(!address1 || !address2 || !decimals1 || !decimals2 || !routeCache) {
 			alert("swap data not set, not enough swap info")
 			throw "not enough swap info"
 		}
@@ -37,13 +39,40 @@
 			address2: address2,
 			decimals1: decimals1,
 			decimals2: decimals2,
-			route: route
+			route: routeCache
+		}
+	}
+
+	async function getRouteIfCache() {
+		if (!address1 || !address2) {
+			return null;
+		}
+
+		if (!routeCache) {
+			try{
+				return await getRoute({
+					addrIn: address1 as string,
+					addrOut: address2 as string,
+					factory: factory,
+					nativeAddr: nativeAddr
+				});
+
+			} catch(e) {
+				throw "No route error"
+			}
+		} else {
+			return routeCache;
 		}
 	}
 
 	async function getSwapTopCurrent() {
+		if(!routeCache) {
+			alert("No routecache")
+			throw "No route cache"
+		}
+
 		const amountInBig = addDecimals(amount1, decimals1);
-		const amountsOut = await router.getAmountsOut(amountInBig, route as string[]);
+		const amountsOut = await router.getAmountsOut(amountInBig, routeCache);
 		const amountOut = amountsOut[amountsOut.length - 1];
 		amount2 = formatNumber(removeDecimals(amountOut, decimals2), 6); // if address exists, decimals exist
 
@@ -52,8 +81,13 @@
 	}
 
 	async function getSwapBottomCurrent() {
+		if(!routeCache) {
+			alert("No routecache")
+			throw "No route cache"
+		}
+
 		const amountOutBig = addDecimals(amount2, decimals2);
-		const amountsIn = await router.getAmountsIn(amountOutBig, route as string[]);
+		const amountsIn = await router.getAmountsIn(amountOutBig, routeCache);
 		const amountIn = amountsIn[0];
 		amount1 = formatNumber(removeDecimals(amountIn, decimals1), 6); // if address exists, decimals exist
 
@@ -63,10 +97,10 @@
 
 	/// @dev extra checks are simply sanity checks that should always be true for that event
 
-	function inputWithAddress(e: CustomEvent<any>) {
-		if (!route) {
-			return;
-		}
+	async function inputWithAddress(e: CustomEvent<any>) {
+		routeCache = await getRouteIfCache();
+
+
 		if (e.detail.num === 1) {
 			if (address2 && address1 && amount1) {
 				getSwapTopCurrent();
@@ -77,12 +111,9 @@
 			}
 		}
 	}
-	function selectionWithTokens(e: CustomEvent<any>) {
-		if (!route) {
-			return;
-		}
-
-		console.log("hello");
+	async function selectionWithTokens(e: CustomEvent<any>) {
+		routeCache = null;
+        routeCache = await getRouteIfCache();
 		
 		if (e.detail.num === 1) {
 			
@@ -95,10 +126,10 @@
 			} 
 		}
 	}
-	function selectionWithoutTokens(e: CustomEvent<any>) {
-		if (!route) {
-			return;
-		}
+	async function selectionWithoutTokens(e: CustomEvent<any>) {
+		routeCache = null;
+        routeCache = await getRouteIfCache();
+
 		if (e.detail.num === 1) {
 			if (address1 && amount1 && address2) {
 				getSwapTopCurrent();
@@ -126,5 +157,4 @@
 	bind:address1
 	bind:address2
 	bind:status
-	bind:routeCache={route}
 />
