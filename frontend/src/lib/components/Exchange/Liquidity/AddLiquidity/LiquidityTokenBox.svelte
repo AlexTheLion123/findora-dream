@@ -130,9 +130,9 @@
 		// symbol might not be given with address but address will always be given
 		if (e.detail.symbol) {
 			return e.detail.symbol;
-		} else {
-			return getSymbol(e.detail.address, signer);
 		}
+		if (e.detail.num === 1) return getSymbol(address1, signer);
+		if (e.detail.num === 2) return getSymbol(address2, signer);
 	}
 
 	async function getReserves(pairAddress: string): Promise<number[]> {
@@ -182,4 +182,3 @@
 	{updateCurrent1}
 	{updateCurrent2}
 />
-
