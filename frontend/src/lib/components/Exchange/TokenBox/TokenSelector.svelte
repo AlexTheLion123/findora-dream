@@ -10,7 +10,6 @@
 	function handleSelection(e: any) {
 		logoSrc = e.detail.src;
 		symbol = e.detail.symbol;
-
 		dispatch('tokenSelected', e.detail);
 	}
 	

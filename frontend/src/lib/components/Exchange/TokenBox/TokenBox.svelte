@@ -1,10 +1,8 @@
 <svelte:options accessors={true} />
 
 <script context="module" lang="ts">
-	import { getBalance, getDecimals, RouterAddressNotSetError, formatNumber } from '$lib/scripts/exchange';
-	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
-	import { BigNumber, utils } from 'ethers';
-	import { getRoute} from '$lib/scripts/exchange'
+	import { getBalance, getDecimals, formatNumber } from '$lib/scripts/exchange';
+	import { removeDecimals } from '$lib/scripts/exchange/utils';
 	import type {IExchangeContext} from '$lib/typesFrontend';
 	
 </script>

@@ -7,8 +7,6 @@
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 
-	
-
 	export let symbolA: string;
 	export let symbolB: string;
 	export let pairBalance: number;
@@ -46,10 +44,10 @@
 		<ul class="sub-content">
 			<li><span>{symbolA}</span><span>{balanceA}</span></li>
 			<li><span>{symbolB}</span><span>{balanceB}</span></li>
-			<li><span>Pool share:</span>{#await poolShare}...{:then share}{share}%{/await}</li>
+			<li><span>Pool share:</span>{#await poolShare then share}{share}%{/await}</li>
 		</ul>
 		<div class="addMoreLink">
-			<Link text="+ Add more instead" link="exchange/lskdjfsjlk"/>
+			<Link text="+ Add more" link="exchange/lskdjfsjlk"/>
 		</div>
 		<div class="button">
 			<Button2 text="Remove Liquidity"/>
