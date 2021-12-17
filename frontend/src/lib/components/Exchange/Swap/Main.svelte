@@ -17,7 +17,8 @@
 
     $: console.log(status)
 
-    $: if(status === 'swap') {
+    $: if(status === 'action') {
+        status = 'swap'
         disabled = false;
     } else {
         disabled = true;

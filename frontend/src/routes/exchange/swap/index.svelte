@@ -1,17 +1,13 @@
 <script lang="ts">
-	import TradeButton from '$lib/components/Misc/TradeButton.svelte';
-	import RangeSlider from 'svelte-range-slider-pips';
 	import ExchangeHeader from '$lib/components/Exchange/Layout/ExchangeHeader.svelte';
-	import SwapTokenBox from '$lib/components/Exchange/Swap/SwapTokenBox.svelte';
+	import Main from '$lib/components/Exchange/Swap/Main.svelte'
 
 	let callSwap: () => Promise<void>;
 </script>
 
 <main>
 	<ExchangeHeader title="Swap" />
-	<SwapTokenBox bind:callSwap={callSwap}/>
-	<RangeSlider id="color-pips" range="min" float pips step={5} />
-	<TradeButton text="Swap" on:click={callSwap} />
+	<Main/>
 </main>
 
 <style lang="scss">
