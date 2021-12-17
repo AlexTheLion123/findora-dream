@@ -9,7 +9,7 @@
 
 <main>
 	<ExchangeHeader title="Swap" />
-	<SwapTokenBox />
+	<SwapTokenBox bind:callSwap={callSwap}/>
 	<RangeSlider id="color-pips" range="min" float pips step={5} />
 	<TradeButton text="Swap" on:click={callSwap} />
 </main>

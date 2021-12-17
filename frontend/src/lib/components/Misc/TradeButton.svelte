@@ -1,12 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { createEventDispatcher } from 'svelte';
-
-
 	export let text: string;
-
-	const dispatch = createEventDispatcher();
-
 </script>
 
 <button on:click|preventDefault>

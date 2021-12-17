@@ -1,10 +1,8 @@
 <script context="module" lang="ts">
 	import {
 		swapExactInput,
-		approveMax,
-		checkSufficientAllowance,
-		getRoute,
-		formatNumber
+		formatNumber,
+		checkAllowanceAndApproveMax
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import type { IExchangeContext } from '$lib/typesFrontend';
@@ -22,22 +20,64 @@
 	let decimals2: number;
 	let route: string[] | null;
 
+	export let slippage = 0.01;
+
 	// get context
-	const { nativeToken, getFactory, getRouter }: IExchangeContext = getContext('exchange');
+	const { getRouter, signerObj }: IExchangeContext =
+		getContext('exchange');
 	const router = getRouter();
+	const signer = signerObj.getSigner();
+	const signerAddress = signerObj.getAddress();
+
+	export async function callSwap() {
+		if (!amount1 || !amount2 || !address1 || !address2) {
+			alert('not enough info for swap');
+			return;
+		}
+
+		if (!route) {
+			alert('route not set yet');
+			return;
+		}
+
+		const amountInExact = addDecimals(amount1, decimals1);
+		const amountOutMin = addDecimals(amount2 * (1 - slippage), decimals2);
+
+		let tx = await checkAllowanceAndApproveMax({
+			toSpend: amountInExact,
+			ownerAddr: signerAddress,
+			spenderAddr: router.address,
+			tokenAddr: address1,
+			signer: signer
+		});
+		await tx?.wait();
+
+		tx = await swapExactInput({
+			amountInExact: amountInExact,
+			amountOutMin: amountOutMin,
+			route: route,
+			to: signerAddress,
+			router: router,
+			deadline: amountInExact
+		}); // TODO change deadline to realistic number
+		await tx.wait();
+		alert("swap performed")
+
+		// TODO find a way to do this updateBoxAfterSwap();
+	}
 
 	async function getSwapTopCurrent() {
 		const amountInBig = addDecimals(amount1, decimals1);
 		const amountsOut = await router.getAmountsOut(amountInBig, route as string[]);
 		const amountOut = amountsOut[amountsOut.length - 1];
-		amount2 = formatNumber(removeDecimals(amountOut, decimals2), 4); // if address exists, decimals exist
+		amount2 = formatNumber(removeDecimals(amountOut, decimals2), 6); // if address exists, decimals exist
 	}
 
 	async function getSwapBottomCurrent() {
 		const amountOutBig = addDecimals(amount2, decimals2);
 		const amountsIn = await router.getAmountsIn(amountOutBig, route as string[]);
 		const amountIn = amountsIn[0];
-		amount1 = formatNumber(removeDecimals(amountIn, decimals1), 4); // if address exists, decimals exist
+		amount1 = formatNumber(removeDecimals(amountIn, decimals1), 6); // if address exists, decimals exist
 	}
 
 	/// @dev extra checks are simply sanity checks that should always be true for that event
