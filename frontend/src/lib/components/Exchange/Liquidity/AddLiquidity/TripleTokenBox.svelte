@@ -11,6 +11,8 @@
 	import { ERC20ABI, UniswapV2PairABI } from '$lib/abis';
 	import { BigNumber, Contract } from 'ethers';
 	import type { Ierc20, UniswapV2Pair } from '$lib/typesUsed';
+
+	// TODO delete
 </script>
 
 <script lang="ts">

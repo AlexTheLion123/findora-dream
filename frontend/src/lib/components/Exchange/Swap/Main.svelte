@@ -30,26 +30,26 @@
 	const signer = signerObj.getSigner();
 	const signerAddress = signerObj.getAddress();
 
-	async function callSwap(swapData: ISwapData) {
+	async function callSwap(_swapData: ISwapData) {
         
         let tx = await checkAllowanceAndApproveMax({
-            toSpend: swapData.amountIn,
+            toSpend: _swapData.amountIn,
 			ownerAddr: signerAddress,
 			spenderAddr: router.address,
-			tokenAddr: swapData.address1,
+			tokenAddr: _swapData.address1,
 			signer: signer
 		});
 		await tx?.wait();
 
-        const amountOutMin = swapData.amountIn.mul((1-slippage)*100).div(100);
+        const amountOutMin = _swapData.amountIn.mul((1-slippage)*100).div(100);
 
 		tx = await swapExactInput({
-			amountInExact: swapData.amountIn,
+			amountInExact: _swapData.amountIn,
 			amountOutMin: amountOutMin,
-			route: swapData.route,
+			route: _swapData.route,
 			to: signerAddress,
 			router: router,
-			deadline: swapData.amountIn
+			deadline: _swapData.amountIn
 		}); // TODO change deadline to realistic number
 		await tx.wait();
 		alert('swap performed');

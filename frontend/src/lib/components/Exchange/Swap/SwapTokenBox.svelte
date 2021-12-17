@@ -20,8 +20,6 @@
 	export let swapData: ISwapData;
 	export let status: string;
 
-	$: console.log("status: ", status)
-
 	// get context
 	const { getRouter }: IExchangeContext = getContext('exchange');
 	const router = getRouter();
@@ -42,20 +40,6 @@
 			route: route
 		}
 	}
-
-	// function updateStatus() {
-	// 	if(!address1 || !address2) {
-	// 		status = "select token"
-	// 		return;
-	// 	}
-	// 	if((address1 && address2 && !amount1) || (address2 && address1 && !amount2)) {
-	// 		status = "enter amount"
-	// 		return;
-	// 	}
-	// 	if((address1 && address2 && amount1) || (address2 && address1 && amount2)) {
-	// 		status = "swap"
-	// 	}	
-	// }
 
 	async function getSwapTopCurrent() {
 		const amountInBig = addDecimals(amount1, decimals1);

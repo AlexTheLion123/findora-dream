@@ -110,3 +110,12 @@ export interface ISwapData {
     decimals2: number;
     route: string[];
 }
+
+export interface IAddLiqData {
+    amountIn1: BigNumber;
+    amountIn2: BigNumber;
+    address1: string;
+    address2: string;
+    decimals1: number;
+    decimals2: number;
+}

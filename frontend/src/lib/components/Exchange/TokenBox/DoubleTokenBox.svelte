@@ -14,13 +14,16 @@
 	let otherTokenBox: typeof currentTokenBox;
 
 	export let status: string;
-    export let routeCache: string[] | null;
+    export let routeCache: string[] | null = null;
 	export let amount1: number;
 	export let amount2: number;
 	export let address1: string;
 	export let address2: string;
 	export let decimals1: number;
 	export let decimals2: number;
+	export let updateCurrent1 = false;
+	export let updateCurrent2 = false;
+
 
 	$: if(!(address1 && address2)) {
 		status = "select token"
@@ -114,6 +117,7 @@
 		bind:numTokens={amount1}
 		bind:address={address1}
 		bind:decimals={decimals1}
+		updateCurrentInput={updateCurrent1}
 		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens()}
 		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens()}
 		on:tokenNumInputWithAddress={(e) => handleInputWithAddress(tokenBox1, e)}
@@ -127,6 +131,7 @@
 		bind:numTokens={amount2}
 		bind:address={address2}
 		bind:decimals={decimals2}
+		updateCurrentInput={updateCurrent2}
 		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithNumTokens()}
 		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionWithoutNumTokens()}
 		on:tokenNumInputWithAddress={(e) => handleInputWithAddress(tokenBox2, e)}
