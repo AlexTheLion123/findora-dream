@@ -1,10 +1,9 @@
 <svelte:options accessors={true} />
 
 <script context="module" lang="ts">
-	import { getBalance, getDecimals, formatNumber } from '$lib/scripts/exchange';
+	import { getBalance, getDecimals, formatNumber, getSymbol } from '$lib/scripts/exchange';
 	import { removeDecimals } from '$lib/scripts/exchange/utils';
-	import type {IExchangeContext} from '$lib/typesFrontend';
-	
+	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
@@ -13,32 +12,25 @@
 	import { createEventDispatcher, getContext } from 'svelte';
 
 	// get context
-	const {
-		signerObj,
-		nativeToken,
-		dollarsToken,
-		getFactory,
-		getRouter,
-	}: IExchangeContext = getContext('exchange');
-
+	const { signerObj }: IExchangeContext = getContext('exchange');
 	const signer = signerObj.getSigner();
 	const signerAddress = signerObj.getAddress();
-	const nativeAddr = nativeToken.address;
-	const dollarsAddr = dollarsToken.address
-	const factory = getFactory();
-	const router = getRouter();
 
-	export let numTokens: number;
+	// all you need to supply in parent to set default is address
+
 	export let address: string;
-	export let decimals: number = 18;
+	export let numTokens: number = 0;
+	export let decimals: number = 0;
 	export let balance: number = 0;
+	export let editable = true;
 	export let updateCurrentInput = true;
+	export let symbol = "";
+	export let logoSrc = "/src/lib/assets/tokens/logos/eth_logo.svg"
 
 	const dispatch = createEventDispatcher();
 
-
-	export async function updateBalance() {
-		balance = removeDecimals(await getBalance(address, signer, signerAddress), decimals)
+	export async function updateBalance() { // TODO use
+		balance = removeDecimals(await getBalance(address, signer, signerAddress), decimals);
 	}
 
 	async function handleSelection(e: CustomEvent<any>) {
@@ -51,36 +43,67 @@
 		decimals = await getDecimals(e.detail.address, signer);
 		balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress), decimals); // getBalance asynchronously then wait for decimals
 
-		dispatch('tokenSelected', e.detail)
-		if(numTokens) {
+		dispatch('tokenSelected', e.detail);
+		if (numTokens) {
 			dispatch('tokenSelectedWithNumTokens', e.detail);
 		} else {
-			dispatch('tokenSelectedWithoutNumTokens', e.detail)
+			dispatch('tokenSelectedWithoutNumTokens', e.detail);
 		}
 	}
 
-	export async function handleInput() {
+	export async function handleInput() { // TODO use
 		/**
 		 * Only dispatch event if same box's address exists
 		 * numTokens is already bound to input
-		*/
+		 */
 
-		if(address) {
+		if (address) {
 			dispatch('tokenNumInputWithAddress');
 		} else {
-			dispatch('tokenNumInputWithoutAddress')
+			dispatch('tokenNumInputWithoutAddress');
+		}
+	}
+
+	function initialize(node: HTMLDivElement) {
+		if(address) {
+			console.log("initializing", address);
+
+			if(!symbol) {
+				getSymbol(address, signer)
+				.then(_symbol => {
+					symbol = _symbol ? _symbol : "Select"
+				});
+			}
+
+			if(!decimals) {
+				getDecimals(address, signer)
+				.then(_decimals => {
+					decimals = _decimals
+					
+					if(!balance) {
+						getBalance(address, signer, signerAddress)
+						.then(_balance => {
+							balance = removeDecimals(_balance, decimals)
+						})
+					}
+				})
+			}
 		}
 
 	}
 </script>
 
-<div class="box">
-	<div class="selector"><TokenSelector on:tokenSelected={handleSelection} /></div>
+<div class="box" use:initialize>
+	<div class="selector"><TokenSelector on:tokenSelected={handleSelection} {editable} {symbol} {logoSrc}/></div>
 	<p class="balance">
 		Balance: {formatNumber(balance, 5)}
 	</p>
 	<div class="input-component">
-		<NumTokenInput bind:value={numTokens} updateCurrent={updateCurrentInput} on:tokenNumInput={handleInput} />
+		<NumTokenInput
+			bind:value={numTokens}
+			updateCurrent={updateCurrentInput}
+			on:tokenNumInput={handleInput}
+		/>
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}

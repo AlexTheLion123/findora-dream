@@ -1,23 +1,52 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, getContext } from 'svelte';
+	import {getSymbol} from '$lib/scripts/exchange'
 	import TokenSearchDialog from '../TokenSearchDialog/TokenSearchDialog.svelte';
-
+	
+	export let address: string;
+	export let editable: boolean = true; // TODO - don't allow hover on non-editable
+    export let logoSrc: string = "";
+	export let symbol: string = "Select";
+	
 	let showSearch = false; // bound to child
-    let logoSrc: string;
-    export let symbol = "Select";
-	export let address = "";
+
+	const {signerObj} = getContext("exchange");
+	const signer = signerObj.getSigner();
+
+	function initialize(node: HTMLButtonElement) {
+		if(address) {
+			if(!symbol) {
+				getSymbol(address, signer)
+				.then(_symbol => symbol = _symbol)
+			}
+
+			// TODO find way to get logo or default logo
+		}
+	}
 
 	const dispatch = createEventDispatcher();
 	function handleSelection(e: any) {
 		address = e.detail.address;
-		logoSrc = e.detail.src;
-		symbol = e.detail.symbol;
+
+		if(e.detail.src) {
+			logoSrc = e.detail.src;
+		} else {
+			logoSrc = "default"
+		}
+
+		if(e.detail.symbol) {
+			symbol = e.detail.symbol;
+		} else {
+			getSymbol(e.detail.address, signer) // can do async
+			.then(_symbol => symbol = _symbol)
+		}
+		
 		dispatch('tokenSelected', e.detail);
 	}
 	
 </script>
 
-<button on:click|preventDefault={() => (showSearch = true)}>
+<button on:click|preventDefault={() => (showSearch = true) } disabled={!editable} use:initialize>
 	<img src={logoSrc} class="symbol" width="35" height="35" alt="" />
 	<p>{symbol}</p>
 	<i class="fas fa-chevron-down" />

@@ -1,7 +1,7 @@
 
 <script lang="ts">
-	import Button2 from '$lib/components/Misc/Button2.svelte'
 	import Link from '$lib/components/Misc/Link.svelte'
+	import LinkButtonStyle from '$lib/components/Misc/LInkButtonStyle.svelte';
 
 	import { getBalance, removeDecimals, formatNumber } from '$lib/scripts/exchange';
 	import { getContext } from 'svelte';
@@ -50,7 +50,7 @@
 			<Link text="+ Add more" link="exchange/lskdjfsjlk"/>
 		</div>
 		<div class="button">
-			<Button2 text="Remove Liquidity"/>
+			<LinkButtonStyle text="Remove Liquidity" link={`/exchange/liquidity/remove/${pairAddress}`}/>
 		</div>
 	{/if}
 </main>

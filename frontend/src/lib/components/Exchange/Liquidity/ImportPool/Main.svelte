@@ -1,8 +1,4 @@
-<script lang="ts">
-	import Link from '$lib/components/Misc/Link.svelte';
-
-	import { getContext } from 'svelte';
-	import TokenSelector from '$lib/components/Exchange/TokenBox/TokenSelector.svelte';
+<script context="module" lang="ts">
 	import {
 		getReservesQuery,
 		getPairAddress,
@@ -14,6 +10,14 @@
 		formatNumber
 	} from '$lib/scripts/exchange';
 	import type { IExchangeContext } from '$lib/typesFrontend';
+</script>
+
+<script lang="ts">
+	import Button2 from '$lib/components/Misc/Button2.svelte';
+	import TokenSelector from '$lib/components/Exchange/TokenBox/TokenSelector.svelte';
+	import Link from '$lib/components/Misc/Link.svelte';
+
+	import { getContext } from 'svelte';
 
 	let address1: string;
 	let address2: string;
@@ -46,6 +50,8 @@
 			} else {
 				return 'none';
 			}
+		} else {
+			return 'none';
 		}
 	}
 
@@ -81,6 +87,10 @@
 			pool2: pool2
 		};
 	}
+
+	function handleImport() {
+
+	}
 </script>
 
 <div class="selector">
@@ -95,9 +105,9 @@
 	{:then _state}
 		<section class="content">
 			{#if _state === 'uninitialized'}
-				Select a token to find your liquidity
+				<p>Select a token to find your liquidity</p>
 			{:else if _state === 'none'}
-				You don't have liquidity in this pool yet.
+				<p>You don't have liquidity in this pool yet.</p>
 				<Link link="/exchange/liquidity/add" text="Add Liquidity" />
 			{:else}
 				<h3>Your position</h3>
@@ -115,21 +125,31 @@
 						<p>{formatNumber(_state.pool2, 5)}</p>
 					</div>
 				</div>
-                
-                
+
+				<div class="link">
+					<Button2 text="Import" on:click={handleImport} />
+				</div>
 			{/if}
 		</section>
 	{/await}
 </div>
 
 <style>
-    .selector {
-        margin: 20px 0;
-    }
+	.selector {
+		margin: 20px 0;
+	}
+
+	.link {
+		margin-top: 20px;
+	}
 
 	.content {
 		margin-top: 15px;
-		padding: 10px;
+		padding: 15px;
+
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 15px;
+		text-align: center;
 	}
 
 	.table {
@@ -143,5 +163,13 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
+	}
+
+	.left {
+		text-align: left;
+	}
+
+	.right {
+		text-align: right;
 	}
 </style>
