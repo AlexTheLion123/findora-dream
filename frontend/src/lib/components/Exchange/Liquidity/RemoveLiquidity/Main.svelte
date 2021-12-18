@@ -103,8 +103,10 @@
 
 		let tx = await checkAllowanceAndApproveMax({toSpend: amountToRemove, ownerAddr: signerAddr, spenderAddr: router.address, tokenAddr: pairAddress, signer: signer})
 		await tx?.wait();
-		
-		router.removeLiquidity(address1, address2, amountToRemove, amountAMin, amountBMin, signerAddr, amountAMin);
+
+		tx = await router.removeLiquidity(address1, address2, amountToRemove, amountAMin, amountBMin, signerAddr, amountAMin);
+		await tx.wait();
+		console.log("remove liquidity successful")
 	}
 
 	$: console.log(balance1);
