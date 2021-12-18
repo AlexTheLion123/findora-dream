@@ -5,7 +5,6 @@
 	import { getContext } from 'svelte';
 	import { getPosition } from '$lib/scripts/exchange';
 	import type { IExchangeContext } from '$lib/typesFrontend';
-	import { Contract } from 'ethers';
 
 	let positions: {
 		pair: IToken;
@@ -49,6 +48,9 @@
 		}
 		return positions;
 	}
+
+
+	// TODO get positions from local storage
 </script>
 
 <main class="positions">

@@ -17,8 +17,6 @@
     let disabled = true;
     let slippage = 0.05; // TODO put in gui
 
-
-
     $: if(status === 'action') {
         status = 'add liquidity'
         disabled = false;
@@ -78,5 +76,13 @@
 </script>
 
 <LiquidityTokenBox bind:addLiqData bind:status bind:share bind:rate bind:symbol1 bind:symbol2 {address1} {address2}/>
-<PoolInfo {share} {rate} {symbol1} {symbol2}/>
+<div class="pool-info">
+	<PoolInfo {share} {rate} {symbol1} {symbol2}/>
+</div>
 <TradeButton text={status} {disabled} on:click={() => addLiquidity(addLiqData)}/>
+
+<style>
+	.pool-info {
+		margin: 10px 0;
+	}
+</style>

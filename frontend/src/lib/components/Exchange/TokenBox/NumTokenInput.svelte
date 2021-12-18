@@ -1,5 +1,13 @@
 <script context="module" lang="ts">
 	let current: HTMLInputElement | undefined;
+
+	const elements: Set<HTMLInputElement> = new Set();
+
+	function clearAll() {
+		elements.forEach(element => {
+			element.value = ''
+		})
+	}
 </script>
 
 <script lang="ts">
@@ -15,8 +23,8 @@
 		updateCurrentInputElement();
 
 		if(!value) {
-			// deleted all
-			return
+			clearAll();
+			return;
 		}
 
 		dispatch('tokenNumInput', { numTokens: inputElement.value });
@@ -34,6 +42,7 @@
 
 	onMount(() => {
 		inputElement.value = '';
+		elements.add(inputElement)
 	});
 </script>
 

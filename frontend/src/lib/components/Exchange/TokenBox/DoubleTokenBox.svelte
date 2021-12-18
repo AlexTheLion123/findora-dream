@@ -35,12 +35,6 @@
     let tokenBox1: TokenBox;
 	let tokenBox2: TokenBox;
 
-    
-	// get context
-	const { nativeToken, getFactory }: IExchangeContext = getContext('exchange');
-	const nativeAddr = nativeToken.address;
-	const factory = getFactory();
-
 	const dispatch = createEventDispatcher();
 
 	function updateCurrentTokenBox(_tokenBox: TokenBox) {

@@ -3,7 +3,7 @@
 	import Link from '$lib/components/Misc/Link.svelte'
 	import LinkButtonStyle from '$lib/components/Misc/LInkButtonStyle.svelte';
 
-	import { getBalance, removeDecimals, formatNumber } from '$lib/scripts/exchange';
+	import { getBalance, removeDecimals, formatNumber, getPosition } from '$lib/scripts/exchange';
 	import { getContext } from 'svelte';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 
@@ -19,10 +19,10 @@
 	export let showFull: boolean = false;
 
 	// get context
-	const { signerObj }: IExchangeContext = getContext('exchange');
-
+	const { signerObj, getFactory }: IExchangeContext = getContext('exchange');
 	const signer = signerObj.getSigner();
 	const signerAddr = signerObj.getAddress();
+	const factory = getFactory();
 
 	function toggle() {
 		showFull = !showFull;
@@ -33,6 +33,7 @@
 			(pairBalance / removeDecimals(await getBalance(pairAddress, signer, signerAddr), 18)) * 100
 		);
 	})();
+
 </script>
 
 <main>
