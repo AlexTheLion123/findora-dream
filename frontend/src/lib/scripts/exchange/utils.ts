@@ -51,13 +51,15 @@ export async function checkPairExists(factory: UniswapV2Factory, addr1: string, 
     return (checkAddressExists(result)) ? true : false;
 }
 
-export async function getReservesQuery({factoryAddr, addrInput, addrOutput, signer}: {
+export async function getReservesQuery({factoryAddr, addrInput, addrOutput, signer, pairAddr}: {
     factoryAddr: string,
     addrInput: string,
     addrOutput: string,
-    signer: Signer
+    signer: Signer,
+    pairAddr?: string
 }): Promise<BigNumber[]> {
-    const pairAddress = getPairAddress(factoryAddr, addrInput, addrOutput)
+    
+    const pairAddress = !pairAddr ? getPairAddress(factoryAddr, addrInput, addrOutput) : pairAddr
     
     const { _reserve0, _reserve1 } = await (new Contract(pairAddress, UniswapV2PairABI, signer) as UniswapV2Pair).getReserves();
 

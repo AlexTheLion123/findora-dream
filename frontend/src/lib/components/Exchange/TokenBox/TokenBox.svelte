@@ -1,7 +1,7 @@
 <svelte:options accessors={true} />
 
 <script context="module" lang="ts">
-	import { getBalance, getDecimals, formatNumber, getSymbol } from '$lib/scripts/exchange';
+	import { getBalance, getDecimals, formatNumber } from '$lib/scripts/exchange';
 	import { removeDecimals } from '$lib/scripts/exchange/utils';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
@@ -9,7 +9,7 @@
 <script lang="ts">
 	import TokenSelector from './TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
-	import { createEventDispatcher, getContext } from 'svelte';
+	import { createEventDispatcher, getContext, onMount } from 'svelte';
 
 	// get context
 	const { signerObj }: IExchangeContext = getContext('exchange');
@@ -18,18 +18,22 @@
 
 	// all you need to supply in parent to set default is address
 
-	export let address: string;
+	export let address: string = '';
 	export let numTokens: number = 0;
 	export let decimals: number = 0;
 	export let balance: number = 0;
 	export let editable = true;
 	export let updateCurrentInput = true;
-	export let symbol = "";
-	export let logoSrc = "/src/lib/assets/tokens/logos/eth_logo.svg"
-
+	export let logoSrc: string = "/src/lib/assets/tokens/logos/eth_logo.svg";
+	export let symbol: string = "Select";
+	
 	const dispatch = createEventDispatcher();
 
-	export async function updateBalance() { // TODO use
+	initialize();
+
+
+	export async function updateBalance() {
+		// TODO use
 		balance = removeDecimals(await getBalance(address, signer, signerAddress), decimals);
 	}
 
@@ -51,7 +55,8 @@
 		}
 	}
 
-	export async function handleInput() { // TODO use
+	export async function handleInput() {
+		// TODO use
 		/**
 		 * Only dispatch event if same box's address exists
 		 * numTokens is already bound to input
@@ -64,37 +69,25 @@
 		}
 	}
 
-	function initialize(node: HTMLDivElement) {
-		if(address) {
-			console.log("initializing", address);
 
-			if(!symbol) {
-				getSymbol(address, signer)
-				.then(_symbol => {
-					symbol = _symbol ? _symbol : "Select"
-				});
+	async function initialize() {
+		if (address) {
+			if (!decimals) {
+				decimals = await getDecimals(address, signer);
 			}
 
-			if(!decimals) {
-				getDecimals(address, signer)
-				.then(_decimals => {
-					decimals = _decimals
-					
-					if(!balance) {
-						getBalance(address, signer, signerAddress)
-						.then(_balance => {
-							balance = removeDecimals(_balance, decimals)
-						})
-					}
-				})
+			if (!balance) {
+				balance = removeDecimals(await getBalance(address, signer, signerAddress), decimals)
 			}
 		}
-
 	}
+
 </script>
 
-<div class="box" use:initialize>
-	<div class="selector"><TokenSelector on:tokenSelected={handleSelection} {editable} {symbol} {logoSrc}/></div>
+<div class="box">
+	<div class="selector">
+		<TokenSelector on:tokenSelected={handleSelection} {editable} {symbol} {logoSrc} {address}/>
+	</div>
 	<p class="balance">
 		Balance: {formatNumber(balance, 5)}
 	</p>

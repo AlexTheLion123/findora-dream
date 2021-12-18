@@ -3,14 +3,9 @@
 	import Position from './Position.svelte';
 
 	import { getContext } from 'svelte';
-	import {
-		getPairAddress,
-		getBalance,
-		removeDecimals,
-		getSymbol,
-		getDecimals
-	} from '$lib/scripts/exchange';
+	import { getPosition } from '$lib/scripts/exchange';
 	import type { IExchangeContext } from '$lib/typesFrontend';
+	import { Contract } from 'ethers';
 
 	let positions: {
 		pair: IToken;
@@ -22,6 +17,7 @@
 		address: string;
 		balance: number;
 		symbol: string;
+		decimals: number;
 	}
 
 	// get context
@@ -44,45 +40,11 @@
 			const addr1 = nativeAddr;
 			const addr2 = tokens[i].address;
 
-			const pairAddress = getPairAddress(factory.address, addr1, addr2);
-
 			try {
-				const balance = removeDecimals(await getBalance(pairAddress, signer, signerAddr), 18);
-				console.log('balance', balance);
-
-				if (balance) {
-					// TODO look at promise.all
-					const sym1 = await getSymbol(addr1, signer);
-					const sym2 = await getSymbol(addr2, signer);
-
-					const decimals1 = await getDecimals(addr1, signer);
-					const decimals2 = await getDecimals(addr1, signer);
-
-					const balance1 = removeDecimals(await getBalance(addr1, signer, signerAddr), decimals1);
-					const balance2 = removeDecimals(await getBalance(addr2, signer, signerAddr), decimals2);
-
-					const item = {
-						pair: {
-							address: pairAddress,
-							balance: balance,
-							symbol: `${sym1} - ${sym2}`
-						},
-						tokenA: {
-							address: nativeAddr,
-							balance: balance1,
-							symbol: sym1
-						},
-						tokenB: {
-							address: tokens[i].address,
-							balance: balance2,
-							symbol: sym2
-						}
-					};
-
-					positions.push(item);
-				}
-			} catch (e) {
-				console.log(e);
+				const item = await getPosition(addr1, addr2, factory.address, signer, signerAddr);
+				positions.push(item);
+			} catch (error) {
+				console.log(error, 'nothing to worry about')
 			}
 		}
 		return positions;
@@ -108,10 +70,8 @@
 	{/await}
 </main>
 
-
 <style>
 	.position:not(:first-of-type) {
 		margin-top: 10px;
 	}
 </style>
-

@@ -24,7 +24,6 @@
 
 	function toggle() {
 		showFull = !showFull;
-		console.log('hello');
 	}
 
 	let poolShare = (async function () {
@@ -47,7 +46,7 @@
 			<li><span>Pool share:</span>{#await poolShare then share}{share}%{/await}</li>
 		</ul>
 		<div class="addMoreLink">
-			<Link text="+ Add more" link="exchange/lskdjfsjlk"/>
+			<Link text="+ Add more" link="/exchange/liquidity/add"/>
 		</div>
 		<div class="button">
 			<LinkButtonStyle text="Remove Liquidity" link={`/exchange/liquidity/remove/${pairAddress}`}/>

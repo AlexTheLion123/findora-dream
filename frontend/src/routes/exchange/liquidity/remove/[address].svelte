@@ -3,14 +3,14 @@
 	import Main from '$lib/components/Exchange/Liquidity/RemoveLiquidity/Main.svelte'
 
 	import { page } from '$app/stores';
-	const address = $page.params.address
+	const pairAddress = $page.params.address
 </script>
 
 <main>
 	<header>
 		<ExchangeHeader title="Remove Liquidity" showBack={true} path={'/exchange/liquidity'}/>
 	</header>
-	<Main {address}/>
+	<Main {pairAddress}/>
 </main>
 
 <style>

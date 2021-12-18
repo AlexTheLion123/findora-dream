@@ -1,5 +1,5 @@
 import { NoRouteError, SamePairError } from '.';
-import { checkAddressAgainstNative, checkAddressExists, getPairAddress, removeDecimals, precisionDivision } from '.'
+import { checkAddressAgainstNative, checkAddressExists, getPairAddress, removeDecimals, getReservesQuery } from '.'
 import { Contract } from 'ethers'
 import { ERC20ABI } from '$lib/abis';
 import type { UniswapV2Factory, Ierc20, UniswapV2Router02 } from '$lib/typesUsed'
@@ -93,3 +93,53 @@ export async function getSymbol(tokenAddress: string, signer: Signer): Promise<s
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).symbol();
 }
 
+export async function getPosition(addr1: string, addr2: string, factoryAddr: string, signer: Signer, signerAddr: string) {
+    const pairAddress = getPairAddress(factoryAddr, addr1, addr2);
+
+    try {
+        const balance = removeDecimals(await getBalance(pairAddress, signer, signerAddr), 18);
+        const supply = removeDecimals(await getTotalSupply(pairAddress, signer, signerAddr), 18)
+        
+        
+        
+        
+        // TODO look at promise.all
+        const sym1 = await getSymbol(addr1, signer);
+        const sym2 = await getSymbol(addr2, signer);
+        
+        const decimals1 = await getDecimals(addr1, signer);
+        const decimals2 = await getDecimals(addr1, signer);
+        
+        const [_reserve0, _reserve1] = await getReservesQuery({factoryAddr: factoryAddr, addrInput: addr1, addrOutput: addr2, signer: signer, pairAddr: pairAddress})
+        const reserve1 = removeDecimals(_reserve0, decimals1);
+        const reserve2 = removeDecimals(_reserve1, decimals2);
+
+        const balance1 = balance/supply*reserve1;
+        const balance2 = balance/supply*reserve2;
+
+        return {
+            pair: {
+                address: pairAddress,
+                balance: balance,
+                symbol: `${sym1} - ${sym2}`,
+                decimals: 18
+            },
+            tokenA: {
+                address: addr1,
+                balance: balance1,
+                symbol: sym1,
+                decimals: decimals1
+            },
+            tokenB: {
+                address: addr2,
+                balance: balance2,
+                symbol: sym2,
+                decimals: decimals2
+            }
+        };
+    } catch (e) {
+        throw "No position"
+    }
+
+
+}

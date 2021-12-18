@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { createEventDispatcher, getContext } from 'svelte';
+	import { createEventDispatcher, getContext, onMount } from 'svelte';
 	import {getSymbol} from '$lib/scripts/exchange'
 	import TokenSearchDialog from '../TokenSearchDialog/TokenSearchDialog.svelte';
 	
-	export let address: string;
+	export let address: string = '';
 	export let editable: boolean = true; // TODO - don't allow hover on non-editable
-    export let logoSrc: string = "";
+    export let logoSrc: string = "/src/lib/assets/tokens/logos/eth_logo.svg";
 	export let symbol: string = "Select";
 	
 	let showSearch = false; // bound to child
@@ -13,16 +13,18 @@
 	const {signerObj} = getContext("exchange");
 	const signer = signerObj.getSigner();
 
-	function initialize(node: HTMLButtonElement) {
+	initialize();
+
+	async function initialize() {
 		if(address) {
 			if(!symbol) {
-				getSymbol(address, signer)
-				.then(_symbol => symbol = _symbol)
+				symbol = await getSymbol(address, signer)
 			}
 
 			// TODO find way to get logo or default logo
 		}
 	}
+
 
 	const dispatch = createEventDispatcher();
 	function handleSelection(e: any) {
@@ -46,7 +48,7 @@
 	
 </script>
 
-<button on:click|preventDefault={() => (showSearch = true) } disabled={!editable} use:initialize>
+<button on:click|preventDefault={() => (showSearch = true) } disabled={!editable}>
 	<img src={logoSrc} class="symbol" width="35" height="35" alt="" />
 	<p>{symbol}</p>
 	<i class="fas fa-chevron-down" />
