@@ -17,7 +17,7 @@
 
 	async function initialize() {
 		if(address) {
-			if(!symbol) {
+			if(!symbol || symbol==="Select") {
 				symbol = await getSymbol(address, signer)
 			}
 

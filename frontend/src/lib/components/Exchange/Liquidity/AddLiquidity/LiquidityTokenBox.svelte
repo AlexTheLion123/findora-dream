@@ -25,14 +25,14 @@
 	export let rate: number;
 	export let symbol1: string; // TODO delete, find a way to do in pool info, listen to changes
 	export let symbol2: string;
+	export let address1: string = "";
+	export let address2: string = "";
 
 	let updateCurrent1 = false;
 	let updateCurrent2 = false;
 
 	let amount1: number;
 	let amount2: number;
-	let address1: string;
-	let address2: string;
 	let decimals1: number;
 	let decimals2: number;
 

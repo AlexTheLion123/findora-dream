@@ -13,6 +13,8 @@
 	export let pairAddress: string;
 	export let balanceA: number;
 	export let balanceB: number;
+	export let addressA: string;
+	export let addressB: string;
 
 	export let showFull: boolean = false;
 
@@ -46,7 +48,7 @@
 			<li><span>Pool share:</span>{#await poolShare then share}{share}%{/await}</li>
 		</ul>
 		<div class="addMoreLink">
-			<Link text="+ Add more" link="/exchange/liquidity/add"/>
+			<Link text="+ Add more" link={`/exchange/liquidity/add/${addressA}/${addressB}`}/>
 		</div>
 		<div class="button">
 			<LinkButtonStyle text="Remove Liquidity" link={`/exchange/liquidity/remove/${pairAddress}`}/>

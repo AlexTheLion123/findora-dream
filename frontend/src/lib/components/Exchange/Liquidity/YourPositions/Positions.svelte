@@ -64,6 +64,8 @@
 					pairAddress={position.pair.address}
 					balanceA={position.tokenA.balance}
 					balanceB={position.tokenB.balance}
+					addressA={position.tokenA.address}
+					addressB={position.tokenB.address}
 				/>
 			</div>
 		{/each}
