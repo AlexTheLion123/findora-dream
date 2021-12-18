@@ -70,13 +70,6 @@ export async function getRoute({ addrIn, addrOut, factory, nativeAddr }: {
     throw new NoRouteError();
 }
 
-// export async function getQuoteFromRoute({route, router}: {route: string[], router: UniswapV2Router02}) {
-//     for(let i=0; i<route.length-1; i++) {
-//         router.getReserves()
-//     }
-// }
-
-
 export function getBalance(tokenAddress: string, signer: Signer, signerAddress: string): Promise<BigNumber> {
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).balanceOf(signerAddress);
 }
@@ -93,36 +86,36 @@ export async function getSymbol(tokenAddress: string, signer: Signer): Promise<s
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).symbol();
 }
 
-export async function getPosition(addr1: string, addr2: string, factoryAddr: string, signer: Signer, signerAddr: string) {
-    const pairAddress = getPairAddress(factoryAddr, addr1, addr2);
+export async function getPosition({ addr1, addr2, factoryAddr, signer, signerAddr, pairAddr, symbol1, symbol2 }: {
+    addr1: string, addr2: string, factoryAddr: string, signer: Signer, signerAddr: string, pairAddr?: string, symbol1?: string, symbol2?: string
+}) {
+    const pairAddress = pairAddr || getPairAddress(factoryAddr, addr1, addr2);
 
     try {
         const balance = removeDecimals(await getBalance(pairAddress, signer, signerAddr), 18);
         const supply = removeDecimals(await getTotalSupply(pairAddress, signer, signerAddr), 18)
-        
-        
-        
-        
+
         // TODO look at promise.all
-        const sym1 = await getSymbol(addr1, signer);
-        const sym2 = await getSymbol(addr2, signer);
-        
+        const sym1 = symbol1 || await getSymbol(addr1, signer);
+        const sym2 = symbol2 || await getSymbol(addr2, signer);
+
         const decimals1 = await getDecimals(addr1, signer);
         const decimals2 = await getDecimals(addr1, signer);
-        
-        const [_reserve0, _reserve1] = await getReservesQuery({factoryAddr: factoryAddr, addrInput: addr1, addrOutput: addr2, signer: signer, pairAddr: pairAddress})
+
+        const [_reserve0, _reserve1] = await getReservesQuery({ factoryAddr: factoryAddr, addrInput: addr1, addrOutput: addr2, signer: signer, pairAddr: pairAddress })
         const reserve1 = removeDecimals(_reserve0, decimals1);
         const reserve2 = removeDecimals(_reserve1, decimals2);
 
-        const balance1 = balance/supply*reserve1;
-        const balance2 = balance/supply*reserve2;
+        const balance1 = balance / supply * reserve1;
+        const balance2 = balance / supply * reserve2;
 
         return {
             pair: {
                 address: pairAddress,
                 balance: balance,
                 symbol: `${sym1} - ${sym2}`,
-                decimals: 18
+                decimals: 18,
+                share: balance / supply
             },
             tokenA: {
                 address: addr1,

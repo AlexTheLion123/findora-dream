@@ -119,3 +119,16 @@ export interface IAddLiqData {
     decimals1: number;
     decimals2: number;
 }
+
+export type Positions = {
+    pair: IToken;
+    tokenA: IToken;
+    tokenB: IToken;
+};
+
+interface IToken {
+    address: string;
+    balance: number;
+    symbol: string;
+    decimals: number;
+}

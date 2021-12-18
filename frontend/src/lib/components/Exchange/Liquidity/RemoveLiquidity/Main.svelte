@@ -1,7 +1,11 @@
 <script context="module" lang="ts">
 	import { Contract } from 'ethers';
 	import { UniswapV2PairABI } from '$lib/abis';
-	import { addDecimals, getDecimals, getSymbol, getPosition, checkAllowanceAndApproveMax } from '$lib/scripts/exchange';
+	import {
+		addDecimals,
+		getPosition,
+		checkAllowanceAndApproveMax
+	} from '$lib/scripts/exchange';
 	import type { UniswapV2Pair } from '$lib/typesUsed';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
@@ -11,6 +15,7 @@
 	import TradeButton from '$lib/components/Misc/TradeButton.svelte';
 	import RangeSlider from 'svelte-range-slider-pips';
 	import { getContext } from 'svelte';
+	import ReceiveInfo from '$lib/components/Exchange/Liquidity/RemoveLiquidity/ReceiveInfo.svelte';
 
 	const { signerObj, getRouter, getFactory }: IExchangeContext = getContext('exchange');
 	const signer = signerObj.getSigner();
@@ -61,13 +66,13 @@
 		address2 = await tokenInstance.token1();
 
 		try {
-			const { pair, tokenA, tokenB } = await getPosition(
-				address1,
-				address2,
-				factory.address,
-				signer,
-				signerAddr
-			);
+			const { pair, tokenA, tokenB } = await getPosition({
+				addr1: address1,
+				addr2: address2,
+				factoryAddr: factory.address,
+				signer: signer,
+				signerAddr: signerAddr
+		});
 
 			symbol = pair.symbol;
 			decimals = pair.decimals;
@@ -91,35 +96,34 @@
 
 		console.log('to remove liquidity');
 		const amountToRemove = addDecimals(amount, decimals);
-		const amountAMin = addDecimals(amount1*(1-slippage), decimals1)
-		const amountBMin = addDecimals(amount2*(1-slippage), decimals2)
+		const amountAMin = addDecimals(amount1 * (1 - slippage), decimals1);
+		const amountBMin = addDecimals(amount2 * (1 - slippage), decimals2);
 
-		console.log(amountAMin.toString());
-		console.log(amountBMin.toString());
-		console.log(address1);
-		console.log(address2);
-		console.log(address1);
-		console.log(address2);		
-
-		let tx = await checkAllowanceAndApproveMax({toSpend: amountToRemove, ownerAddr: signerAddr, spenderAddr: router.address, tokenAddr: pairAddress, signer: signer})
+		let tx = await checkAllowanceAndApproveMax({
+			toSpend: amountToRemove,
+			ownerAddr: signerAddr,
+			spenderAddr: router.address,
+			tokenAddr: pairAddress,
+			signer: signer
+		});
 		await tx?.wait();
 
-		tx = await router.removeLiquidity(address1, address2, amountToRemove, amountAMin, amountBMin, signerAddr, amountAMin);
+		tx = await router.removeLiquidity(
+			address1,
+			address2,
+			amountToRemove,
+			amountAMin,
+			amountBMin,
+			signerAddr,
+			amountAMin
+		);
 		await tx.wait();
-		console.log("remove liquidity successful")
+		console.log('remove liquidity successful');
 	}
-
-	$: console.log(balance1);
-	$: console.log(balance2);
 </script>
 
 {#await init then}
-	<TokenBox
-		editable={false}
-		bind:numTokens={amount}
-		address={pairAddress}
-		{symbol}
-	/>
+	<TokenBox editable={false} bind:numTokens={amount} address={pairAddress} {symbol} />
 {:catch error}
 	<p>Invalid address</p>
 	{console.log(error)}
@@ -128,50 +132,14 @@
 	<RangeSlider id="color-pips" range="min" float pips step={5} bind:values />
 </div>
 {#if amount1 && amount2}
-	<section class="receive-container">
-		<h4>You will receive</h4>
-		<div class="receive-content">
-			<div class="inner left">
-				<p>{amount1}</p>
-				<p>{amount2}</p>
-			</div>
-			<div class="inner right">
-				<p>{symbol1}</p>
-				<p>{symbol2}</p>
-			</div>
-		</div>
-	</section>
+	<ReceiveInfo {amount1} {amount2} {symbol1} {symbol2} />
 {/if}
 <div class="button">
 	<TradeButton text={state} on:click={callRemove} {disabled} />
 </div>
 
-
-
 <style>
 	.slider {
 		margin: 50px 0;
-	}
-
-	.receive-container {
-		margin: 30px 0;
-	}
-
-	.receive-container h4 {
-		margin: 5px;
-	}
-	.receive-content {
-		background: rgba(255, 255, 255, 0.1);
-		border-radius: 10px;
-		padding: 20px;
-
-		display: flex;
-	}
-	.left {
-		text-align: left;
-		width: 100%;
-	}
-	.right {
-		text-align: right;
 	}
 </style>

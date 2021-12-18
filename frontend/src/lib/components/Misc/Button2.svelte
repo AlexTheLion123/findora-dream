@@ -5,7 +5,7 @@
 <button on:click|preventDefault>{text}</button>
 
 <style lang="scss">
-    $background: rgba(0, 0, 0, 0.2);
+    $background: rgba(0, 0, 0, 0.5);
 
     button {
         background: $background;

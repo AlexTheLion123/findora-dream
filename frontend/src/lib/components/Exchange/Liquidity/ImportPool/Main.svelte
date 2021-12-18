@@ -7,16 +7,16 @@
 		removeDecimals,
 		getTotalSupply,
 		getDecimals,
-		formatNumber
+		formatNumber,
+		getPosition
 	} from '$lib/scripts/exchange';
-	import type { IExchangeContext } from '$lib/typesFrontend';
+	import type { IExchangeContext, Positions } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
 	import Button2 from '$lib/components/Misc/Button2.svelte';
 	import TokenSelector from '$lib/components/Exchange/TokenBox/TokenSelector.svelte';
 	import Link from '$lib/components/Misc/Link.svelte';
-
 	import { getContext } from 'svelte';
 
 	let address1: string;
@@ -46,7 +46,16 @@
 			const bal = removeDecimals(await getBalance(address, signer, signerAddress), 18);
 
 			if (bal) {
-				return getPosition(address);
+				return getPosition({
+					addr1: address1,
+					addr2: address2,
+					factoryAddr: factory.address,
+					signer: signer,
+					signerAddr: signerAddress,
+					pairAddr: address,
+					symbol1: symbol1,
+					symbol2: symbol2
+				});
 			} else {
 				return 'none';
 			}
@@ -55,41 +64,45 @@
 		}
 	}
 
-	interface IGetPosiion {
-		position: number;
-		share: number;
-		pool1: number;
-		pool2: number;
+	async function handleImport() {
+		if (!state || state === 'uninitialized') {
+			alert('Pool not found');
+			throw 'Pool not found';
+		}
+
+		const storage = localStorage.getItem('positions');
+		const pairAddress = getPairAddress(factory.address, address1, address2);
+		const toStorage = getItemToStorage(pairAddress);
+
+		if (storage) {
+			if (storage.indexOf(pairAddress) > -1) {
+				alert('Pool already added');
+				return;
+			}
+
+			localStorage.setItem('positions', JSON.stringify([...JSON.parse(storage), toStorage]))
+			alert('Pool imported')
+		} else {
+			localStorage.setItem('positions', JSON.stringify(toStorage));
+			alert('Pool imported');
+		}
 	}
 
-	async function getPosition(pairAddress: string): Promise<IGetPosiion> {
-		const [_reserve0, _reserve1] = await getReservesQuery({
-			factoryAddr: factory.address,
-			addrInput: address1,
-			addrOutput: address2,
-			signer: signer
-		});
-
-		const bal = removeDecimals(await getBalance(pairAddress, signer, signerAddress), 18);
-		const supply = removeDecimals(await getTotalSupply(pairAddress, signer, signerAddress), 18);
-
-		const decimals1 = await getDecimals(address1, signer);
-		const decimals2 = await getDecimals(address2, signer);
-
-		const share = bal / supply;
-		const pool1 = removeDecimals(_reserve0, decimals1) * share;
-		const pool2 = removeDecimals(_reserve1, decimals2) * share;
-
+	function getItemToStorage(pairAddr: string) {
 		return {
-			position: bal,
-			share: share,
-			pool1: pool1,
-			pool2: pool2
+			pair: {
+				address: pairAddr,
+				symbol: `${symbol1}-${symbol2}`
+			},
+			tokenA: {
+				address: address1,
+				symbol: `${symbol1}`
+			},
+			tokenB: {
+				address: address2,
+				symbol: `${symbol2}`
+			}
 		};
-	}
-
-	function handleImport() {
-
 	}
 </script>
 
@@ -113,16 +126,16 @@
 				<h3>Your position</h3>
 				<div class="table">
 					<div class="state-inner left">
-						<p>{symbol1}-{symbol2} LP</p>
+						<p>{_state.tokenA.symbol}-{_state.tokenB.symbol} LP</p>
 						<p>Pool share</p>
-						<p>Pooled {symbol1}</p>
-						<p>Pooled {symbol2}</p>
+						<p>Pooled {_state.tokenA.symbol}</p>
+						<p>Pooled {_state.tokenB.symbol}</p>
 					</div>
 					<div class="state-inner right">
-						<p>{formatNumber(_state.position, 5)}</p>
-						<p>{formatNumber(_state.share * 100, 5)}%</p>
-						<p>{formatNumber(_state.pool1, 5)}</p>
-						<p>{formatNumber(_state.pool2, 5)}</p>
+						<p>{formatNumber(_state.pair.balance, 5)}</p>
+						<p>{formatNumber(_state.pair.share * 100, 5)}%</p>
+						<p>{formatNumber(_state.tokenA.balance, 5)}</p>
+						<p>{formatNumber(_state.tokenB.balance, 5)}</p>
 					</div>
 				</div>
 

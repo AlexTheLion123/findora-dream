@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ExchangeHeader from '$lib/components/Exchange/Layout/ExchangeHeader.svelte';
-	import Positions from '$lib/components/Exchange/Liquidity/YourPositions/Positions.svelte';
-	import ImportTokens from '$lib/components/Exchange/Liquidity/YourPositions/ImportTokens.svelte';
+	import Positions from '$lib/components/Exchange/Liquidity/Positions/Positions.svelte';
+	import ImportTokens from '$lib/components/Exchange/Liquidity/Positions/ImportTokens.svelte';
 	import LinkBright from '$lib/components/Misc/LinkBright.svelte';
 </script>
 
