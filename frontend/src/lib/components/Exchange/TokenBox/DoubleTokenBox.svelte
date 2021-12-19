@@ -61,7 +61,10 @@
 	}
 
 	function getToDispatch(e: CustomEvent) {
-		let toDispatch = e.detail;
+		let toDispatch = {
+			...e.detail,
+			tokenBox: currentTokenBox
+		};
 
 		if (toGetStatus) {
 			if (!e.detail.status) {
@@ -70,9 +73,8 @@
 			}
 
 			toDispatch = {
-				...e.detail,
+				...toDispatch,
 				status: getStatus(e.detail.status),
-				tokenBox: currentTokenBox
 			};
 		}
 		return toDispatch;
