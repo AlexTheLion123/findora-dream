@@ -127,7 +127,7 @@
 		<TokenSelector bind:address {editable} on:tokenSelected={handleSelection} />
 	</div>
 	<p class="balance">
-		Balance: {formatNumber(balance, 5)}
+		Balance: {#if balance}{formatNumber(balance, 5)}{/if}
 	</p>
 	<div class="input-component">
 		<NumTokenInput bind:amount {updateCurrentInput} on:amountInput={handleInput} on:clearAll/>
