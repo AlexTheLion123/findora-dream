@@ -66,7 +66,6 @@
 	}
 
 	function setSwapData(e: CustomEvent) {
-		console.log('got swap data');
 		swapData = e.detail.swapData;
 	}
 </script>

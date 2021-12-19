@@ -71,7 +71,6 @@
 			let isApproved = false;
 			if (approvalCache.address === address) {
 				isApproved = approvalCache.isApproved;
-				console.log('Using approval cache');
 			} else {
 				isApproved = await checkSufficientAllowance({
 					toSpend: addDecimals(amount, decimals),
