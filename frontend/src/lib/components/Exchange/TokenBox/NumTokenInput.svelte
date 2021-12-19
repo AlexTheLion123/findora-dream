@@ -13,18 +13,15 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 
-	let inputElement: HTMLInputElement;
-
 	export let updateCurrentInput: boolean;
-
-	let value: number;
-
+	
+	let inputElement: HTMLInputElement;
 	const dispatch = createEventDispatcher();
 	
 	const handleInput = function () {
 		updateCurrentInputElement();
 
-		if(!value) {
+		if(!inputElement.value) {
 			clearAll();
 			return;
 		}
