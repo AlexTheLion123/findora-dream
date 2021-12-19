@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
 	import { formatNumber, getRoute } from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
-	import type { IExchangeContext, ISwapData } from '$lib/typesFrontend';
+	import type { IExchangeContext } from '$lib/typesFrontend';
 	import type { BigNumber } from 'ethers';
 </script>
 
@@ -88,11 +88,12 @@
 				return 'enter amount';
 			}
 
-			if (_status.toLowerCase() === 'enter amount') {
+			if (_status.toLowerCase() === 'fine') {
 				if (address1 && address2 && amount1 && amount2) {
 					return 'action';
 				}
 			}
+			console.log("status", _status)
 			return _status;
 		}
 	}
@@ -107,7 +108,7 @@
 		const amountsOut = await router.getAmountsOut(amountInBig, routeCache);
 		const amountOut = amountsOut[amountsOut.length - 1];
 		amount2 = formatNumber(removeDecimals(amountOut, decimals2), 6); // if address exists, decimals exist
-
+		
 		dispatchSwapData({ amountIn: amountInBig, amountOutDesired: amountOut });
 	}
 

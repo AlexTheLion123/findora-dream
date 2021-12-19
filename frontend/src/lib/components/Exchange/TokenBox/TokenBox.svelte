@@ -88,9 +88,9 @@
 		}
 	}
 
-	async function getToDispatch(e: CustomEvent) {
+	async function getToDispatch(e?: CustomEvent) {
 		return {
-			...e.detail,
+			...e?.detail,
 			status: await getStatus()
 		};
 	}
@@ -106,13 +106,15 @@
 			: dispatch('selectionNoAmount', toDispatch);
 	}
 
-	async function handleInput(e: CustomEvent) {
+	async function handleInput(e?: CustomEvent) {
 		// TODO use export
 
 		const toDispatch = await getToDispatch(e);
 
 		address ? dispatch('inputWithAddress', toDispatch) : dispatch('inputNoAddress', toDispatch);
 	}
+
+	
 </script>
 
 <div class="box">

@@ -9,7 +9,7 @@
 	export let toGetStatus: boolean;
 	export let updateCurrentInput = true;
 	export let approveBoth = false;
-
+	
 	let getStatus1: boolean = false;
 	let getStatus2: boolean = false;
 
