@@ -20,7 +20,7 @@
 
 	let swapData: ISwapData;
 	let slippage = 0.05; // TODO let user change slippage
-	let status: string = "select token";
+	let status: string = 'select token';
 	let disabled: boolean;
 
 	// TODO get swapdata from event
@@ -60,9 +60,7 @@
 	}
 
 	function handleEvent(e: CustomEvent) {
-		if (e.detail.status) {
-			status = e.detail.status;
-		}
+		status = e.detail.status;
 	}
 
 	function setSwapData(e: CustomEvent) {

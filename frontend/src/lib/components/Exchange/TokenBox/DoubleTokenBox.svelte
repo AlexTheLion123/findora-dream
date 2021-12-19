@@ -23,41 +23,7 @@
 		}
 	}
 
-
 	const dispatch = createEventDispatcher();
-
-	function getStatus(_status: string) {
-		if (!toGetStatus) {
-			alert('not meant to be getting status');
-			throw 'not meant to be getting status';
-		}
-
-		if (!approveBoth) {
-			// standard
-
-			if (!address2) {
-				return 'select token';
-			}
-
-			if (!amount1) {
-				return 'enter amount';
-			}
-
-			return _status;
-		} else {
-			// only add liquidity can require approve both
-
-			if (!address2) {
-				return 'select token';
-			}
-
-			if (!amount1 || !amount2) {
-				return 'enter amount';
-			}
-
-			return _status;
-		}
-	}
 
 	function getToDispatch(num: 1 | 2, e: CustomEvent) {
 		let toDispatch = {
@@ -65,24 +31,18 @@
 			tokenBox: num
 		};
 
-		if (toGetStatus && e.detail?.status) {
-			toDispatch = {
-				...toDispatch,
-				status: getStatus(e.detail.status),
-			};
-		}
 		return toDispatch;
 	}
 
-	function selectionWithAmount(num: 1 | 2,e: CustomEvent) {
+	function selectionWithAmount(num: 1 | 2, e: CustomEvent) {
 		const toDispatch = getToDispatch(num, e);
 
 		dispatch('selectionWithAmount', toDispatch);
 	}
 
-	function selectionNoAmount(num: 1 | 2,e: CustomEvent) {
+	function selectionNoAmount(num: 1 | 2, e: CustomEvent) {
 		const toDispatch = getToDispatch(num, e);
-		
+
 		dispatch('selectionNoAmount', toDispatch);
 	}
 	function inputWithAddress(num: 1 | 2, e: CustomEvent) {
@@ -95,7 +55,6 @@
 		amount1 = 0;
 		amount2 = 0;
 	}
-
 </script>
 
 <div class="token-box">

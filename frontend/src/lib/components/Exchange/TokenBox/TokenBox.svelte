@@ -44,11 +44,6 @@
 	}
 
 	async function getStatus() {
-		if (!toGetStatus) {
-			alert('not meant to be getting status');
-			throw 'not meant to be getting status';
-		}
-
 		if (!address && !balance && !decimals) {
 			return 'select token';
 		}
@@ -57,14 +52,15 @@
 			return 'enter amount';
 		}
 
-		if (amount > balance) {
-			return `insufficient ${symbol}`;
-		}
+		if (toGetStatus) {
+			if (amount > balance) {
+				return `insufficient ${symbol}`;
+			}
 
-		if (!(await getApprovalStatus())) {
-			return `approve ${symbol}`;
+			if (!(await getApprovalStatus())) {
+				return `approve ${symbol}`;
+			}
 		}
-
 		return 'fine';
 
 		async function getApprovalStatus(): Promise<boolean> {
@@ -93,14 +89,10 @@
 	}
 
 	async function getToDispatch(e: CustomEvent) {
-		let toDispatch = e.detail;
-		if (toGetStatus) {
-			toDispatch = {
-				...e.detail,
-				status: await getStatus()
-			};
-		}
-		return toDispatch;
+		return {
+			...e.detail,
+			status: await getStatus()
+		};
 	}
 
 	async function handleSelection(e: CustomEvent) {
@@ -109,7 +101,9 @@
 		symbol = e.detail.symbol;
 		const toDispatch = await getToDispatch(e);
 
-		amount ? dispatch('selectionWithAmount', toDispatch) : dispatch('selectionNoAmount', toDispatch);
+		amount
+			? dispatch('selectionWithAmount', toDispatch)
+			: dispatch('selectionNoAmount', toDispatch);
 	}
 
 	async function handleInput(e: CustomEvent) {
@@ -129,7 +123,7 @@
 		Balance: {#if balance}{formatNumber(balance, 5)}{/if}
 	</p>
 	<div class="input-component">
-		<NumTokenInput bind:amount {updateCurrentInput} on:amountInput={handleInput} on:clearAll/>
+		<NumTokenInput bind:amount {updateCurrentInput} on:amountInput={handleInput} on:clearAll />
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}

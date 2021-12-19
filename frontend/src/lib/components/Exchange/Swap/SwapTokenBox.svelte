@@ -32,6 +32,7 @@
 		amountIn: BigNumber;
 		amountOutDesired: BigNumber;
 	}) {
+		console.log(address1, address2, decimals1, decimals2, routeCache);
 		if (!address1 || !address2 || !decimals1 || !decimals2 || !routeCache) {
 			alert('swap data not set, not enough swap info');
 			throw 'not enough swap info';
@@ -47,7 +48,7 @@
 			route: routeCache
 		};
 
-		dispatch("swapData", {swapData})
+		dispatch('swapData', { swapData });
 	}
 
 	async function getRouteIfCache() {
@@ -68,6 +69,31 @@
 			}
 		} else {
 			return routeCache;
+		}
+	}
+
+	function getToDispatch(e: CustomEvent) {
+		const status = e.detail.status;
+		return {
+			...e.detail,
+			status: getStatus(status)
+		};
+
+		function getStatus(_status: string) {
+			if (!address2) {
+				return 'select token';
+			}
+
+			if (!amount1) {
+				return 'enter amount';
+			}
+
+			if (_status.toLowerCase() === 'enter amount') {
+				if (address1 && address2 && amount1 && amount2) {
+					return 'action';
+				}
+			}
+			return _status;
 		}
 	}
 
@@ -99,44 +125,39 @@
 		dispatchSwapData({ amountIn: amountIn, amountOutDesired: amountOutBig });
 	}
 
-	/// @dev extra checks are simply sanity checks that should always be true for that event
-
 	async function inputWithAddress(e: CustomEvent<any>) {
 		routeCache = await getRouteIfCache();
 
 		if (e.detail.tokenBox === 1) {
 			if (address2 && address1 && amount1) {
-				getSwapTopCurrent();
+				await getSwapTopCurrent();
 			}
 		} else {
 			if (address1 && address2 && amount2) {
-				getSwapBottomCurrent();
+				await getSwapBottomCurrent();
 			}
 		}
 
-		dispatch("event", e.detail)
+		dispatch('event', getToDispatch(e));
 	}
-
 
 	async function selectionWithAmount(e: CustomEvent<any>) {
 		routeCache = null;
 		routeCache = await getRouteIfCache();
-		
-		
+
 		if (e.detail.tokenBox === 1) {
 			decimals1 = e.detail.decimals;
 			if (amount2 && amount1 && address1) {
-				getSwapTopCurrent();
+				await getSwapTopCurrent();
 			}
 		} else {
 			decimals2 = e.detail.decimals;
-			
 			if (address1 && amount2 && address2) {
-				getSwapBottomCurrent();
+				await getSwapBottomCurrent();
 			}
 		}
 
-		dispatch("event", e.detail)
+		dispatch('event', getToDispatch(e));
 	}
 	async function selectionNoAmount(e: CustomEvent<any>) {
 		routeCache = null;
@@ -146,19 +167,19 @@
 			decimals1 = e.detail.decimals;
 
 			if (address1 && amount1 && address2) {
-				getSwapTopCurrent();
+				await getSwapTopCurrent();
 			}
 		} else {
 			decimals2 = e.detail.decimals;
-			
+			console.log('selection no amount', e.detail.decimals);
 			if (address2 && amount1 && address1) {
-				console.log("getting swap top current");
-				
-				getSwapTopCurrent();
+				console.log('getting swap top current');
+
+				await getSwapTopCurrent();
 			}
 		}
 
-		dispatch("event", e.detail)
+		dispatch('event', getToDispatch(e));
 	}
 </script>
 
