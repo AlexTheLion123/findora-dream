@@ -20,7 +20,7 @@
 
 	let swapData: ISwapData;
 	let slippage = 0.05; // TODO let user change slippage
-	let status: string;
+	let status: string = "select token";
 	let disabled: boolean;
 
 	// TODO get swapdata from event
@@ -71,6 +71,6 @@
 	}
 </script>
 
-<SwapTokenBox bind:address1 bind:address2 on:event={handleEvent} on:swapReady={setSwapData} />
+<SwapTokenBox bind:address1 bind:address2 on:event={handleEvent} on:swapData={setSwapData} />
 <RangeSlider id="color-pips" range="min" float pips step={5} />
 <TradeButton on:click={(e) => callSwap(swapData)} text={status} {disabled} />

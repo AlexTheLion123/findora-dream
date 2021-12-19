@@ -58,7 +58,7 @@
 		}
 
 		if (amount > balance) {
-			return 'insufficient ${symbol}';
+			return `insufficient ${symbol}`;
 		}
 
 		if (!(await getApprovalStatus())) {
@@ -107,6 +107,7 @@
 	async function handleSelection(e: CustomEvent) {
 		decimals = e.detail.decimals;
 		balance = e.detail.balance;
+		symbol = e.detail.symbol;
 		const toDispatch = await getToDispatch(e);
 
 		amount ? dispatch('selectionWithAmount', toDispatch) : dispatch('selectionNoAmount', toDispatch);
@@ -123,13 +124,13 @@
 
 <div class="box">
 	<div class="selector">
-		<TokenSelector on:tokenSelected={handleSelection} {editable} bind:address />
+		<TokenSelector bind:address {editable} on:tokenSelected={handleSelection} />
 	</div>
 	<p class="balance">
 		Balance: {formatNumber(balance, 5)}
 	</p>
 	<div class="input-component">
-		<NumTokenInput {updateCurrentInput} on:amountInput={handleInput} bind:amount/>
+		<NumTokenInput bind:amount {updateCurrentInput} on:amountInput={handleInput} on:clearAll/>
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}

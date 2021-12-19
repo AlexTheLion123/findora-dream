@@ -19,10 +19,11 @@
 	let inputElement: HTMLInputElement;
 	const dispatch = createEventDispatcher();
 	
-	const handleInput = function () {
+	async function handleInput() {
 		updateCurrentInputElement();
 
 		if(!amount) {
+			await dispatch("clearAll");
 			clearAll();
 			return;
 		}

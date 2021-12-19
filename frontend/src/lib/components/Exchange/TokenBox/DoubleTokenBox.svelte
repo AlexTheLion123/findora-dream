@@ -74,21 +74,26 @@
 		return toDispatch;
 	}
 
-	function handleSelectionWithAmount(num: 1 | 2,e: CustomEvent) {
+	function selectionWithAmount(num: 1 | 2,e: CustomEvent) {
 		const toDispatch = getToDispatch(num, e);
 
 		dispatch('selectionWithAmount', toDispatch);
 	}
 
-	function handleSelectionNoAmount(num: 1 | 2,e: CustomEvent) {
+	function selectionNoAmount(num: 1 | 2,e: CustomEvent) {
 		const toDispatch = getToDispatch(num, e);
 		
 		dispatch('selectionNoAmount', toDispatch);
 	}
-	function handleInputWithAddress(num: 1 | 2, e: CustomEvent) {
+	function inputWithAddress(num: 1 | 2, e: CustomEvent) {
 		const toDispatch = getToDispatch(num, e);
 
 		dispatch('inputWithAddress', toDispatch);
+	}
+
+	function clearAll() {
+		amount1 = 0;
+		amount2 = 0;
 	}
 
 </script>
@@ -99,9 +104,10 @@
 		bind:amount={amount1}
 		{updateCurrentInput}
 		toGetStatus={getStatus1}
-		on:selectionWithAmount={(e) => handleSelectionWithAmount(1, e)}
-		on:selectionNoAmount={(e) => handleSelectionNoAmount(1, e)}
-		on:inputWithAddress={(e) => handleInputWithAddress(1, e)}
+		on:selectionWithAmount={(e) => selectionWithAmount(1, e)}
+		on:selectionNoAmount={(e) => selectionNoAmount(1, e)}
+		on:inputWithAddress={(e) => inputWithAddress(1, e)}
+		on:clearAll={clearAll}
 	/>
 </div>
 
@@ -111,8 +117,9 @@
 		bind:amount={amount2}
 		{updateCurrentInput}
 		toGetStatus={getStatus2}
-		on:selectionWithAmount={(e) => handleSelectionWithAmount(2, e)}
-		on:selectionNoAmount={(e) => handleSelectionNoAmount(2, e)}
-		on:inputWithAddress={(e) => handleInputWithAddress(2, e)}
+		on:selectionWithAmount={(e) => selectionWithAmount(2, e)}
+		on:selectionNoAmount={(e) => selectionNoAmount(2, e)}
+		on:inputWithAddress={(e) => inputWithAddress(2, e)}
+		on:clearAll={clearAll}
 	/>
 </div>

@@ -1,10 +1,14 @@
 <script lang="ts">
 	export let text: string;
 	export let disabled = false;
+
+	function formatText(str: string) {
+		return str.charAt(0).toUpperCase() + str.slice(1);
+	}
 </script>
 
 <button on:click|preventDefault {disabled}>
-	{text}
+	{formatText(text)}
 </button>
 
 <style lang="scss">

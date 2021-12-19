@@ -47,7 +47,7 @@
 			route: routeCache
 		};
 
-		dispatch("swapReady", {swapData})
+		dispatch("swapData", {swapData})
 	}
 
 	async function getRouteIfCache() {
@@ -136,7 +136,6 @@
 			}
 		}
 
-
 		dispatch("event", e.detail)
 	}
 	async function selectionNoAmount(e: CustomEvent<any>) {
@@ -153,7 +152,9 @@
 			decimals2 = e.detail.decimals;
 			
 			if (address2 && amount1 && address1) {
-				getSwapBottomCurrent();
+				console.log("getting swap top current");
+				
+				getSwapTopCurrent();
 			}
 		}
 
