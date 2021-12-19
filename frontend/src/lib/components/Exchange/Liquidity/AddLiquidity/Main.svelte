@@ -30,7 +30,6 @@
 
     // get context
 	const { signerObj, getRouter }: IExchangeContext = getContext('exchange');
-	const signer = signerObj.getSigner();
     const signerAddress = signerObj.getAddress();
     const router = getRouter();
 
@@ -39,21 +38,6 @@
 			alert('not enough info');
 			throw 'not enough info to add liquidity';
 		}
-		await checkAllowanceAndApproveMax({
-			toSpend: _addLiqData.amountIn1,
-			ownerAddr: signerAddress,
-			spenderAddr: router.address,
-			tokenAddr: _addLiqData.address1,
-			signer: signer
-		});
-		await checkAllowanceAndApproveMax({
-			toSpend: _addLiqData.amountIn2,
-			ownerAddr: signerAddress,
-			spenderAddr: router.address,
-			tokenAddr: _addLiqData.address2,
-			signer: signer
-		});
-		console.log('approved');
 
 		const amountAMin = (_addLiqData.amountIn1).mul((1-slippage)*100).div(100)
 		const amountBMin = (_addLiqData.amountIn2).mul((1-slippage)*100).div(100)

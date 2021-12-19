@@ -9,12 +9,13 @@
     import TradeButton from '$lib/components/Misc/TradeButton.svelte'
     import {getContext} from 'svelte'
 
+	export let address1: string;
+	export let address2: string;
+
 	let swapData: ISwapData;
     let slippage = 0.05; // TODO let user change slippage
 	let status: string = "Select token";
 	let disabled: boolean;
-	let symbol1: string;
-	let symbol2: string;
 
     $: if(status === 'action') {
         status = 'swap'
@@ -57,6 +58,6 @@
 	}
 </script>
 
-<SwapTokenBox bind:swapData bind:status bind:symbol1 bind:symbol2/>
+<SwapTokenBox bind:swapData bind:status bind:address1 bind:address2/>
 <RangeSlider id="color-pips" range="min" float pips step={5}/>
 <TradeButton on:click={(e) => callSwap(swapData)} text={status} {disabled}/>

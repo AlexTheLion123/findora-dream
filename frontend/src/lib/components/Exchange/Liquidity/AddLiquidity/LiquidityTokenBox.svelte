@@ -23,8 +23,6 @@
 	// poolinfo props
 	export let share: number;
 	export let rate: number;
-	export let symbol1: string; // TODO delete, find a way to do in pool info, listen to changes
-	export let symbol2: string;
 	export let address1: string;
 	export let address2: string;
 
@@ -35,6 +33,9 @@
 	let amount2: number;
 	let decimals1: number;
 	let decimals2: number;
+	
+	export let symbol1: string; // TODO delete, listen to event in parent
+	export let symbol2: string;
 
 	let pairCache: {
 		addresses: [string, string];
@@ -179,8 +180,6 @@
 	bind:address1
 	bind:address2
 	bind:status
-	bind:symbol1
-	bind:symbol2
 	approveBoth={true}
 	{updateCurrent1}
 	{updateCurrent2}

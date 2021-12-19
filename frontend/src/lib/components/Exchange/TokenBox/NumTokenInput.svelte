@@ -15,10 +15,12 @@
 
 	let inputElement: HTMLInputElement;
 
-	export let updateCurrent: boolean = true;
-	export let value: number;
+	export let updateCurrentInput: boolean;
+
+	let value: number;
 
 	const dispatch = createEventDispatcher();
+	
 	const handleInput = function () {
 		updateCurrentInputElement();
 
@@ -27,11 +29,11 @@
 			return;
 		}
 
-		dispatch('tokenNumInput', { numTokens: inputElement.value });
+		dispatch('amountInput', { amount: inputElement.value });
 	};
 
 	function updateCurrentInputElement() {
-		if (!updateCurrent) {
+		if (!updateCurrentInput) {
 			return;
 		}
 		if (current && current !== inputElement) {
@@ -48,7 +50,6 @@
 
 <input
 	type="number"
-	bind:value
 	bind:this={inputElement}
 	placeholder="0.00"
 	on:input={handleInput}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 
-	export let src = '/src/lib/assets/svg/eth_logo.svg';
+	export let logo = '/src/lib/assets/svg/eth_logo.svg'; // default logo
 	export let name: string;
     export let symbol: string;
     export let address: string;
@@ -12,7 +12,7 @@
 	function dispatchEvent(item: HTMLDivElement) {
         dispatch('tokenSelected', {
             element: item,
-            src: src, 
+            logo: logo, 
             symbol: symbol,
             address: address
         })
@@ -20,7 +20,7 @@
 </script>
 
 <div class="container" bind:this={item} on:click={() => dispatchEvent(item)}>
-	<img {src} class="logo" width="35" height="35" alt="" />
+	<img src={logo} class="logo" width="35" height="35" alt="" />
 	<p>{name}</p>
 </div>
 

@@ -1,16 +1,13 @@
 <script context="module" lang="ts">
 	import {
-		getReservesQuery,
 		getPairAddress,
 		checkPairExists,
 		getBalance,
 		removeDecimals,
-		getTotalSupply,
-		getDecimals,
 		formatNumber,
 		getPosition
 	} from '$lib/scripts/exchange';
-	import type { IExchangeContext, Positions } from '$lib/typesFrontend';
+	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
@@ -107,10 +104,10 @@
 </script>
 
 <div class="selector">
-	<TokenSelector on:tokenSelected={handleSelection} bind:address={address1} bind:symbol={symbol1} />
+	<TokenSelector on:tokenSelected={handleSelection} bind:address={address1} editable={true}/>
 </div>
 <div class="selector">
-	<TokenSelector on:tokenSelected={handleSelection} bind:address={address2} bind:symbol={symbol2} />
+	<TokenSelector on:tokenSelected={handleSelection} bind:address={address2} editable={true}/>
 </div>
 <div class="state">
 	{#await state}

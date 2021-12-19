@@ -1,101 +1,135 @@
 <svelte:options accessors={true} />
 
 <script context="module" lang="ts">
-	import { getBalance, getDecimals, formatNumber } from '$lib/scripts/exchange';
-	import { removeDecimals } from '$lib/scripts/exchange/utils';
+	import {
+		getBalance,
+		formatNumber,
+		removeDecimals,
+		checkSufficientAllowance,
+		addDecimals
+	} from '$lib/scripts/exchange';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
 	import TokenSelector from './TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
-	import { createEventDispatcher, getContext, onMount } from 'svelte';
-
-	// get context
-	const { signerObj }: IExchangeContext = getContext('exchange');
-	const signer = signerObj.getSigner();
-	const signerAddress = signerObj.getAddress();
-
-	// all you need to supply in parent to set default is address
+	import { createEventDispatcher, getContext } from 'svelte';
 
 	export let address: string;
-	export let numTokens: number;
-	let balance: number; // TODO incorp balance into status
-	export let decimals: number;
+	export let toGetStatus: boolean;
 	export let updateCurrentInput: boolean;
-	export let symbol: string;
-	export let editable = true;
-	
+	export let editable = true; // only 1 use so far (remove liquidity) for this variable
+
+	// get context
+	const { signerObj, getRouter }: IExchangeContext = getContext('exchange');
+	const signer = signerObj.getSigner();
+	const signerAddress = signerObj.getAddress();
+	const router = getRouter();
+
+	let amount: number; // only used for checking which selection event to dispatch
+	let decimals: number;
+	let balance: number; // TODO incorp balance into status
+	let approvalCache = {
+		address: '',
+		isApproved: false
+	};
+	let symbol: string;
+
 	const dispatch = createEventDispatcher();
 
-	initialize();
-
-
-	export async function updateBalance() {
-		// TODO use
+	async function updateBalance() {
+		// TODO use export
 		balance = removeDecimals(await getBalance(address, signer, signerAddress), decimals);
 	}
 
-	async function handleSelection(e: CustomEvent<any>) {
-		if (typeof e.detail.address !== 'string') {
-			alert('no address for selection');
-			throw 'no address for selection';
+	async function getStatus() {
+		if (!toGetStatus) {
+			alert('not meant to be getting status');
+			throw 'not meant to be getting status';
 		}
 
-		address = e.detail.address;
-		decimals = await getDecimals(e.detail.address, signer);
-		balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress), decimals); // getBalance asynchronously then wait for decimals
-
-		dispatch('tokenSelected', e.detail);
-		if (numTokens) {
-			dispatch('tokenSelectedWithNumTokens', e.detail);
-		} else {
-			dispatch('tokenSelectedWithoutNumTokens', e.detail);
+		if (!address && !balance && !decimals) {
+			return 'select token';
 		}
-	}
 
-	export async function handleInput() {
-		// TODO use
-		/**
-		 * Only dispatch event if same box's address exists
-		 * numTokens is already bound to input
-		 */
-
-		if (address) {
-			dispatch('tokenNumInputWithAddress');
-		} else {
-			dispatch('tokenNumInputWithoutAddress');
+		if (!amount) {
+			return 'enter amount';
 		}
-	}
 
+		if (amount > balance) {
+			return 'insufficient ${symbol}';
+		}
 
-	async function initialize() {
-		if (address) {
-			if (!decimals) {
-				decimals = await getDecimals(address, signer);
+		if (!(await getApprovalStatus())) {
+			return `approve ${symbol}`;
+		}
+
+		return 'fine';
+
+		async function getApprovalStatus(): Promise<boolean> {
+			let isApproved = false;
+			if (approvalCache.address === address) {
+				isApproved = approvalCache.isApproved;
+				console.log('Using approval cache');
+			} else {
+				isApproved = await checkSufficientAllowance({
+					toSpend: addDecimals(amount, decimals),
+					ownerAddr: signerAddress,
+					spenderAddr: router.address,
+					tokenAddr: address,
+					signer: signer
+				});
+				setApprovalCache(address, isApproved);
 			}
+			return isApproved;
+		}
 
-			if (!balance) {
-				balance = removeDecimals(await getBalance(address, signer, signerAddress), decimals)
-			}
+		function setApprovalCache(_address: string, _isApproved: boolean) {
+			Object.assign(approvalCache, {
+				address: _address,
+				isApproved: _isApproved
+			});
 		}
 	}
 
+	async function getToDispatch(e: CustomEvent) {
+		let toDispatch = e.detail;
+		if (toGetStatus) {
+			toDispatch = {
+				...e.detail,
+				status: await getStatus()
+			};
+		}
+		return toDispatch;
+	}
+
+	async function handleSelection(e: CustomEvent) {
+		decimals = e.detail.decimals;
+		balance = e.detail.balance;
+		const toDispatch = await getToDispatch(e);
+
+		amount ? dispatch('selectedWithAmount', toDispatch) : dispatch('selectedNoAmount', toDispatch);
+	}
+
+	async function handleInput(e: CustomEvent) {
+		// TODO use export
+		amount = e.detail.amount;
+		const toDispatch = await getToDispatch(e);
+
+		address ? dispatch('inputWithAddress', toDispatch) : dispatch('inputNoAddress', toDispatch);
+	}
 </script>
 
 <div class="box">
 	<div class="selector">
-		<TokenSelector on:tokenSelected={handleSelection} {editable} {address} bind:symbol/>
+		<TokenSelector on:tokenSelected={handleSelection} {editable} bind:address />
 	</div>
 	<p class="balance">
 		Balance: {formatNumber(balance, 5)}
 	</p>
 	<div class="input-component">
-		<NumTokenInput
-			bind:value={numTokens}
-			updateCurrent={updateCurrentInput}
-			on:tokenNumInput={handleInput}
-		/>
+		<NumTokenInput {updateCurrentInput} on:amountInput={handleInput} />
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}

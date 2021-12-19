@@ -32,18 +32,17 @@
 	let balance: number;
 
 	let address1: string;
-	let symbol1: string;
 	let decimals1: number;
 	let balance1: number;
+	let symbol1: string; // symbols needed for receive info
 	$: amount1 = (sliderVal / 100) * balance1;
 
 	let address2: string;
-	let symbol2: string;
 	let balance2: number;
 	let decimals2: number;
+	let symbol2: string;
 	$: amount2 = (sliderVal / 100) * balance2;
 
-	let symbol = '';
 	let state = 'Enter amount';
 	let disabled = true;
 
@@ -74,17 +73,15 @@
 				signerAddr: signerAddr
 		});
 
-			symbol = pair.symbol;
 			decimals = pair.decimals;
 			balance = pair.balance;
 
 			balance1 = tokenA.balance;
-			symbol1 = tokenA.symbol;
 			decimals1 = tokenA.decimals;
 
 			balance2 = tokenB.balance;
-			symbol2 = tokenB.symbol;
 			decimals2 = tokenB.decimals;
+
 		} catch (error) {}
 	}
 
@@ -123,7 +120,7 @@
 </script>
 
 {#await init then}
-	<TokenBox editable={false} bind:numTokens={amount} address={pairAddress} {symbol} />
+	<TokenBox editable={false} bind:numTokens={amount} address={pairAddress} bind:decimals/>
 {:catch error}
 	<p>Invalid address</p>
 	{console.log(error)}

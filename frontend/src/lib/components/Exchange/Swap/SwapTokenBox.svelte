@@ -9,20 +9,16 @@
 	import DoubleTokenBox from '../TokenBox/DoubleTokenBox.svelte';
 	import { getContext } from 'svelte';
 
+	export let swapData: ISwapData;
+	export let status: string;
+	export let address1: string;
+	export let address2: string;
+
 	let amount1: number;
 	let amount2: number;
-	let address1: string;
-	let address2: string;
 	let decimals1: number;
 	let decimals2: number;
 	
-	export let symbol1: string; // TODO implement address page param for swap as well
-	export let symbol2: string;
-	export let logo1: string;
-	export let logo2: string;
-
-	export let swapData: ISwapData;
-	export let status: string;
     let routeCache: string[] | null = null;
 
 	// get context
@@ -162,8 +158,4 @@
 	bind:address1
 	bind:address2
 	bind:status
-	bind:symbol1
-	bind:symbol2
-	{logo1}
-	{logo2}
 />
