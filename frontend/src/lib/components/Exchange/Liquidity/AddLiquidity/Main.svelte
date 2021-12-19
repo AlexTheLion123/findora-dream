@@ -16,6 +16,8 @@
     let status = "select token";
     let disabled = true;
     let slippage = 0.05; // TODO put in gui
+	let symbol1: string; 
+	let symbol2: string;
 
     $: if(status === 'action') {
         status = 'add liquidity'
@@ -23,6 +25,8 @@
     } else {
         disabled = true
     }
+
+	$: console.log(symbol1, "symbol1")
 
     // get context
 	const { signerObj, getRouter }: IExchangeContext = getContext('exchange');
@@ -71,8 +75,7 @@
     // poolinfo props
 	let share: number;
 	let rate: number;
-	let symbol1: string; // TODO delete, find a way to do in pool info, listen to changes
-	let symbol2: string;
+	
 </script>
 
 <LiquidityTokenBox bind:addLiqData bind:status bind:share bind:rate bind:symbol1 bind:symbol2 {address1} {address2}/>

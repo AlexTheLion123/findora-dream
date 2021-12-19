@@ -25,8 +25,8 @@
 	export let rate: number;
 	export let symbol1: string; // TODO delete, find a way to do in pool info, listen to changes
 	export let symbol2: string;
-	export let address1: string = "";
-	export let address2: string = "";
+	export let address1: string;
+	export let address2: string;
 
 	let updateCurrent1 = false;
 	let updateCurrent2 = false;
@@ -179,6 +179,9 @@
 	bind:address1
 	bind:address2
 	bind:status
+	bind:symbol1
+	bind:symbol2
+	approveBoth={true}
 	{updateCurrent1}
 	{updateCurrent2}
 />

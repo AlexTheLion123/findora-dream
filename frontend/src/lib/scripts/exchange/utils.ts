@@ -90,3 +90,4 @@ export function formatNumber(num: number | string, decimals: number) {
     }
     return Math.round(num * 10 ** decimals) / 10 ** decimals;
 }
+

@@ -4,43 +4,44 @@
 	import TokenSearchDialog from '../TokenSearchDialog/TokenSearchDialog.svelte';
 	
 	export let address: string = '';
-	export let editable: boolean = true; // TODO - don't allow hover on non-editable
-    export let logoSrc: string = "/src/lib/assets/tokens/logos/eth_logo.svg";
-	export let symbol: string = "Select";
+	export let editable: boolean; // TODO - don't allow hover on non-editable
+    let logo: string = "/src/lib/assets/tokens/logos/eth_logo.svg";
+	let symbol: string = "Select";
 	
+	// TODO gets logo and symbol from address manually, don't export symbol or logo
+
 	let showSearch = false; // bound to child
 
 	const {signerObj} = getContext("exchange");
 	const signer = signerObj.getSigner();
 
-	initialize();
+	const dispatch = createEventDispatcher();
+	
+	setNewSymbol();
 
-	async function initialize() {
+	async function setNewSymbol() {
 		if(address) {
 			if(!symbol || symbol==="Select") {
+				console.log("new symbol in place");
 				symbol = await getSymbol(address, signer)
 			}
-
 			// TODO find way to get logo or default logo
 		}
 	}
 
-
-	const dispatch = createEventDispatcher();
 	function handleSelection(e: any) {
 		address = e.detail.address;
 
 		if(e.detail.src) {
-			logoSrc = e.detail.src;
+			logo = e.detail.src;
 		} else {
-			logoSrc = "default"
+			logo = "default"
 		}
 
 		if(e.detail.symbol) {
 			symbol = e.detail.symbol;
 		} else {
-			getSymbol(e.detail.address, signer) // can do async
-			.then(_symbol => symbol = _symbol)
+			setNewSymbol()
 		}
 		
 		dispatch('tokenSelected', e.detail);
@@ -49,7 +50,7 @@
 </script>
 
 <button on:click|preventDefault={() => (showSearch = true) } disabled={!editable}>
-	<img src={logoSrc} class="symbol" width="35" height="35" alt="" />
+	<img src={logo} class="symbol" width="35" height="35" alt="" />
 	<p>{symbol}</p>
 	<i class="fas fa-chevron-down" />
 </button>

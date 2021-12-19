@@ -18,14 +18,13 @@
 
 	// all you need to supply in parent to set default is address
 
-	export let address: string = '';
-	export let numTokens: number = 0;
-	export let decimals: number = 0;
-	export let balance: number = 0;
+	export let address: string;
+	export let numTokens: number;
+	let balance: number; // TODO incorp balance into status
+	export let decimals: number;
+	export let updateCurrentInput: boolean;
+	export let symbol: string;
 	export let editable = true;
-	export let updateCurrentInput = true;
-	export let logoSrc: string = "/src/lib/assets/tokens/logos/eth_logo.svg";
-	export let symbol: string = "Select";
 	
 	const dispatch = createEventDispatcher();
 
@@ -86,7 +85,7 @@
 
 <div class="box">
 	<div class="selector">
-		<TokenSelector on:tokenSelected={handleSelection} {editable} {symbol} {logoSrc} {address}/>
+		<TokenSelector on:tokenSelected={handleSelection} {editable} {address} bind:symbol/>
 	</div>
 	<p class="balance">
 		Balance: {formatNumber(balance, 5)}

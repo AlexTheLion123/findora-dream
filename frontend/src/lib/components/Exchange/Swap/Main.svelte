@@ -11,11 +11,10 @@
 
 	let swapData: ISwapData;
     let slippage = 0.05; // TODO let user change slippage
-
-    let status = "select token"
-    let disabled = true;
-
-    $: console.log(status)
+	let status: string = "Select token";
+	let disabled: boolean;
+	let symbol1: string;
+	let symbol2: string;
 
     $: if(status === 'action') {
         status = 'swap'
@@ -58,6 +57,6 @@
 	}
 </script>
 
-<SwapTokenBox bind:swapData bind:status/>
+<SwapTokenBox bind:swapData bind:status bind:symbol1 bind:symbol2/>
 <RangeSlider id="color-pips" range="min" float pips step={5}/>
 <TradeButton on:click={(e) => callSwap(swapData)} text={status} {disabled}/>

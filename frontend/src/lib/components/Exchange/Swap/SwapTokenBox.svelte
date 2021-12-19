@@ -15,6 +15,11 @@
 	let address2: string;
 	let decimals1: number;
 	let decimals2: number;
+	
+	export let symbol1: string; // TODO implement address page param for swap as well
+	export let symbol2: string;
+	export let logo1: string;
+	export let logo2: string;
 
 	export let swapData: ISwapData;
 	export let status: string;
@@ -157,4 +162,8 @@
 	bind:address1
 	bind:address2
 	bind:status
+	bind:symbol1
+	bind:symbol2
+	{logo1}
+	{logo2}
 />
