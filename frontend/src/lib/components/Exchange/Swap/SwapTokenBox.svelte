@@ -11,6 +11,8 @@
 
 	export let address1: string;
 	export let address2: string;
+	let amount1: number;
+	let amount2: number;
 
 	// get context
 	const { getRouter, getFactory, nativeToken }: IExchangeContext = getContext('exchange');
@@ -18,8 +20,6 @@
 	const factory = getFactory();
 	const nativeAddr = nativeToken.address;
 
-	let amount1: number;
-	let amount2: number;
 	let decimals1: number;
 	let decimals2: number;
 	let routeCache: string[] | null = null;
@@ -105,28 +105,16 @@
 		routeCache = await getRouteIfCache();
 
 		if (e.detail.tokenBox === 1) {
-			amount1 = e.detail.amount;
 			if (address2 && address1 && amount1) {
 				getSwapTopCurrent();
 			}
 		} else {
-			amount2 = e.detail.amount;
 			if (address1 && address2 && amount2) {
 				getSwapBottomCurrent();
 			}
 		}
 
 		dispatch("event", e.detail)
-	}
-
-	function inputNoAddress(e: CustomEvent) {
-		if (e.detail.tokenBox === 1) {
-			amount1 = e.detail.amount;
-		} else {
-			amount2 = e.detail.amount;
-		}
-
-		// no point in dispatching event here
 	}
 
 
@@ -164,7 +152,7 @@
 		} else {
 			decimals2 = e.detail.decimals;
 			
-			if (address2 && amount2 && address1) {
+			if (address2 && amount1 && address1) {
 				getSwapBottomCurrent();
 			}
 		}
@@ -176,9 +164,10 @@
 <DoubleTokenBox
 	bind:address1
 	bind:address2
+	bind:amount1
+	bind:amount2
 	toGetStatus={true}
 	on:inputWithAddress={inputWithAddress}
-	on:inputNoAddress={inputNoAddress}
 	on:selectionWithAmount={selectionWithAmount}
 	on:selectionNoAmount={selectionNoAmount}
 />

@@ -16,6 +16,7 @@
 	import NumTokenInput from './NumTokenInput.svelte';
 	import { createEventDispatcher, getContext } from 'svelte';
 
+	export let amount: number;
 	export let address: string;
 	export let toGetStatus: boolean;
 	export let updateCurrentInput: boolean;
@@ -27,7 +28,6 @@
 	const signerAddress = signerObj.getAddress();
 	const router = getRouter();
 
-	let amount: number; // only used for checking which selection event to dispatch
 	let decimals: number;
 	let balance: number; // TODO incorp balance into status
 	let approvalCache = {
@@ -114,7 +114,7 @@
 
 	async function handleInput(e: CustomEvent) {
 		// TODO use export
-		amount = e.detail.amount;
+
 		const toDispatch = await getToDispatch(e);
 
 		address ? dispatch('inputWithAddress', toDispatch) : dispatch('inputNoAddress', toDispatch);
@@ -129,7 +129,7 @@
 		Balance: {formatNumber(balance, 5)}
 	</p>
 	<div class="input-component">
-		<NumTokenInput {updateCurrentInput} on:amountInput={handleInput} />
+		<NumTokenInput {updateCurrentInput} on:amountInput={handleInput} bind:amount/>
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}

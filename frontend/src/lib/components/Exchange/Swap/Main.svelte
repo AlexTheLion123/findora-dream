@@ -60,17 +60,17 @@
 	}
 
 	function handleEvent(e: CustomEvent) {
-		if(e.detail.status) {
+		if (e.detail.status) {
 			status = e.detail.status;
 		}
 	}
 
 	function setSwapData(e: CustomEvent) {
-		console.log("got swap data")
+		console.log('got swap data');
 		swapData = e.detail.swapData;
 	}
 </script>
 
-<SwapTokenBox bind:address1 bind:address2 on:event={handleEvent} on:swapReady={setSwapData}/>
+<SwapTokenBox bind:address1 bind:address2 on:event={handleEvent} on:swapReady={setSwapData} />
 <RangeSlider id="color-pips" range="min" float pips step={5} />
 <TradeButton on:click={(e) => callSwap(swapData)} text={status} {disabled} />

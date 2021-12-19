@@ -4,14 +4,14 @@
 
 	export let address1: string;
 	export let address2: string;
+	export let amount1: number;
+	export let amount2: number;
 	export let toGetStatus: boolean;
 	export let updateCurrentInput = true;
 	export let approveBoth = false;
 
 	let getStatus1: boolean = false;
 	let getStatus2: boolean = false;
-	let amount1: number;
-	let amount2: number;
 
 	if (toGetStatus) {
 		if (approveBoth) {
@@ -65,7 +65,7 @@
 			tokenBox: num
 		};
 
-		if (toGetStatus && e.detail.status) {
+		if (toGetStatus && e.detail?.status) {
 			toDispatch = {
 				...toDispatch,
 				status: getStatus(e.detail.status),
@@ -86,40 +86,33 @@
 		dispatch('selectionNoAmount', toDispatch);
 	}
 	function handleInputWithAddress(num: 1 | 2, e: CustomEvent) {
-		num === 1 ? (amount1 = e.detail.amount) : (amount2 = e.detail.amount);
 		const toDispatch = getToDispatch(num, e);
 
 		dispatch('inputWithAddress', toDispatch);
 	}
-	function handleInputNoAddress(num: 1 | 2, e: CustomEvent) {
-		num === 1 ? (amount1 = e.detail.amount) : (amount2 = e.detail.amount);
-		const toDispatch = getToDispatch(num, e);
 
-		dispatch('inputNoAddress', toDispatch)
-		// no reason to dispatch any event here
-	}
 </script>
 
 <div class="token-box">
 	<TokenBox
 		bind:address={address1}
+		bind:amount={amount1}
 		{updateCurrentInput}
 		toGetStatus={getStatus1}
 		on:selectionWithAmount={(e) => handleSelectionWithAmount(1, e)}
 		on:selectionNoAmount={(e) => handleSelectionNoAmount(1, e)}
 		on:inputWithAddress={(e) => handleInputWithAddress(1, e)}
-		on:inputNoAddress={(e) => handleInputNoAddress(1, e)}
 	/>
 </div>
 
 <div class="token-box">
 	<TokenBox
 		bind:address={address2}
+		bind:amount={amount2}
 		{updateCurrentInput}
 		toGetStatus={getStatus2}
 		on:selectionWithAmount={(e) => handleSelectionWithAmount(2, e)}
 		on:selectionNoAmount={(e) => handleSelectionNoAmount(2, e)}
 		on:inputWithAddress={(e) => handleInputWithAddress(2, e)}
-		on:inputNoAddress={(e) => handleInputNoAddress(2, e)}
 	/>
 </div>

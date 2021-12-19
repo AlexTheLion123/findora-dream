@@ -14,19 +14,20 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 
 	export let updateCurrentInput: boolean;
-	
+	export let amount: number;
+
 	let inputElement: HTMLInputElement;
 	const dispatch = createEventDispatcher();
 	
 	const handleInput = function () {
 		updateCurrentInputElement();
 
-		if(!inputElement.value) {
+		if(!amount) {
 			clearAll();
 			return;
 		}
 
-		dispatch('amountInput', { amount: inputElement.value });
+		dispatch('amountInput');
 	};
 
 	function updateCurrentInputElement() {
@@ -47,8 +48,9 @@
 
 <input
 	type="number"
-	bind:this={inputElement}
 	placeholder="0.00"
+	bind:value={amount}
+	bind:this={inputElement}
 	on:input={handleInput}
 />
 
