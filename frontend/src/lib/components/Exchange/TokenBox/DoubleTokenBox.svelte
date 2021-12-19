@@ -10,6 +10,8 @@
 
 	let getStatus1: boolean = false;
 	let getStatus2: boolean = false;
+	let amount1: number;
+	let amount2: number;
 
 	if (toGetStatus) {
 		if (approveBoth) {
@@ -21,9 +23,6 @@
 		}
 	}
 
-	let currentTokenBox: number | null;
-	let amount1: number;
-	let amount2: number;
 
 	const dispatch = createEventDispatcher();
 
@@ -60,18 +59,13 @@
 		}
 	}
 
-	function getToDispatch(e: CustomEvent) {
+	function getToDispatch(num: 1 | 2, e: CustomEvent) {
 		let toDispatch = {
 			...e.detail,
-			tokenBox: currentTokenBox
+			tokenBox: num
 		};
 
-		if (toGetStatus) {
-			if (!e.detail.status) {
-				alert('no status provided');
-				throw 'no status provdided';
-			}
-
+		if (toGetStatus && e.detail.status) {
 			toDispatch = {
 				...toDispatch,
 				status: getStatus(e.detail.status),
@@ -80,36 +74,28 @@
 		return toDispatch;
 	}
 
-	function updateCurrentTokenBox(num: number) {
-		if (num === 1) {
-			currentTokenBox = 1;
-		} else {
-			currentTokenBox = 2;
-		}
-	}
-
-	function handleSelectionWithAmount(e: CustomEvent) {
-		const toDispatch = getToDispatch(e);
+	function handleSelectionWithAmount(num: 1 | 2,e: CustomEvent) {
+		const toDispatch = getToDispatch(num, e);
 
 		dispatch('selectionWithAmount', toDispatch);
 	}
 
-	function handleSelectionNoAmount(e: CustomEvent) {
-		const toDispatch = getToDispatch(e);
-
+	function handleSelectionNoAmount(num: 1 | 2,e: CustomEvent) {
+		const toDispatch = getToDispatch(num, e);
+		
 		dispatch('selectionNoAmount', toDispatch);
 	}
-	function handleInputWithAddress(num: number, e: CustomEvent) {
+	function handleInputWithAddress(num: 1 | 2, e: CustomEvent) {
 		num === 1 ? (amount1 = e.detail.amount) : (amount2 = e.detail.amount);
-		updateCurrentTokenBox(num);
-		const toDispatch = getToDispatch(e);
+		const toDispatch = getToDispatch(num, e);
 
 		dispatch('inputWithAddress', toDispatch);
 	}
-	function handleInputNoAddress(num: number, e: CustomEvent) {
+	function handleInputNoAddress(num: 1 | 2, e: CustomEvent) {
 		num === 1 ? (amount1 = e.detail.amount) : (amount2 = e.detail.amount);
-		updateCurrentTokenBox(num);
+		const toDispatch = getToDispatch(num, e);
 
+		dispatch('inputNoAddress', toDispatch)
 		// no reason to dispatch any event here
 	}
 </script>
@@ -119,8 +105,8 @@
 		bind:address={address1}
 		{updateCurrentInput}
 		toGetStatus={getStatus1}
-		on:selectedWithAmount={(e) => handleSelectionWithAmount(e)}
-		on:selectedNoAmount={(e) => handleSelectionNoAmount(e)}
+		on:selectionWithAmount={(e) => handleSelectionWithAmount(1, e)}
+		on:selectionNoAmount={(e) => handleSelectionNoAmount(1, e)}
 		on:inputWithAddress={(e) => handleInputWithAddress(1, e)}
 		on:inputNoAddress={(e) => handleInputNoAddress(1, e)}
 	/>
@@ -131,9 +117,9 @@
 		bind:address={address2}
 		{updateCurrentInput}
 		toGetStatus={getStatus2}
-		on:tokenSelectedWithNumTokens={(e) => handleSelectionWithAmount(e)}
-		on:tokenSelectedWithoutNumTokens={(e) => handleSelectionNoAmount(e)}
-		on:tokenNumInputWithAddress={(e) => handleInputWithAddress(2, e)}
-		on:tokenNumInputWithoutAddress={(e) => handleInputNoAddress(2, e)}
+		on:selectionWithAmount={(e) => handleSelectionWithAmount(2, e)}
+		on:selectionNoAmount={(e) => handleSelectionNoAmount(2, e)}
+		on:inputWithAddress={(e) => handleInputWithAddress(2, e)}
+		on:inputNoAddress={(e) => handleInputNoAddress(2, e)}
 	/>
 </div>

@@ -32,8 +32,8 @@
 		logo = e.detail.logo; // logo or default logo always provided
 		symbol = e.detail.symbol; // symbol always provided
 
-		const decimals = await getDecimals(e.detail.address, signer); // TODO maybe search box will provide these?
-		const balance = removeDecimals(await getBalance(e.detail.address, signer, signerAddress),decimals);
+		const decimals = e.detail.decimals || await getDecimals(e.detail.address, signer); // TODO maybe search box will provide these?
+		const balance = e.detail.balance || removeDecimals(await getBalance(e.detail.address, signer, signerAddress),decimals);
 
 		dispatch('tokenSelected', {
 			...e.detail,

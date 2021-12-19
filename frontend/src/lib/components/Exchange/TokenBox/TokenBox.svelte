@@ -109,7 +109,7 @@
 		balance = e.detail.balance;
 		const toDispatch = await getToDispatch(e);
 
-		amount ? dispatch('selectedWithAmount', toDispatch) : dispatch('selectedNoAmount', toDispatch);
+		amount ? dispatch('selectionWithAmount', toDispatch) : dispatch('selectionNoAmount', toDispatch);
 	}
 
 	async function handleInput(e: CustomEvent) {

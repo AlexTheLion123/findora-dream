@@ -9,7 +9,6 @@
 	import DoubleTokenBox from '../TokenBox/DoubleTokenBox.svelte';
 	import { getContext, createEventDispatcher } from 'svelte';
 
-	export let swapData: ISwapData;
 	export let address1: string;
 	export let address2: string;
 
@@ -26,7 +25,7 @@
 	let routeCache: string[] | null = null;
 	const dispatch = createEventDispatcher();
 
-	function setSwapData({
+	function dispatchSwapData({
 		amountIn,
 		amountOutDesired
 	}: {
@@ -38,7 +37,7 @@
 			throw 'not enough swap info';
 		}
 
-		swapData = {
+		const swapData = {
 			amountIn: amountIn,
 			amountOutDesired: amountOutDesired,
 			address1: address1,
@@ -47,6 +46,8 @@
 			decimals2: decimals2,
 			route: routeCache
 		};
+
+		dispatch("swapReady", {swapData})
 	}
 
 	async function getRouteIfCache() {
@@ -81,7 +82,7 @@
 		const amountOut = amountsOut[amountsOut.length - 1];
 		amount2 = formatNumber(removeDecimals(amountOut, decimals2), 6); // if address exists, decimals exist
 
-		setSwapData({ amountIn: amountInBig, amountOutDesired: amountOut });
+		dispatchSwapData({ amountIn: amountInBig, amountOutDesired: amountOut });
 	}
 
 	async function getSwapBottomCurrent() {
@@ -95,13 +96,15 @@
 		const amountIn = amountsIn[0];
 		amount1 = formatNumber(removeDecimals(amountIn, decimals1), 6); // if address exists, decimals exist
 
-		setSwapData({ amountIn: amountIn, amountOutDesired: amountOutBig });
+		dispatchSwapData({ amountIn: amountIn, amountOutDesired: amountOutBig });
 	}
 
 	/// @dev extra checks are simply sanity checks that should always be true for that event
 
 	async function inputWithAddress(e: CustomEvent<any>) {
-		if (e.detail.token === 1) {
+		routeCache = await getRouteIfCache();
+
+		if (e.detail.tokenBox === 1) {
 			amount1 = e.detail.amount;
 			if (address2 && address1 && amount1) {
 				getSwapTopCurrent();
@@ -113,43 +116,58 @@
 			}
 		}
 
-		routeCache = await getRouteIfCache();
-
 		dispatch("event", e.detail)
 	}
+
+	function inputNoAddress(e: CustomEvent) {
+		if (e.detail.tokenBox === 1) {
+			amount1 = e.detail.amount;
+		} else {
+			amount2 = e.detail.amount;
+		}
+
+		// no point in dispatching event here
+	}
+
+
 	async function selectionWithAmount(e: CustomEvent<any>) {
-		if (e.detail.token === 1) {
+		routeCache = null;
+		routeCache = await getRouteIfCache();
+		
+		
+		if (e.detail.tokenBox === 1) {
 			decimals1 = e.detail.decimals;
 			if (amount2 && amount1 && address1) {
 				getSwapTopCurrent();
 			}
 		} else {
 			decimals2 = e.detail.decimals;
+			
 			if (address1 && amount2 && address2) {
 				getSwapBottomCurrent();
 			}
 		}
 
-		routeCache = null;
-		routeCache = await getRouteIfCache();
 
 		dispatch("event", e.detail)
 	}
 	async function selectionNoAmount(e: CustomEvent<any>) {
-		if (e.detail.token === 1) {
+		routeCache = null;
+		routeCache = await getRouteIfCache();
+
+		if (e.detail.tokenBox === 1) {
 			decimals1 = e.detail.decimals;
+
 			if (address1 && amount1 && address2) {
 				getSwapTopCurrent();
 			}
 		} else {
 			decimals2 = e.detail.decimals;
+			
 			if (address2 && amount2 && address1) {
 				getSwapBottomCurrent();
 			}
 		}
-
-		routeCache = null;
-		routeCache = await getRouteIfCache();
 
 		dispatch("event", e.detail)
 	}
@@ -160,6 +178,7 @@
 	bind:address2
 	toGetStatus={true}
 	on:inputWithAddress={inputWithAddress}
+	on:inputNoAddress={inputNoAddress}
 	on:selectionWithAmount={selectionWithAmount}
 	on:selectionNoAmount={selectionNoAmount}
 />

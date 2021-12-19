@@ -23,6 +23,8 @@
 	let status: string;
 	let disabled: boolean;
 
+	// TODO get swapdata from event
+
 	$: if (status === 'action') {
 		console.log('status: ', status);
 		disabled = false;
@@ -58,10 +60,17 @@
 	}
 
 	function handleEvent(e: CustomEvent) {
-		status = e.detail.status;
+		if(e.detail.status) {
+			status = e.detail.status;
+		}
+	}
+
+	function setSwapData(e: CustomEvent) {
+		console.log("got swap data")
+		swapData = e.detail.swapData;
 	}
 </script>
 
-<SwapTokenBox bind:swapData bind:address1 bind:address2 on:event={handleEvent} />
+<SwapTokenBox bind:address1 bind:address2 on:event={handleEvent} on:swapReady={setSwapData}/>
 <RangeSlider id="color-pips" range="min" float pips step={5} />
 <TradeButton on:click={(e) => callSwap(swapData)} text={status} {disabled} />
