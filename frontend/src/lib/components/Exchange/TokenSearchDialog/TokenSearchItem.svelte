@@ -32,8 +32,6 @@
 	onMount(async () => {
 		decimals = decimals || await getDecimals(address, signer);
 		balance = balance || removeDecimals(await getBalance(address, signer, signerAddr), decimals);
-		console.log(decimals, balance);
-		
 	});
 </script>
 
@@ -41,7 +39,7 @@
 	<img src={logo} class="logo" width="35" height="35" alt="" />
 	<p>{name}</p>
 	<div class="balance">
-		{#if balance}
+		{#if balance || balance===0}
 			{balance}
 		{/if}
 	</div>

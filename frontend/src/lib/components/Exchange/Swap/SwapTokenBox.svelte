@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { checkSufficientAllowance, formatNumber, getRoute } from '$lib/scripts/exchange';
+	import { checkSufficientAllowance, formatNumber, getDecimals, getRoute } from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import type { IExchangeContext } from '$lib/typesFrontend';
 	import type { BigNumber } from 'ethers';
@@ -7,7 +7,7 @@
 
 <script lang="ts">
 	import DoubleTokenBox from '../TokenBox/DoubleTokenBox.svelte';
-	import { getContext, createEventDispatcher } from 'svelte';
+	import { getContext, createEventDispatcher, onMount } from 'svelte';
 
 	export let address1: string;
 	export let address2: string;
@@ -190,6 +190,16 @@
 	function handleSelection(e: CustomEvent) {
 		e.detail.tokenBox === 1 ? handleSelection1(e) : handleSelection2(e);
 	}
+
+	onMount(async() => {
+		if(address1) {
+			decimals1 = await getDecimals(address1, signer)
+		}
+		if(address2) {
+			decimals2 = await getDecimals(address2, signer)
+		}
+	})
+
 </script>
 
 <DoubleTokenBox
