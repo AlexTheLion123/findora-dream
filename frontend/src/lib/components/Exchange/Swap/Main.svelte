@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { addDecimals, checkAllowanceAndApproveMax, swapExactInput } from '$lib/scripts/exchange';
+	import { approveMax, swapExactInput } from '$lib/scripts/exchange';
 	import type { IExchangeContext, ISwapData } from '$lib/typesFrontend';
 </script>
 
@@ -20,54 +20,72 @@
 
 	let swapData: ISwapData;
 	let slippage = 0.05; // TODO let user change slippage
-	let status: string = 'select token';
-	let disabled: boolean;
+	let status: string = "select token";
+	let disabled: boolean = true;
 
 	// TODO get swapdata from event
 
-	$: if (status === 'action') {
-		console.log('status: ', status);
-		disabled = false;
-	} else {
-		console.log('status: ', status);
-		disabled = true;
-	}
+	async function swap() {
+		const amountOutMin = swapData.amountIn.mul((1 - slippage) * 100).div(100);
 
-	async function callSwap(_swapData: ISwapData) {
-		let tx = await checkAllowanceAndApproveMax({
-			toSpend: _swapData.amountIn,
-			ownerAddr: signerAddress,
-			spenderAddr: router.address,
-			tokenAddr: _swapData.address1,
-			signer: signer
-		});
-		await tx?.wait();
-
-		const amountOutMin = _swapData.amountIn.mul((1 - slippage) * 100).div(100);
-
-		tx = await swapExactInput({
-			amountInExact: _swapData.amountIn,
+		return swapExactInput({
+			amountInExact: swapData.amountIn,
 			amountOutMin: amountOutMin,
-			route: _swapData.route,
+			route: swapData.route,
 			to: signerAddress,
 			router: router,
-			deadline: _swapData.amountIn
+			deadline: swapData.amountIn
 		}); // TODO change deadline to realistic number
-		await tx.wait();
-		alert('swap performed');
 
 		// TODO find a way to do this updateBoxAfterSwap();
 	}
 
-	function handleEvent(e: CustomEvent) {
-		status = e.detail.status;
+	async function _approveMax() {
+		return approveMax({
+			tokenAddress: address1,
+			spenderAddress: router.address,
+			signer: signer
+		});
 	}
 
-	function setSwapData(e: CustomEvent) {
-		swapData = e.detail.swapData;
+	async function handleClick() {
+		let tx;
+
+		if (status === 'swap') {
+			tx = await swap();
+			await tx.wait();
+			return;
+		}
+
+		if (isStatusApprove()) {
+			tx = await _approveMax();
+			await tx.wait();
+			return;
+		}
+
+		throw "neither swap nor approve, shouldn't happen";
+	}
+
+	function updateStatus(e: CustomEvent) {
+		status = e.detail.status;
+
+		if (e.detail?.swapData) {
+			swapData = e.detail.swapData;
+			disabled = false;
+			return;
+		}
+
+		disabled = isStatusApprove() ? false : true;
+	}
+
+	function isStatusApprove(): boolean {
+		return status.toLowerCase().includes('approve');
 	}
 </script>
 
-<SwapTokenBox bind:address1 bind:address2 on:event={handleEvent} on:swapData={setSwapData} />
-<RangeSlider id="color-pips" range="min" float pips step={5} />
-<TradeButton on:click={(e) => callSwap(swapData)} text={status} {disabled} />
+<SwapTokenBox bind:address1 bind:address2 on:statusUpdate={updateStatus} />
+<div class="slider">
+	<RangeSlider id="color-pips" range="min" float pips step={5} />
+
+</div>
+<TradeButton on:click={handleClick} text={status} {disabled} />

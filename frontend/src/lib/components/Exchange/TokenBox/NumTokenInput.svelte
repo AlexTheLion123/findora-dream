@@ -28,7 +28,7 @@
 			return;
 		}
 
-		dispatch('amountInput');
+		dispatch('input');
 	};
 
 	function updateCurrentInputElement() {

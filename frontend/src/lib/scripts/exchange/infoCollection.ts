@@ -1,6 +1,6 @@
 import { NoRouteError, SamePairError } from '.';
 import { checkAddressAgainstNative, checkAddressExists, getPairAddress, removeDecimals, getReservesQuery } from '.'
-import { Contract } from 'ethers'
+import { constants, Contract } from 'ethers'
 import { ERC20ABI } from '$lib/abis';
 import type { UniswapV2Factory, Ierc20, UniswapV2Router02 } from '$lib/typesUsed'
 import type { Signer, BigNumber } from 'ethers'
@@ -35,11 +35,11 @@ export async function getAllInOrOut({ addrIn, addrOut, amount, nativeAddr, facto
 }
 
 /// @returns true if sufficient allowance
-export async function checkSufficientAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
-    toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
+export async function checkSufficientAllowance({ ownerAddr, spenderAddr, tokenAddr, signer }: {
+    ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
 }): Promise<boolean> {
     const tokenInstance = new Contract(tokenAddr, ERC20ABI, signer) as Ierc20
-    return (await tokenInstance.allowance(ownerAddr, spenderAddr)).lt(toSpend) ? false : true;
+    return (await tokenInstance.allowance(ownerAddr, spenderAddr)).eq(constants.MaxUint256) ? true: false;
 }
 
 
@@ -78,11 +78,11 @@ export function getTotalSupply(tokenAddress: string, signer: Signer, signerAddre
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).totalSupply();
 }
 
-export async function getDecimals(tokenAddress: string, signer: Signer): Promise<number> {
+export function getDecimals(tokenAddress: string, signer: Signer): Promise<number> {
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).decimals()
 }
 
-export async function getSymbol(tokenAddress: string, signer: Signer): Promise<string> {
+export function getSymbol(tokenAddress: string, signer: Signer): Promise<string> {
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).symbol();
 }
 

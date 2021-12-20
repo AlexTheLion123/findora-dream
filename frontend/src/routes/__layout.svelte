@@ -15,10 +15,9 @@
 			// connected
 			$provider = new providers.Web3Provider(window.ethereum);
 			$isProvided = true;
-			
+
 			$signer = $provider!.getSigner();
 			$signerAddress = await $signer!.getAddress();
-
 		} else {
 			$provider = null;
 			$signer = null;
@@ -26,9 +25,6 @@
 			$signerAddress = null;
 		}
 	});
-
-
-	
 </script>
 
 <svelte:head>
@@ -45,7 +41,7 @@
 	<Background />
 	<div class="nav"><Nav /></div>
 	<header><Header /></header>
-	<main><slot /></main>
+	<main><div class="slot"><slot /></div></main>
 </div>
 
 <style lang="scss">
@@ -92,7 +88,8 @@
 		all: unset;
 	}
 
-	input[type='number'] { // TODO delete since not global?
+	input[type='number'] {
+		// TODO delete since not global?
 		-moz-appearance: textfield; /* Firefox */
 	}
 
@@ -110,7 +107,6 @@
 	}
 
 	header {
-		height: 70px;
 		grid-area: header;
 	}
 
@@ -126,7 +122,7 @@
 
 		grid-template:
 			'nav header' 1fr
-			'nav content' 5fr
+			'nav content' 10fr
 			/ minmax(200px, 300px) 3fr;
 	}
 
@@ -137,9 +133,11 @@
 	}
 
 	main {
-		height: 100%;
-		width: 100%;
-		display: grid;
 		grid-area: content;
+		position: relative;
+	}
+
+	.slot {
+		margin-top: 100px;
 	}
 </style>
