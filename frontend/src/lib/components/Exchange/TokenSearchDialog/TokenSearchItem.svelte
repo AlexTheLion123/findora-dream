@@ -10,6 +10,7 @@
 	export let name: string;
 	export let symbol: string;
 	export let address: string;
+	export let selected: boolean;
 
 	const { signerObj }: IExchangeContext = getContext('exchange');
 	const signer = signerObj.getSigner();
@@ -20,6 +21,11 @@
 
 	const dispatch = createEventDispatcher();
 	function handleClick() {
+		if(selected) {
+			return;
+		}
+		selected = true;
+
 		dispatch('selection', {
 			logo: logo,
 			symbol: symbol,
@@ -35,7 +41,7 @@
 	});
 </script>
 
-<div class="container" on:click={handleClick}>
+<div class="container" on:click={handleClick} class:selected>
 	<img src={logo} class="logo" width="35" height="35" alt="" />
 	<p>{name}</p>
 	<div class="balance">
@@ -53,6 +59,7 @@
 
 		height: 50px;
 		padding: 0 20px;
+		border-bottom: 1px solid black;
 	}
 
 	.balance {
@@ -62,5 +69,9 @@
 	.container:hover {
 		cursor: pointer;
 		background: rgb(255, 255, 255, 0.3);
+	}
+
+	.selected {
+		background: rgb(255, 255, 255, 0.2);
 	}
 </style>

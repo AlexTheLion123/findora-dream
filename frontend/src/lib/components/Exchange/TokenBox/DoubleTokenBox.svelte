@@ -28,7 +28,7 @@
 
 	async function handleSelection(e: CustomEvent) {
 		hideSearch();
-		
+
 		if (!whichBox) {
 			throw 'whichShowBox not set yet';
 		}
@@ -48,12 +48,12 @@
 	}
 
 	function hideSearch() {
-		showSearchDialog = false
+		showSearchDialog = false;
 	}
 
 	function showSearch(num: 1 | 2) {
-		showSearchDialog = true;
 		whichBox = num;
+		showSearchDialog = true;
 	}
 </script>
 
@@ -81,16 +81,11 @@
 	on:input={() => dispatch('input', { tokenBox: 2 })}
 />
 
-{#if showSearchDialog}
-	<div class="popup-wrapper">
-		<div class="popup-modal">
-			<TokenSearchDialog
-				on:selection={handleSelection}
-				on:click={hideSearch}
-			/>
-		</div>
+<div class="popup-wrapper" class:hide={!showSearchDialog}>
+	<div class="popup-modal">
+		<TokenSearchDialog {whichBox} on:selection={handleSelection} on:click={hideSearch} />
 	</div>
-{/if}
+</div>
 
 <style>
 	.popup-wrapper {
@@ -110,4 +105,7 @@
 		margin-top: -100px;
 	}
 
+	.hide {
+		display: none;
+	}
 </style>

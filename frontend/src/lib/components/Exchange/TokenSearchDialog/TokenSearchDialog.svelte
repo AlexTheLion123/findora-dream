@@ -4,20 +4,66 @@
 
 <script lang="ts">
 	import TokenSearchItem from './TokenSearchItem.svelte';
+	import { createEventDispatcher } from 'svelte';
+
+	export let whichBox: 1 | 2;
+
+	let lastSelected: number[] = new Array();
+	lastSelected[0] = 0; // get correct index programmatically
+
+	let allTokens = tokens.map((item, index) => {
+		if (index == 0) {
+			// TODO programatically from given address
+			return {
+				...item,
+				selected: true
+			};
+		}
+
+		return {
+			...item,
+			selected: false
+		};
+	});
+
+	const dispatch = createEventDispatcher();
+
+	function clearPrevAndUpdate(index: number) {
+
+		if (whichBox === 1) {
+			const i = (lastSelected && lastSelected[0]) ?? index;
+			allTokens[i] = { ...allTokens[i], selected: false };
+			lastSelected[0] = index;
+		} else {
+			const i = (lastSelected && lastSelected[1]) ?? index;
+			allTokens[i] = { ...allTokens[i], selected: false };
+			lastSelected[1] = index;
+		}
+
+		allTokens[index] = { ...allTokens[index], selected: true };
+		allTokens = allTokens;
+	}
+
+	function handleSelection(index: number, e: CustomEvent) {
+		clearPrevAndUpdate(index);
+
+		dispatch('selection', e.detail);
+	}
 </script>
 
 <div class="box">
 	<header>
 		<input type="text" />
-		<i class="fas fa-times" on:click/>
+		<i class="fas fa-times" on:click />
 	</header>
 	<main>
-		{#each tokens as token}
+		{#each allTokens as token, i}
 			<TokenSearchItem
 				name={token.name}
 				address={token.address}
 				symbol={token.symbol}
-				on:selection
+				selected={token.selected}
+				on:selection={(e) => handleSelection(i, e)}
 			/>
 		{/each}
 	</main>
