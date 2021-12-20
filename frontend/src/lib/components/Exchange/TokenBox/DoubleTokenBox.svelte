@@ -1,6 +1,6 @@
 <script lang="ts">
 	import TokenBox from '../TokenBox/TokenBox.svelte';
-	import TokenSearchDialog from '../TokenSearchDialog/TokenSearchDialog.svelte';
+	import TokenSearchMain from '../TokenSearchDialog/TokenSearchMain.svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	export let amount1: number; // bound
@@ -27,8 +27,6 @@
 	}
 
 	async function handleSelection(e: CustomEvent) {
-		hideSearch();
-
 		if (!whichBox) {
 			throw 'whichShowBox not set yet';
 		}
@@ -45,10 +43,6 @@
 			balance2 = e.detail.balance;
 			dispatch('selection', { ...e.detail, tokenBox: whichBox });
 		}
-	}
-
-	function hideSearch() {
-		showSearchDialog = false;
 	}
 
 	function showSearch(num: 1 | 2) {
@@ -81,31 +75,4 @@
 	on:input={() => dispatch('input', { tokenBox: 2 })}
 />
 
-<div class="popup-wrapper" class:hide={!showSearchDialog}>
-	<div class="popup-modal">
-		<TokenSearchDialog {whichBox} on:selection={handleSelection} on:click={hideSearch} />
-	</div>
-</div>
-
-<style>
-	.popup-wrapper {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		z-index: 999;
-
-		display: grid;
-		place-items: center;
-	}
-
-	.popup-modal {
-		position: fixed;
-		margin-top: -100px;
-	}
-
-	.hide {
-		display: none;
-	}
-</style>
+<TokenSearchMain {whichBox} bind:showSearchDialog on:selection={handleSelection}/>
