@@ -20,11 +20,17 @@
 	const signer = signerObj.getSigner();
 	const signerAddr = signerObj.getAddress();
 
-	onMount(async () => {
+	async function update() {
+		// TODO after swap
+
 		if (address) {
 			const decimals = await getDecimals(address, signer);
 			balance = removeDecimals(await getBalance(address, signer, signerAddr), decimals);
 		}
+	}
+
+	onMount(async () => {
+		update()
 	});
 </script>
 

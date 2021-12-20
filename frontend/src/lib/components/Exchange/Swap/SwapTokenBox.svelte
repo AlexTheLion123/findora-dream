@@ -1,13 +1,23 @@
 <script context="module" lang="ts">
-	import { checkSufficientAllowance, formatNumber, getDecimals, getRoute } from '$lib/scripts/exchange';
+	import {
+		checkSufficientAllowance,
+		formatNumber,
+		getBalance,
+		getDecimals,
+		getRoute,
+		getSymbol
+	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
+	import { BigNumber, Contract } from 'ethers';
 	import type { IExchangeContext } from '$lib/typesFrontend';
-	import type { BigNumber } from 'ethers';
+	import type {Ierc20} from '$lib/typesUsed'
 </script>
 
 <script lang="ts">
 	import DoubleTokenBox from '../TokenBox/DoubleTokenBox.svelte';
 	import { getContext, createEventDispatcher, onMount } from 'svelte';
+import { listen } from 'svelte/internal';
+import { ERC20ABI } from '$lib/abis';
 
 	export let address1: string;
 	export let address2: string;
@@ -30,6 +40,7 @@
 	let isCurrentBox1: boolean; // box where input last typed
 	let swapData; // TODO type
 	let route: string[] | null = null;
+	let isApproved: boolean = false;
 	const dispatch = createEventDispatcher();
 
 	function getSwapData({
@@ -39,14 +50,13 @@
 		amountIn: BigNumber;
 		amountOutDesired: BigNumber;
 	}) {
-		console.log(address1, address2, decimals1, decimals2, route);
 		if (!address1 || !address2 || !decimals1 || !decimals2 || !route) {
 			alert('swap data not set, not enough swap info');
 			throw 'not enough swap info';
 		}
 		// TODO
 
-		swapData = {
+		return {
 			amountIn: amountIn,
 			amountOutDesired: amountOutDesired,
 			address1: address1,
@@ -86,14 +96,7 @@
 	}
 
 	function getStatus() {
-		if (
-			!checkSufficientAllowance({
-				ownerAddr: signerAddr,
-				spenderAddr: router.address,
-				tokenAddr: address1,
-				signer: signer
-			})
-		) {
+		if (!isApproved) {
 			return `approve ${symbol1}`;
 		}
 
@@ -105,6 +108,7 @@
 			return 'enter amount';
 		}
 
+
 		if (amount1 > balance1) {
 			return `insufficient ${symbol1}`;
 		}
@@ -115,27 +119,38 @@
 	}
 
 	async function handleEvent() {
-		let status = getStatus();
-		
+		let status: string;
+
 		if (address1 && address2 && (amount1 || amount2)) {
 			swapData = isCurrentBox1 ? await getSwapTop() : await getSwapBottom();
 			status = getStatus();
-
+			
 			if (status !== 'swap') {
 				dispatch('statusUpdate', { status: status });
 				console.log('not ready to swap yet');
 				return;
 			}
-
+			
 			dispatch('statusUpdate', { status: status, swapData: swapData });
 			return;
 		}
+		
+		status = getStatus();
 
 		if (status === 'swap') {
 			throw "status is swap when it shouldn't be";
 		}
 
 		dispatch('statusUpdate', { status: status });
+	}
+
+	function checkApproval1(): Promise<boolean> {
+		return checkSufficientAllowance({
+				ownerAddr: signerAddr,
+				spenderAddr: router.address,
+				tokenAddr: address1,
+				signer: signer
+		})
 	}
 
 	function handleInput1() {
@@ -153,6 +168,8 @@
 		decimals1 = e.detail.decimals;
 		address1 = e.detail.address;
 		symbol1 = e.detail.symbol;
+
+		isApproved = await checkApproval1()
 
 		if (address2) {
 			route = await getRoute({
@@ -184,22 +201,39 @@
 
 	function handleInput(e: CustomEvent) {
 		e.detail.isBox1 ? handleInput1() : handleInput2();
-
 	}
 
 	function handleSelection(e: CustomEvent) {
 		e.detail.isBox1 ? handleSelection1(e) : handleSelection2(e);
 	}
 
-	onMount(async() => {
-		if(address1) {
-			decimals1 = await getDecimals(address1, signer)
-		}
-		if(address2) {
-			decimals2 = await getDecimals(address2, signer)
-		}
-	})
+	function listenApproval(_address: string) {
+		// could also bind function to parent and don't listen
 
+		const token = new Contract(_address, ERC20ABI, signer) as Ierc20;
+		
+		token.on("Approval", () => {
+			isApproved = true;
+			handleEvent()
+		})
+
+	}
+
+	onMount(async () => {
+		if (address1) {
+			decimals1 = await getDecimals(address1, signer);
+			symbol1 = await getSymbol(address1, signer)
+			balance1 = removeDecimals(await getBalance(address1, signer, signerAddr), decimals1)
+			isApproved = await checkApproval1()
+
+			listenApproval(address1)
+		}
+		if (address2) {
+			decimals2 = await getDecimals(address2, signer);
+		}
+		handleEvent();
+
+	});
 </script>
 
 <DoubleTokenBox

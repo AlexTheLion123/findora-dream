@@ -52,7 +52,7 @@ export function getNativeAndDollarAddr(tokens: {address: string, symbol: string,
         throw "unable to find native and dollar address"
            
     }
-    console.log("real native and dollar address", nativeAddr, dollarsAddr)
+
     return {
         nativeAddr: nativeAddr,
         dollarsAddr: dollarsAddr

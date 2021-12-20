@@ -8,7 +8,7 @@
 </script>
 
 <button on:click|preventDefault {disabled}>
-	{formatText(text)}
+	{#if text}{formatText(text)}{/if}
 </button>
 
 <style lang="scss">

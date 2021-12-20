@@ -67,7 +67,6 @@
 
 			console.log('factory and router objects ready');
 		} else {
-			console.log('no signer');
 			exchangeReady = false;
 		}
 	});
