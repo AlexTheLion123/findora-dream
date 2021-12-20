@@ -27,7 +27,7 @@
 	let decimals2: number;
 	let balance1: number;
 	let symbol1: string;
-	let currentBox: 1 | 2; // box where input last typed
+	let isCurrentBox1: boolean; // box where input last typed
 	let swapData; // TODO type
 	let route: string[] | null = null;
 	const dispatch = createEventDispatcher();
@@ -116,9 +116,9 @@
 
 	async function handleEvent() {
 		let status = getStatus();
-
+		
 		if (address1 && address2 && (amount1 || amount2)) {
-			swapData = currentBox === 1 ? await getSwapTop() : await getSwapBottom();
+			swapData = isCurrentBox1 ? await getSwapTop() : await getSwapBottom();
 			status = getStatus();
 
 			if (status !== 'swap') {
@@ -139,13 +139,12 @@
 	}
 
 	function handleInput1() {
-		currentBox = 1;
-
+		isCurrentBox1 = true;
 		handleEvent();
 	}
 
 	function handleInput2() {
-		currentBox = 2;
+		isCurrentBox1 = false;
 		handleEvent();
 	}
 
@@ -184,11 +183,12 @@
 	}
 
 	function handleInput(e: CustomEvent) {
-		e.detail.tokenBox === 1 ? handleInput1() : handleInput2();
+		e.detail.isBox1 ? handleInput1() : handleInput2();
+
 	}
 
 	function handleSelection(e: CustomEvent) {
-		e.detail.tokenBox === 1 ? handleSelection1(e) : handleSelection2(e);
+		e.detail.isBox1 ? handleSelection1(e) : handleSelection2(e);
 	}
 
 	onMount(async() => {

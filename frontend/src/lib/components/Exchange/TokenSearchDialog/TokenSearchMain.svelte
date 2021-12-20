@@ -2,7 +2,7 @@
     import TokenSearchDialog from './TokenSearchDialog.svelte';
     import {createEventDispatcher} from 'svelte';
 
-    export let whichBox: 1 | 2; // TODO change to boolean
+    export let isBox1: boolean; // TODO change to boolean
     export let showSearchDialog = false;
 
     const dispatch = createEventDispatcher();
@@ -21,7 +21,7 @@
 
 <div class="popup-wrapper" class:hide={!showSearchDialog}>
 	<div class="popup-modal">
-		<TokenSearchDialog {whichBox} on:selection={handleSelection} on:click={hideSearch} />
+		<TokenSearchDialog {isBox1} on:selection={handleSelection} on:click={hideSearch} />
 	</div>
 </div>
 

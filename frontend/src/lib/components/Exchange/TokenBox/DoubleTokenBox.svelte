@@ -16,7 +16,7 @@
 	let logo2: string;
 	let symbol1: string;
 	let symbol2: string;
-	let whichBox: 1 | 2;
+	let isBox1: boolean;
 	// decimals passed upwards in event
 
 	const dispatch = createEventDispatcher();
@@ -27,26 +27,20 @@
 	}
 
 	async function handleSelection(e: CustomEvent) {
-		if (!whichBox) {
-			throw 'whichShowBox not set yet';
-		}
-
-		if (whichBox === 1) {
+		if (isBox1) {
 			logo1 = e.detail.logo; // logo or default logo always provided
 			symbol1 = e.detail.symbol; // symbol always provided
 			balance1 = e.detail.balance;
-
-			dispatch('selection', { ...e.detail, tokenBox: whichBox });
 		} else {
 			logo2 = e.detail.logo; // logo or default logo always provided
 			symbol2 = e.detail.symbol; // symbol always provided
 			balance2 = e.detail.balance;
-			dispatch('selection', { ...e.detail, tokenBox: whichBox });
 		}
+		dispatch('selection', { ...e.detail, isBox1: isBox1 });
 	}
 
-	function showSearch(num: 1 | 2) {
-		whichBox = num;
+	function showSearch(_isBox1: boolean) {
+		isBox1 = _isBox1;
 		showSearchDialog = true;
 	}
 </script>
@@ -59,8 +53,8 @@
 	balance={balance1}
 	{updateCurrentInput}
 	on:clearAll={clearAll}
-	on:showSearchDialog={() => showSearch(1)}
-	on:input={() => dispatch('input', { tokenBox: 1 })}
+	on:showSearchDialog={() => showSearch(true)}
+	on:input={() => dispatch('input', { isBox1: true })}
 />
 
 <TokenBox
@@ -71,8 +65,8 @@
 	balance={balance2}
 	{updateCurrentInput}
 	on:clearAll={clearAll}
-	on:showSearchDialog={() => showSearch(2)}
-	on:input={() => dispatch('input', { tokenBox: 2 })}
+	on:showSearchDialog={() => showSearch(false)}
+	on:input={() => dispatch('input', { isBox1: false })}
 />
 
-<TokenSearchMain {whichBox} bind:showSearchDialog on:selection={handleSelection}/>
+<TokenSearchMain {isBox1} bind:showSearchDialog on:selection={handleSelection} />

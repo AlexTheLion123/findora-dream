@@ -6,7 +6,7 @@
 	import TokenSearchItem from './TokenSearchItem.svelte';
 	import { createEventDispatcher } from 'svelte';
 
-	export let whichBox: 1 | 2;
+	export let isBox1: boolean;
 
 	let lastSelected: number[] = new Array();
 	lastSelected[0] = 0; // get correct index programmatically
@@ -30,7 +30,7 @@
 
 	function clearPrevAndUpdate(index: number) {
 
-		if (whichBox === 1) {
+		if (isBox1) {
 			const i = (lastSelected && lastSelected[0]) ?? index;
 			allTokens[i] = { ...allTokens[i], selected: false };
 			lastSelected[0] = index;
