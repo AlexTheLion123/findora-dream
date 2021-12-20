@@ -1,28 +1,42 @@
 <script context="module" lang="ts">
-	import { formatNumber } from '$lib/scripts/exchange';
+	import { formatNumber, getBalance, getDecimals, removeDecimals } from '$lib/scripts/exchange';
+	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
 	import TokenSelector from './TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
+	import { getContext, onMount } from 'svelte';
 
+	export let address: string;
 	export let amount: number;
 	export let symbol: string;
 	export let logo: string; // logo src
 	export let updateCurrentInput: boolean;
 	export let balance: number;
 	export let editable = true; // only 1 use so far (remove liquidity) for this variable
+
+	const { signerObj }: IExchangeContext = getContext('exchange');
+	const signer = signerObj.getSigner();
+	const signerAddr = signerObj.getAddress();
+
+	onMount(async () => {
+		if (address) {
+			const decimals = await getDecimals(address, signer);
+			balance = removeDecimals(await getBalance(address, signer, signerAddr), decimals);
+		}
+	});
 </script>
 
 <div class="box">
 	<div class="selector">
-		<TokenSelector {logo} {symbol} {editable} on:showSearchDialog />
+		<TokenSelector {address} {logo} {symbol} {editable} on:showSearchDialog />
 	</div>
 	<p class="balance">
 		Balance: {#if balance}{formatNumber(balance, 5)}{/if}
 	</p>
 	<div class="input-component">
-		<NumTokenInput bind:amount {updateCurrentInput} on:input on:clearAll/>
+		<NumTokenInput bind:amount {updateCurrentInput} on:input on:clearAll />
 	</div>
 	<!-- <p class="dollars">
 		~$ {formatNumber(dollars, 2)}

@@ -5,6 +5,8 @@
 
 	export let amount1: number; // bound
 	export let amount2: number; // bound
+	export let address1: string;
+	export let address2: string;
 	export let updateCurrentInput = true;
 
 	let showSearchDialog = false;
@@ -57,6 +59,7 @@
 
 <TokenBox
 	bind:amount={amount1}
+	address={address1}
 	symbol={symbol1}
 	logo={logo1}
 	balance={balance1}
@@ -68,6 +71,7 @@
 
 <TokenBox
 	bind:amount={amount2}
+	address={address2}
 	symbol={symbol2}
 	logo={logo2}
 	balance={balance2}

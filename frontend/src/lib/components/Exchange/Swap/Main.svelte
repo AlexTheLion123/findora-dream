@@ -83,7 +83,7 @@
 	}
 </script>
 
-<SwapTokenBox bind:address1 bind:address2 on:statusUpdate={updateStatus} />
+<SwapTokenBox {address1} {address2} on:statusUpdate={updateStatus} />
 <div class="slider">
 	<RangeSlider id="color-pips" range="min" float pips step={5} />
 

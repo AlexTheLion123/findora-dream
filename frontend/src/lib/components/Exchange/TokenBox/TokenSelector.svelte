@@ -1,15 +1,35 @@
-<script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+<script context="module" lang="ts">
+	import { getSymbol } from '$lib/scripts/exchange';
+	import type { IExchangeContext } from '$lib/typesFrontend';
+</script>
 
+<script lang="ts">
+	import { createEventDispatcher, getContext, onMount } from 'svelte';
+	
+	export let address: string; // address needed to set default
 	export let editable: boolean; // TODO - don't allow hover on non-editable
 	export let logo: string;
 	export let symbol: string;
+
+	const {signerObj}: IExchangeContext = getContext("exchange")
+	const signer = signerObj.getSigner();
 
 	const dispatch = createEventDispatcher();
 
 	function handleClick() {
 		dispatch("showSearchDialog")
 	}
+
+	onMount(async () => {
+		if(address) {
+			symbol = await getSymbol(address, signer)
+			logo = '/src/lib/assets/svg/eth_logo.svg'
+			// TODO get logo from symbol
+		} else {
+			symbol = "Select"
+		}
+	})
+
 </script>
 
 <button on:click|preventDefault={handleClick} disabled={!editable}>

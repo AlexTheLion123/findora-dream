@@ -127,12 +127,12 @@
 				return;
 			}
 
-			dispatch('statusUpdate', { status: status, swapData: swapData});
+			dispatch('statusUpdate', { status: status, swapData: swapData });
 			return;
 		}
 
-		if(status === 'swap') {
-			throw "status is swap when it shouldn't be"
+		if (status === 'swap') {
+			throw "status is swap when it shouldn't be";
 		}
 
 		dispatch('statusUpdate', { status: status });
@@ -192,4 +192,11 @@
 	}
 </script>
 
-<DoubleTokenBox bind:amount1 bind:amount2 on:input={handleInput} on:selection={handleSelection} />
+<DoubleTokenBox
+	bind:amount1
+	bind:amount2
+	{address1}
+	{address2}
+	on:input={handleInput}
+	on:selection={handleSelection}
+/>
