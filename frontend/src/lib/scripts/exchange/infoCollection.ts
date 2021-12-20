@@ -35,11 +35,11 @@ export async function getAllInOrOut({ addrIn, addrOut, amount, nativeAddr, facto
 }
 
 /// @returns true if sufficient allowance
-export async function checkSufficientAllowance({ ownerAddr, spenderAddr, tokenAddr, signer }: {
-    ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
+export async function checkSufficientAllowance({ toSpend, ownerAddr, spenderAddr, tokenAddr, signer }: {
+    toSpend: BigNumber, ownerAddr: string, spenderAddr: string, tokenAddr: string, signer: Signer
 }): Promise<boolean> {
     const tokenInstance = new Contract(tokenAddr, ERC20ABI, signer) as Ierc20
-    return (await tokenInstance.allowance(ownerAddr, spenderAddr)).eq(constants.MaxUint256) ? true: false;
+    return toSpend.lt(await tokenInstance.allowance(ownerAddr, spenderAddr)) ? true : false;
 }
 
 
@@ -84,6 +84,10 @@ export function getDecimals(tokenAddress: string, signer: Signer): Promise<numbe
 
 export function getSymbol(tokenAddress: string, signer: Signer): Promise<string> {
     return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).symbol();
+}
+
+export function getAllowance({tokenAddress, signer, signerAddr, spenderAddr} : {tokenAddress: string, signer: Signer, signerAddr: string, spenderAddr: string}): Promise<BigNumber> {
+    return (new Contract(tokenAddress, ERC20ABI, signer) as Ierc20).allowance(signerAddr, spenderAddr);
 }
 
 export async function getPosition({ addr1, addr2, factoryAddr, signer, signerAddr, pairAddr, symbol1, symbol2 }: {

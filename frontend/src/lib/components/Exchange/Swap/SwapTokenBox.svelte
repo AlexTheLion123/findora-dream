@@ -2,6 +2,7 @@
 	import {
 		checkSufficientAllowance,
 		formatNumber,
+		getAllowance,
 		getBalance,
 		getDecimals,
 		getRoute,
@@ -18,6 +19,7 @@
 	import { getContext, createEventDispatcher, onMount } from 'svelte';
 import { listen } from 'svelte/internal';
 import { ERC20ABI } from '$lib/abis';
+import { check } from 'prettier';
 
 	export let address1: string;
 	export let address2: string;
@@ -37,10 +39,11 @@ import { ERC20ABI } from '$lib/abis';
 	let decimals2: number;
 	let balance1: number;
 	let symbol1: string;
+	let allowance1: BigNumber;
 	let isCurrentBox1: boolean; // box where input last typed
 	let swapData; // TODO type
 	let route: string[] | null = null;
-	let isApproved: boolean = false;
+	let isApproved: boolean = true;
 	const dispatch = createEventDispatcher();
 
 	function getSwapData({
@@ -127,7 +130,6 @@ import { ERC20ABI } from '$lib/abis';
 			
 			if (status !== 'swap') {
 				dispatch('statusUpdate', { status: status });
-				console.log('not ready to swap yet');
 				return;
 			}
 			
@@ -144,16 +146,12 @@ import { ERC20ABI } from '$lib/abis';
 		dispatch('statusUpdate', { status: status });
 	}
 
-	function checkApproval1(): Promise<boolean> {
-		return checkSufficientAllowance({
-				ownerAddr: signerAddr,
-				spenderAddr: router.address,
-				tokenAddr: address1,
-				signer: signer
-		})
+	function checkApproval1() {
+		return addDecimals(amount1, decimals1).lt(allowance1)
 	}
 
-	function handleInput1() {
+	async function handleInput1() {
+		isApproved = await checkApproval1()
 		isCurrentBox1 = true;
 		handleEvent();
 	}
@@ -168,8 +166,7 @@ import { ERC20ABI } from '$lib/abis';
 		decimals1 = e.detail.decimals;
 		address1 = e.detail.address;
 		symbol1 = e.detail.symbol;
-
-		isApproved = await checkApproval1()
+		allowance1 = await getAllowance({tokenAddress: address1, signer: signer, signerAddr: signerAddr, spenderAddr: router.address})
 
 		if (address2) {
 			route = await getRoute({
@@ -211,7 +208,6 @@ import { ERC20ABI } from '$lib/abis';
 		// could also bind function to parent and don't listen
 
 		const token = new Contract(_address, ERC20ABI, signer) as Ierc20;
-		
 		token.on("Approval", () => {
 			isApproved = true;
 			handleEvent()
@@ -224,7 +220,7 @@ import { ERC20ABI } from '$lib/abis';
 			decimals1 = await getDecimals(address1, signer);
 			symbol1 = await getSymbol(address1, signer)
 			balance1 = removeDecimals(await getBalance(address1, signer, signerAddr), decimals1)
-			isApproved = await checkApproval1()
+			allowance1 = await getAllowance({tokenAddress: address1, signer: signer, signerAddr: signerAddr, spenderAddr: router.address})
 
 			listenApproval(address1)
 		}
