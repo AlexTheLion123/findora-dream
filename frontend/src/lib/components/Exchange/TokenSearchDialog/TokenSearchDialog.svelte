@@ -1,12 +1,20 @@
-<script context="module">
+<script context="module" lang="ts">
 	import tokens from '$lib/assets/tokens/tokens.json';
+	import { getSymbol, getDecimals, removeDecimals, getBalance } from '$lib/scripts/exchange';
+	import type { IExchangeContext } from '$lib/typesFrontend';
 </script>
 
 <script lang="ts">
 	import TokenSearchItem from './TokenSearchItem.svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, getContext, onMount } from 'svelte';
 
 	export let isBox1: boolean;
+	export let address1: string;
+	export let address2: string;
+
+	const { signerObj }: IExchangeContext = getContext('exchange');
+	const signer = signerObj.getSigner();
+	const signerAddr = signerObj.getAddress();
 
 	let lastSelected: number[] = new Array();
 	lastSelected[0] = 0; // get correct index programmatically
@@ -29,7 +37,6 @@
 	const dispatch = createEventDispatcher();
 
 	function clearPrevAndUpdate(index: number) {
-
 		if (isBox1) {
 			const i = (lastSelected && lastSelected[0]) ?? index;
 			allTokens[i] = { ...allTokens[i], selected: false };
@@ -49,6 +56,49 @@
 
 		dispatch('selection', e.detail);
 	}
+
+	function init(address: string) {
+		checkIfDefault(address);
+		getDataAndDispatch(address);
+
+		function checkIfDefault(address: string) {
+			tokens.map((value, index) => {
+				if (value.address === address) {
+					clearPrevAndUpdate(index);
+					return;
+				}
+			});
+		}
+
+		async function getDataAndDispatch(address: string) {
+			const symbol = await getSymbol(address, signer);
+			const logo = '/src/lib/assets/svg/eth_logo.svg';
+			const decimals = await getDecimals(address, signer);
+			const balance = removeDecimals(await getBalance(address, signer, signerAddr), decimals);
+
+			dispatch('selection', {
+				address: address,
+				symbol: symbol,
+				logo: logo,
+				decimals: decimals,
+				balance: balance,
+				isBox1: isBox1
+			});
+			// TODO get logo from symbol
+		}
+	}
+
+	onMount(async () => {
+		if (address1) {
+			isBox1 = true;
+			init(address1);
+		}
+
+		if (address2) {
+			isBox1 = false;
+			init(address2);
+		}
+	});
 </script>
 
 <div class="box">

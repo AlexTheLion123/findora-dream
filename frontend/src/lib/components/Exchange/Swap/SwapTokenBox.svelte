@@ -2,21 +2,16 @@
 	import {
 		formatNumber,
 		getAllowance,
-		getBalance,
-		getDecimals,
 		getRoute,
-		getSymbol
 	} from '$lib/scripts/exchange';
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
-	import { BigNumber, Contract } from 'ethers';
+	import { BigNumber, constants } from 'ethers';
 	import type { IExchangeContext } from '$lib/typesFrontend';
-	import type { Ierc20 } from '$lib/typesUsed';
 </script>
 
 <script lang="ts">
 	import DoubleTokenBox from '../TokenBox/DoubleTokenBox.svelte';
 	import { getContext, createEventDispatcher, onMount } from 'svelte';
-	import { ERC20ABI } from '$lib/abis';
 
 	export let address1: string;
 	export let address2: string;
@@ -39,7 +34,7 @@
 	let allowance1: BigNumber;
 	let isCurrentBox1: boolean; // box where input last typed
 	let route: string[] | null = null;
-	let isApproved: boolean = true;
+	let isApproved1: boolean;
 	const dispatch = createEventDispatcher();
 
 	function getSwapData({
@@ -93,7 +88,7 @@
 	}
 
 	function getStatus() {
-		if (!isApproved) {
+		if (!isApproved1) {
 			return `approve ${symbol1}`;
 		}
 
@@ -116,35 +111,24 @@
 
 	async function handleEvent() {
 		let status: string;
+		let swapData = null;
 
 		if (address1 && address2 && (amount1 || amount2)) {
-			const swapData = isCurrentBox1 ? await getBottomValue() : await getTopValue();
-			status = getStatus();
-
-			if (status !== 'swap') {
-				dispatch('statusUpdate', { status: status });
-				return;
-			}
-
-			dispatch('statusUpdate', { status: status, swapData: swapData });
-			return;
+			swapData = isCurrentBox1 ? await getBottomValue() : await getTopValue();
 		}
 
 		status = getStatus();
-
-		if (status === 'swap') {
-			throw "status is swap when it shouldn't be";
-		}
-
-		dispatch('statusUpdate', { status: status });
+		dispatch('statusUpdate', { status: status, swapData: swapData });
 	}
 
-	function checkApproval1() {
-		return addDecimals(amount1, decimals1).lt(allowance1);
+	function checkApproval(_amount: number, _decimals: number, _allowance: BigNumber) {
+		console.log(_amount, _decimals, _allowance.toString());
+		
+		return addDecimals(_amount, _decimals).lt(_allowance);
 	}
 
 	function handleInput1() {
-		isApproved = checkApproval1();
+		isApproved1 = checkApproval(amount1, decimals1, allowance1);
 		isCurrentBox1 = true;
 	}
 
@@ -157,13 +141,16 @@
 		decimals1 = e.detail.decimals;
 		address1 = e.detail.address;
 		symbol1 = e.detail.symbol;
+		
 		allowance1 = await getAllowance({
 			tokenAddress: address1,
 			signer: signer,
 			signerAddr: signerAddr,
 			spenderAddr: router.address
 		});
-
+		
+		isApproved1 = checkApproval(0, decimals1, allowance1)
+		
 		if (address2) {
 			route = await getRoute({
 				addrIn: address1 as string,
@@ -195,40 +182,26 @@
 		handleEvent()
 	}
 
-	function handleSelection(e: CustomEvent) {
-		e.detail.isBox1 ? handleSelection1(e) : handleSelection2(e);
+	async function handleSelection(e: CustomEvent) {
+		e.detail.isBox1 ? await handleSelection1(e) : await handleSelection2(e);
 		handleEvent()
 	}
 
-	function listenApproval(_address: string) {
-		// could also bind function to parent and don't listen
+	export function approveFromParent(_address: string) {
+		// bound to parent instead of below comment
 
-		const token = new Contract(_address, ERC20ABI, signer) as Ierc20;
-		token.on('Approval', () => {
-			isApproved = true;
-			handleEvent();
-		});
+		isApproved1 = true;
+		allowance1 = constants.MaxUint256;
+		handleEvent();
 	}
 
-	onMount(async () => {
-		if (address1) {
-			decimals1 = await getDecimals(address1, signer);
-			symbol1 = await getSymbol(address1, signer);
-			balance1 = removeDecimals(await getBalance(address1, signer, signerAddr), decimals1);
-			allowance1 = await getAllowance({
-				tokenAddress: address1,
-				signer: signer,
-				signerAddr: signerAddr,
-				spenderAddr: router.address
-			});
-
-			listenApproval(address1);
-		}
-		if (address2) {
-			decimals2 = await getDecimals(address2, signer);
-		}
-		handleEvent();
-	});
+	// function listenApproval(_address: string) {
+	// 	const token = new Contract(_address, ERC20ABI, signer) as Ierc20;
+	// 	token.on('Approval', () => {
+	// 		isApproved = true;
+	// 		handleEvent();
+	// 	});
+	// }
 </script>
 
 <DoubleTokenBox

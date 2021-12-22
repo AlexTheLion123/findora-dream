@@ -147,12 +147,14 @@
 		balance1 = e.detail.balance;
 		decimals1 = e.detail.decimals;
 		address1 = e.detail.address;
+		symbol1 = e.detail.symbol;
 	}
 
 	function selection2(e: CustomEvent) {
 		balance2 = e.detail.balance;
 		decimals2 = e.detail.decimals;
 		address2 = e.detail.address;
+		symbol2 = e.detail.symbol;
 	}
 
 	function getStatus() {

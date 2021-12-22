@@ -23,6 +23,7 @@
 	let slippage = 0.05; // TODO let user change slippage
 	let status: string;
 	let disabled: boolean = true;
+	let approveChild: () => void
 
 	// TODO get swapdata from event
 
@@ -65,6 +66,7 @@
 		if (isStatusApprove()) {
 			tx = await _approveMax();
 			await tx.wait();
+			approveChild();
 			return;
 		}
 
@@ -73,14 +75,7 @@
 
 	function updateStatus(e: CustomEvent) {
 		status = e.detail.status;
-
-		if (e.detail?.swapData) {
-			swapData = e.detail.swapData;
-			disabled = false;
-			return;
-		} else {
-			swapData = null;
-		}
+		swapData = e.detail.swapData
 
 		disabled = isStatusApproveOrSwap() ? false : true;
 	}
@@ -94,7 +89,7 @@
 	}
 </script>
 
-<SwapTokenBox {address1} {address2} on:statusUpdate={updateStatus} />
+<SwapTokenBox bind:approveFromParent={approveChild} {address1} {address2} on:statusUpdate={updateStatus} />
 <div class="slider">
 	<RangeSlider id="color-pips" range="min" float pips step={5} />
 

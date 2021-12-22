@@ -1,12 +1,10 @@
 <script context="module" lang="ts">
-	import { formatNumber, getBalance, getDecimals, removeDecimals } from '$lib/scripts/exchange';
-	import type { IExchangeContext } from '$lib/typesFrontend';
+	import { formatNumber} from '$lib/scripts/exchange';
 </script>
 
 <script lang="ts">
 	import TokenSelector from './TokenSelector.svelte';
 	import NumTokenInput from './NumTokenInput.svelte';
-	import { getContext, onMount } from 'svelte';
 
 	export let address: string;
 	export let amount: number;
@@ -16,22 +14,6 @@
 	export let balance: number;
 	export let editable = true; // only 1 use so far (remove liquidity) for this variable
 
-	const { signerObj }: IExchangeContext = getContext('exchange');
-	const signer = signerObj.getSigner();
-	const signerAddr = signerObj.getAddress();
-
-	async function update() {
-		// TODO after swap
-
-		if (address) {
-			const decimals = await getDecimals(address, signer);
-			balance = removeDecimals(await getBalance(address, signer, signerAddr), decimals);
-		}
-	}
-
-	onMount(async () => {
-		update()
-	});
 </script>
 
 <div class="box">

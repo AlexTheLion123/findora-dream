@@ -86,7 +86,14 @@
 	}
 
 	function handleStatus(e: CustomEvent) {
-		status = e.detail.status;
+		if(e.detail.status.toLowerCase().includes("approve")) {
+			const str = e.detail.status.split(" ")
+			status = str[0] + " " + str[1]
+		} else {
+			status = e.detail.status;
+
+		}
+
 		symbol1 = e.detail?.symbol1;
 		symbol2 = e.detail?.symbol2;
 		liqData = e.detail?.liqData;

@@ -4,6 +4,8 @@
 
     export let isBox1: boolean; // TODO change to boolean
     export let showSearchDialog = false;
+	export let address1: string;
+	export let address2: string;
 
     const dispatch = createEventDispatcher();
 
@@ -21,7 +23,7 @@
 
 <div class="popup-wrapper" class:hide={!showSearchDialog}>
 	<div class="popup-modal">
-		<TokenSearchDialog {isBox1} on:selection={handleSelection} on:click={hideSearch} />
+		<TokenSearchDialog {isBox1} {address1} {address2} on:selection={handleSelection} on:click={hideSearch} />
 	</div>
 </div>
 

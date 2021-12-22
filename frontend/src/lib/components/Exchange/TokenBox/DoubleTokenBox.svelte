@@ -27,16 +27,19 @@
 	}
 
 	async function handleSelection(e: CustomEvent) {
-		if (isBox1) {
+		if (e.detail.isBox1) {
 			logo1 = e.detail.logo; // logo or default logo always provided
 			symbol1 = e.detail.symbol; // symbol always provided
 			balance1 = e.detail.balance;
+
 		} else {
 			logo2 = e.detail.logo; // logo or default logo always provided
 			symbol2 = e.detail.symbol; // symbol always provided
 			balance2 = e.detail.balance;
+
+
 		}
-		dispatch('selection', { ...e.detail, isBox1: isBox1 });
+		dispatch('selection', e.detail);
 	}
 
 	function showSearch(_isBox1: boolean) {
@@ -69,4 +72,4 @@
 	on:input={() => dispatch('input', { isBox1: false })}
 />
 
-<TokenSearchMain {isBox1} bind:showSearchDialog on:selection={handleSelection} />
+<TokenSearchMain {isBox1} {address1} {address2} bind:showSearchDialog on:selection={handleSelection} />

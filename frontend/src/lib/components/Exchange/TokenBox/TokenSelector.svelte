@@ -1,44 +1,32 @@
-<script context="module" lang="ts">
-	import { getSymbol } from '$lib/scripts/exchange';
-	import type { IExchangeContext } from '$lib/typesFrontend';
-</script>
-
 <script lang="ts">
-	import { createEventDispatcher, getContext, onMount } from 'svelte';
-	
+	import { createEventDispatcher, onMount } from 'svelte';
+
 	export let address: string; // address needed to set default
 	export let editable: boolean; // TODO - don't allow hover on non-editable
 	export let logo: string;
 	export let symbol: string;
 
-	const {signerObj}: IExchangeContext = getContext("exchange")
-	const signer = signerObj.getSigner();
-
 	const dispatch = createEventDispatcher();
 
 	function handleClick() {
-		dispatch("showSearchDialog")
+		dispatch('showSearchDialog');
 	}
 
-	onMount(async () => {
-		if(address) {
-			symbol = await getSymbol(address, signer)
-			logo = '/src/lib/assets/svg/eth_logo.svg'
-			// TODO get logo from symbol
-		} else {
-			symbol = "Select"
-		}
-	})
-
+	if(!address){
+		symbol = 'select'
+	}
 </script>
 
-<button on:click|preventDefault={handleClick} disabled={!editable}>
-	<img src={logo} class="symbol" width="35" height="35" alt="" />
-	<p>{symbol}</p>
+<button on:click|preventDefault={handleClick} disabled={!editable} class:select={!(symbol && logo && address)}>
+	{#if symbol && logo && address}
+		<img src={logo} class="symbol" width="35" height="35" alt="" />
+		<p>{symbol}</p>
+	{:else}
+		<div class="placeholder"></div>
+		<p>Select</p>
+	{/if}
 	<i class="fas fa-chevron-down" />
 </button>
-
-
 
 <style>
 	button {
@@ -63,5 +51,9 @@
 		border-radius: 100%;
 		box-sizing: content-box;
 		padding: 5px;
+	}
+
+	.select {
+		background: rgba(255,255,255, 0.05);
 	}
 </style>
