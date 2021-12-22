@@ -31,14 +31,14 @@
 			logo1 = e.detail.logo; // logo or default logo always provided
 			symbol1 = e.detail.symbol; // symbol always provided
 			balance1 = e.detail.balance;
-
+			console.log("hello");
+			
 		} else {
 			logo2 = e.detail.logo; // logo or default logo always provided
 			symbol2 = e.detail.symbol; // symbol always provided
 			balance2 = e.detail.balance;
-
-
 		}
+
 		dispatch('selection', e.detail);
 	}
 

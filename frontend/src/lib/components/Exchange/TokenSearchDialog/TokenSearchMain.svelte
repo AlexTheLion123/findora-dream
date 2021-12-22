@@ -15,8 +15,13 @@
 
     function handleSelection(e: CustomEvent) {
         showSearchDialog = false;
-
-        dispatch("selection", e.detail)
+		
+		if(e.detail?.isBox1){
+			dispatch("selection", {...e.detail})
+		} else {
+			dispatch("selection", {...e.detail, isBox1: isBox1})
+		}
+		
     }
 
 </script>

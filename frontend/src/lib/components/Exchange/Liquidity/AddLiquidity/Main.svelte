@@ -28,8 +28,8 @@
 	let approveOnChild: (str: string) => void;
 
 	// poolinfo props
-	let share: number | undefined;
-	let rate: number | undefined;
+	let share = 0;
+	let rate = 0;
 
 	function addLiquidity() {
 		if (!liqData) {
@@ -88,10 +88,10 @@
 
 	function handleStatus(e: CustomEvent) {
 		status = e.detail.status;
-		symbol1 = e.detail?.symbol1;
-		symbol2 = e.detail?.symbol2;
-		liqData = e.detail?.liqData;
-		rate = e.detail?.liqData?.rate;
+		symbol1 = e.detail.symbol1;
+		symbol2 = e.detail.symbol2;
+		liqData = e.detail.liqData;
+		rate = e.detail?.rate || rate;
 		share = e.detail?.share;
 
 		updateButtonStatus();

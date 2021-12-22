@@ -57,6 +57,7 @@
 		};
 		rate: number;
 	} | null = null;
+	let share: number;
 
 	function getLiqData() {
 		if (!amount1 || !amount2 || !address1 || !address2 || !decimals1 || !decimals2 || !pair) {
@@ -75,7 +76,6 @@
 			decimals1: decimals1,
 			decimals2: decimals2,
 			pair: pair,
-			share: (amount1 / pair.reserves.reserve1) * 100
 		};
 	}
 
@@ -176,8 +176,8 @@
 		if (status.includes('create') || status.includes('add')) {
 			liqData = getLiqData();
 		}
-
-		dispatch('statusUpdate', { ...e?.detail, status: status, liqData: liqData });
+		
+		dispatch('statusUpdate', { ...e?.detail, status: status, liqData: liqData, rate:pair?.rate, symbol1: symbol1, symbol2: symbol2, share: share });
 	}
 
 	function handleInput1() {
@@ -185,6 +185,9 @@
 
 		if(address1 && address2) {
 			amount2 = getBottom()
+			share = (amount1 / pair!.reserves.reserve1) * 100
+		} else {
+			share = 0;
 		}
 	}
 
@@ -193,6 +196,9 @@
 
 		if(address1 && address2) {
 			amount1 = getTop()
+			share = (amount1 / pair!.reserves.reserve1) * 100
+		} else {
+			share = 0;
 		}
 	}
 
