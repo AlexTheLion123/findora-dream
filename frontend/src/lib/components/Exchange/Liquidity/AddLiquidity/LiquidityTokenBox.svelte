@@ -44,6 +44,7 @@
 	let isApproved2: boolean;
 	let allowance1: BigNumber;
 	let allowance2: BigNumber;
+	let isCurrentBox1: boolean;
 
 	let pair: {
 		addresses: {
@@ -75,7 +76,7 @@
 			amountIn2: amountIn2,
 			decimals1: decimals1,
 			decimals2: decimals2,
-			pair: pair,
+			pair: pair
 		};
 	}
 
@@ -136,32 +137,31 @@
 		if (!isApproved1 && address1) {
 			return `approve ${symbol1} ${address1}`;
 		}
-		
-		
+
 		if (!isApproved2 && address2) {
 			return `approve ${symbol2} ${address2}`;
 		}
-		
+
 		if (!address2) {
 			return 'select token';
 		}
-		
+
 		if (!amount1) {
 			return 'enter amount 1';
 		}
-		
+
 		if (amount1 > balance1) {
 			return `insufficient ${symbol1}`;
 		}
-		
+
 		if (!amount2) {
 			return 'enter amount 2';
 		}
-		
+
 		if (amount2 > balance2) {
 			return `insufficient ${symbol2}`;
 		}
-		
+
 		if (!pair) {
 			return 'create pair';
 		} else {
@@ -172,31 +172,41 @@
 	function afterEventHook(e?: CustomEvent) {
 		const status = getStatus();
 		let liqData = null;
-		
+
 		if (status.includes('create') || status.includes('add')) {
 			liqData = getLiqData();
 		}
-		
-		dispatch('statusUpdate', { ...e?.detail, status: status, liqData: liqData, rate:pair?.rate, symbol1: symbol1, symbol2: symbol2, share: share });
+
+		dispatch('statusUpdate', {
+			...e?.detail,
+			status: status,
+			liqData: liqData,
+			rate: pair?.rate,
+			symbol1: symbol1,
+			symbol2: symbol2,
+			share: share
+		});
 	}
 
 	function handleInput1() {
+		isCurrentBox1 = true;
 		isApproved1 = checkApproval(amount1, decimals1, allowance1);
 
-		if(address1 && address2) {
-			amount2 = getBottom()
-			share = (amount1 / pair!.reserves.reserve1) * 100
+		if (address1 && address2) {
+			amount2 = getBottom();
+			share = (amount1 / pair!.reserves.reserve1) * 100;
 		} else {
 			share = 0;
 		}
 	}
 
 	function handleInput2() {
+		isCurrentBox1 = false;
 		isApproved2 = checkApproval(amount2, decimals2, allowance2);
 
-		if(address1 && address2) {
-			amount1 = getTop()
-			share = (amount1 / pair!.reserves.reserve1) * 100
+		if (address1 && address2) {
+			amount1 = getTop();
+			share = (amount1 / pair!.reserves.reserve1) * 100;
 		} else {
 			share = 0;
 		}
@@ -254,26 +264,30 @@
 		afterEventHook(e);
 	}
 
+	function getOther() {
+		if (amount1 && isCurrentBox1) {
+			amount2 = getBottom();
+		} else if (amount2 && !isCurrentBox1) {
+			amount1 = getTop();
+		}
+	}
+
 	async function handleSelection(e: CustomEvent) {
 		e.detail.isBox1 ? await selection1(e) : await selection2(e);
 
 		if (address1 && address2) {
 			const pairAddress = await factory.getPair(address1, address2);
-			
+
 			if (!checkAddressExists(pairAddress)) {
-				console.log("address dne");
-				
+				console.log('address dne');
+
 				updateCurrentInput = false;
 			} else {
 				updateCurrentInput = true;
 				const [reserve1, reserve2] = await getReserves(pairAddress);
 				pair = getPairObj(pairAddress, reserve1, reserve2);
 
-				if (amount1) {
-					amount2 = getBottom();
-				} else if (amount2) {
-					amount1 = getTop();
-				}
+				getOther();
 			}
 		}
 
