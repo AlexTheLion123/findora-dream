@@ -61,7 +61,7 @@
 	let share: number;
 
 	function getLiqData() {
-		if (!amount1 || !amount2 || !address1 || !address2 || !decimals1 || !decimals2 || !pair) {
+		if (!amount1 || !amount2 || !address1 || !address2 || !decimals1 || !decimals2) {
 			alert('swap data not set, not enough swap info');
 			throw 'not enough swap info';
 		}
@@ -162,7 +162,7 @@
 			return `insufficient ${symbol2}`;
 		}
 
-		if (!pair) {
+		if (!pair?.addresses.pair) {
 			return 'create pair';
 		} else {
 			return 'add liquidity';
@@ -172,8 +172,11 @@
 	function afterEventHook(e?: CustomEvent) {
 		const status = getStatus();
 		let liqData = null;
-
+		
+		
 		if (status.includes('create') || status.includes('add')) {
+			console.log(status);
+			
 			liqData = getLiqData();
 		}
 
@@ -192,7 +195,7 @@
 		isCurrentBox1 = true;
 		isApproved1 = checkApproval(amount1, decimals1, allowance1);
 
-		if (address1 && address2) {
+		if (address1 && address2 && pair) {
 			amount2 = getBottom();
 			share = (amount1 / pair!.reserves.reserve1) * 100;
 		} else {
@@ -204,7 +207,7 @@
 		isCurrentBox1 = false;
 		isApproved2 = checkApproval(amount2, decimals2, allowance2);
 
-		if (address1 && address2) {
+		if (address1 && address2 && pair) {
 			amount1 = getTop();
 			share = (amount1 / pair!.reserves.reserve1) * 100;
 		} else {
@@ -280,7 +283,8 @@
 
 			if (!checkAddressExists(pairAddress)) {
 				console.log('address dne');
-
+				pair=null;
+				share = 100;
 				updateCurrentInput = false;
 			} else {
 				updateCurrentInput = true;
