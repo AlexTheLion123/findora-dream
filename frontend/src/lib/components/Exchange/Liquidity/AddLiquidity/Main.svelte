@@ -8,7 +8,6 @@
 	import TradeButton from '$lib/components/Misc/TradeButton.svelte';
 	import { getContext } from 'svelte';
 	import { approveMax } from '$lib/scripts/exchange';
-	import { pairCreationCode } from '$lib/assets/pairInitCode';
 
 	export let address1: string;
 	export let address2: string;
@@ -26,7 +25,7 @@
 	let slippage = 0.05; // TODO put in gui
 	let symbol1: string;
 	let symbol2: string;
-	let approveOnChild: () => void;
+	let approveOnChild: (str: string) => void;
 
 	// poolinfo props
 	let share: number | undefined;
@@ -66,7 +65,7 @@
 
 		if (statusIncludes('add') || statusIncludes('create')) {
 			// add liquidity
-
+			
 			tx = await addLiquidity();
 			await tx.wait();
 			return;

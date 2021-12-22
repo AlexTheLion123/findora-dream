@@ -68,6 +68,8 @@
 		const amountIn2 = addDecimals(amount2, decimals2);
 
 		return {
+			address1: address1,
+			address2: address2,
 			amountIn1: amountIn1,
 			amountIn2: amountIn2,
 			decimals1: decimals1,
@@ -170,8 +172,6 @@
 	function afterEventHook(e?: CustomEvent) {
 		const status = getStatus();
 		let liqData = null;
-
-		
 		
 		if (status.includes('create') || status.includes('add')) {
 			liqData = getLiqData();
