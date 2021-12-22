@@ -6,7 +6,7 @@
 		removeDecimals,
 		getAllowance
 	} from '$lib/scripts/exchange';
-	import { Contract } from 'ethers';
+	import { Contract, constants } from 'ethers';
 	import { UniswapV2PairABI } from '$lib/abis';
 	import type { BigNumber } from 'ethers';
 	import type { IAddLiqData, IExchangeContext } from '$lib/typesFrontend';
@@ -134,31 +134,32 @@
 		if (!isApproved1 && address1) {
 			return `approve ${symbol1} ${address1}`;
 		}
-
+		
+		
 		if (!isApproved2 && address2) {
 			return `approve ${symbol2} ${address2}`;
 		}
-
-		if(!address2) {
-			return 'select token'
+		
+		if (!address2) {
+			return 'select token';
 		}
-
-		if(!amount1) {
-			return 'enter amount'
+		
+		if (!amount1) {
+			return 'enter amount 1';
 		}
-
+		
 		if (amount1 > balance1) {
 			return `insufficient ${symbol1}`;
 		}
-
-		if(!amount2) {
-			return 'enter amount'
+		
+		if (!amount2) {
+			return 'enter amount 2';
 		}
-
+		
 		if (amount2 > balance2) {
 			return `insufficient ${symbol2}`;
 		}
-
+		
 		if (!pair) {
 			return 'create pair';
 		} else {
@@ -166,32 +167,47 @@
 		}
 	}
 
-	function afterEventHook(e: CustomEvent) {
+	function afterEventHook(e?: CustomEvent) {
 		const status = getStatus();
 		let liqData = null;
 
-		if (status.includes('create') || status.includes('add')) {
-			liqData = getLiqData()
-			return;
-		}
 		
-		dispatch('statusUpdate', { ...e.detail, status: status, liqData: liqData });
+		
+		if (status.includes('create') || status.includes('add')) {
+			liqData = getLiqData();
+		}
+
+		dispatch('statusUpdate', { ...e?.detail, status: status, liqData: liqData });
 	}
 
 	function handleInput1() {
 		isApproved1 = checkApproval(amount1, decimals1, allowance1);
 
-		if (address1 && address2 && pair) {
-			amount2 = getBottom();
+		if(address1 && address2) {
+			amount2 = getBottom()
 		}
 	}
 
 	function handleInput2() {
 		isApproved2 = checkApproval(amount2, decimals2, allowance2);
 
-		if (address1 && address2 && pair) {
-			amount1 = getTop();
+		if(address1 && address2) {
+			amount1 = getTop()
 		}
+	}
+
+	export function approveFromParent(_address: string) {
+		// bound to parent instead of below comment
+
+		if (_address === address1) {
+			isApproved2 = true;
+			allowance2 = constants.MaxUint256;
+		} else {
+			isApproved2 = true;
+			allowance2 = constants.MaxUint256;
+		}
+
+		afterEventHook();
 	}
 
 	async function selection1(e: CustomEvent) {
@@ -199,7 +215,7 @@
 		decimals1 = e.detail.decimals;
 		address1 = e.detail.address;
 		symbol1 = e.detail.symbol;
-		
+
 		allowance1 = await getAllowance({
 			tokenAddress: address1,
 			signer: signer,
@@ -237,8 +253,10 @@
 
 		if (address1 && address2) {
 			const pairAddress = await factory.getPair(address1, address2);
-
+			
 			if (!checkAddressExists(pairAddress)) {
+				console.log("address dne");
+				
 				updateCurrentInput = false;
 			} else {
 				updateCurrentInput = true;
@@ -258,8 +276,8 @@
 </script>
 
 <DoubleTokenBox
-	bind:amount2
 	bind:amount1
+	bind:amount2
 	{address1}
 	{address2}
 	{updateCurrentInput}

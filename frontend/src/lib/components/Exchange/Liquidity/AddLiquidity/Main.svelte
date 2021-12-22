@@ -26,6 +26,7 @@
 	let slippage = 0.05; // TODO put in gui
 	let symbol1: string;
 	let symbol2: string;
+	let approveOnChild: () => void;
 
 	// poolinfo props
 	let share: number | undefined;
@@ -77,6 +78,7 @@
 
 			tx = await _approveMax(address);
 			await tx.wait();
+			approveOnChild(address)
 			return;
 		}
 	}
@@ -86,14 +88,7 @@
 	}
 
 	function handleStatus(e: CustomEvent) {
-		if(e.detail.status.toLowerCase().includes("approve")) {
-			const str = e.detail.status.split(" ")
-			status = str[0] + " " + str[1]
-		} else {
-			status = e.detail.status;
-
-		}
-
+		status = e.detail.status;
 		symbol1 = e.detail?.symbol1;
 		symbol2 = e.detail?.symbol2;
 		liqData = e.detail?.liqData;
@@ -114,7 +109,7 @@
 	
 </script>
 
-<LiquidityTokenBox {address1} {address2} on:statusUpdate={handleStatus} />
+<LiquidityTokenBox bind:approveFromParent={approveOnChild} {address1} {address2} on:statusUpdate={handleStatus} />
 <div class="pool-info">
 	<PoolInfo {share} {rate} {symbol1} {symbol2} />
 </div>

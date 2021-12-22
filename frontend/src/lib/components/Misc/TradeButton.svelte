@@ -2,8 +2,17 @@
 	export let text: string;
 	export let disabled = false;
 
+	function formatIfApprove(str: string) {
+		if (str.toLowerCase().includes('approve')) {
+			const arr = str.split(' ');
+			return arr[0] + ' ' + arr[1];
+		}
+		return str;
+	}
+
 	function formatText(str: string) {
-		return str.charAt(0).toUpperCase() + str.slice(1);
+		const temp = formatIfApprove(str)
+		return temp.charAt(0).toUpperCase() + temp.slice(1);
 	}
 </script>
 
