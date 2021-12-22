@@ -20,7 +20,7 @@
 
 	const PRECISION = 7;
 
-	let liqData: IAddLiqData;
+	let liqData: IAddLiqData | null;
 	let status: string;
 	let disabled = true;
 	let slippage = 0.05; // TODO put in gui
@@ -97,7 +97,6 @@
 		symbol1 = e.detail?.symbol1;
 		symbol2 = e.detail?.symbol2;
 		liqData = e.detail?.liqData;
-
 		rate = e.detail?.liqData?.rate;
 		share = e.detail?.share;
 

@@ -88,7 +88,7 @@
 	}
 
 	function getStatus() {
-		if (!isApproved1) {
+		if (!isApproved1 && address1) {
 			return `approve ${symbol1}`;
 		}
 
@@ -122,8 +122,6 @@
 	}
 
 	function checkApproval(_amount: number, _decimals: number, _allowance: BigNumber) {
-		console.log(_amount, _decimals, _allowance.toString());
-		
 		return addDecimals(_amount, _decimals).lt(_allowance);
 	}
 

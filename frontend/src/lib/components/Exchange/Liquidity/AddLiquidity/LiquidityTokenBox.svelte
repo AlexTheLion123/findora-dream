@@ -3,7 +3,8 @@
 		addDecimals,
 		checkAddressExists,
 		formatNumber,
-		removeDecimals
+		removeDecimals,
+		getAllowance
 	} from '$lib/scripts/exchange';
 	import { Contract } from 'ethers';
 	import { UniswapV2PairABI } from '$lib/abis';
@@ -21,9 +22,11 @@
 	export let address2: string;
 
 	// get context
-	const { getFactory, signerObj }: IExchangeContext = getContext('exchange');
+	const { getFactory, signerObj, getRouter }: IExchangeContext = getContext('exchange');
 	const factory = getFactory();
 	const signer = signerObj.getSigner();
+	const signerAddr = signerObj.getAddress();
+	const router = getRouter();
 
 	const dispatch = createEventDispatcher();
 
@@ -123,51 +126,33 @@
 		};
 	}
 
-	function checkApproval(_amount: number, _allowance: BigNumber, _decimals: number) {
+	function checkApproval(_amount: number, _decimals: number, _allowance: BigNumber) {
 		return addDecimals(_amount, _decimals).lt(_allowance);
 	}
 
-	function handleInput1() {
-		isApproved1 = checkApproval(amount1, allowance1, decimals1);
-
-		if (address1 && address2 && pair) {
-			amount2 = getBottom();
-		}
-	}
-
-	function handleInput2() {
-		isApproved2 = checkApproval(amount2, allowance2, decimals2);
-
-		if (address1 && address2 && pair) {
-			amount1 = getTop();
-		}
-	}
-
-	function selection1(e: CustomEvent) {
-		balance1 = e.detail.balance;
-		decimals1 = e.detail.decimals;
-		address1 = e.detail.address;
-		symbol1 = e.detail.symbol;
-	}
-
-	function selection2(e: CustomEvent) {
-		balance2 = e.detail.balance;
-		decimals2 = e.detail.decimals;
-		address2 = e.detail.address;
-		symbol2 = e.detail.symbol;
-	}
-
 	function getStatus() {
-		if (!isApproved1) {
+		if (!isApproved1 && address1) {
 			return `approve ${symbol1} ${address1}`;
 		}
 
-		if (!isApproved2) {
+		if (!isApproved2 && address2) {
 			return `approve ${symbol2} ${address2}`;
+		}
+
+		if(!address2) {
+			return 'select token'
+		}
+
+		if(!amount1) {
+			return 'enter amount'
 		}
 
 		if (amount1 > balance1) {
 			return `insufficient ${symbol1}`;
+		}
+
+		if(!amount2) {
+			return 'enter amount'
 		}
 
 		if (amount2 > balance2) {
@@ -183,23 +168,72 @@
 
 	function afterEventHook(e: CustomEvent) {
 		const status = getStatus();
+		let liqData = null;
 
 		if (status.includes('create') || status.includes('add')) {
-			dispatch('statusUpdate', { ...e.detail, status: status, liqData: getLiqData() });
+			liqData = getLiqData()
 			return;
 		}
-
-		dispatch('statusUpdate', { ...e.detail, status: status });
+		
+		dispatch('statusUpdate', { ...e.detail, status: status, liqData: liqData });
 	}
 
-	async function handleInput(e: CustomEvent) {
+	function handleInput1() {
+		isApproved1 = checkApproval(amount1, decimals1, allowance1);
+
+		if (address1 && address2 && pair) {
+			amount2 = getBottom();
+		}
+	}
+
+	function handleInput2() {
+		isApproved2 = checkApproval(amount2, decimals2, allowance2);
+
+		if (address1 && address2 && pair) {
+			amount1 = getTop();
+		}
+	}
+
+	async function selection1(e: CustomEvent) {
+		balance1 = e.detail.balance;
+		decimals1 = e.detail.decimals;
+		address1 = e.detail.address;
+		symbol1 = e.detail.symbol;
+		
+		allowance1 = await getAllowance({
+			tokenAddress: address1,
+			signer: signer,
+			signerAddr: signerAddr,
+			spenderAddr: router.address
+		});
+
+		isApproved1 = checkApproval(0, decimals1, allowance1);
+	}
+
+	async function selection2(e: CustomEvent) {
+		balance2 = e.detail.balance;
+		decimals2 = e.detail.decimals;
+		address2 = e.detail.address;
+		symbol2 = e.detail.symbol;
+
+		allowance2 = await getAllowance({
+			tokenAddress: address2,
+			signer: signer,
+			signerAddr: signerAddr,
+			spenderAddr: router.address
+		});
+
+		isApproved2 = checkApproval(0, decimals2, allowance2);
+	}
+
+	function handleInput(e: CustomEvent) {
 		e.detail.isBox1 ? handleInput1() : handleInput2();
 
 		afterEventHook(e);
 	}
 
 	async function handleSelection(e: CustomEvent) {
-		e.detail.isBox1 ? selection1(e) : selection2(e);
+		e.detail.isBox1 ? await selection1(e) : await selection2(e);
 
 		if (address1 && address2) {
 			const pairAddress = await factory.getPair(address1, address2);
