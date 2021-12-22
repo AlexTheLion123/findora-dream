@@ -1,6 +1,5 @@
 <script context="module" lang="ts">
 	import {
-		checkSufficientAllowance,
 		formatNumber,
 		getAllowance,
 		getBalance,
@@ -11,15 +10,13 @@
 	import { addDecimals, removeDecimals } from '$lib/scripts/exchange/utils';
 	import { BigNumber, Contract } from 'ethers';
 	import type { IExchangeContext } from '$lib/typesFrontend';
-	import type {Ierc20} from '$lib/typesUsed'
+	import type { Ierc20 } from '$lib/typesUsed';
 </script>
 
 <script lang="ts">
 	import DoubleTokenBox from '../TokenBox/DoubleTokenBox.svelte';
 	import { getContext, createEventDispatcher, onMount } from 'svelte';
-import { listen } from 'svelte/internal';
-import { ERC20ABI } from '$lib/abis';
-import { check } from 'prettier';
+	import { ERC20ABI } from '$lib/abis';
 
 	export let address1: string;
 	export let address2: string;
@@ -41,7 +38,6 @@ import { check } from 'prettier';
 	let symbol1: string;
 	let allowance1: BigNumber;
 	let isCurrentBox1: boolean; // box where input last typed
-	let swapData; // TODO type
 	let route: string[] | null = null;
 	let isApproved: boolean = true;
 	const dispatch = createEventDispatcher();
@@ -57,7 +53,6 @@ import { check } from 'prettier';
 			alert('swap data not set, not enough swap info');
 			throw 'not enough swap info';
 		}
-		// TODO
 
 		return {
 			amountIn: amountIn,
@@ -70,12 +65,11 @@ import { check } from 'prettier';
 		};
 	}
 
-	async function getSwapTop() {
+	async function getBottomValue() {
 		if (!route) {
 			alert('No routecache');
 			throw 'No route cache';
 		}
-
 		const amountInBig = addDecimals(amount1, decimals1);
 		const amountsOut = await router.getAmountsOut(amountInBig, route);
 		const amountOut = amountsOut[amountsOut.length - 1];
@@ -84,7 +78,7 @@ import { check } from 'prettier';
 		return getSwapData({ amountIn: amountInBig, amountOutDesired: amountOut });
 	}
 
-	async function getSwapBottom() {
+	async function getTopValue() {
 		if (!route) {
 			alert('No routecache');
 			throw 'No route cache';
@@ -111,7 +105,6 @@ import { check } from 'prettier';
 			return 'enter amount';
 		}
 
-
 		if (amount1 > balance1) {
 			return `insufficient ${symbol1}`;
 		}
@@ -125,18 +118,18 @@ import { check } from 'prettier';
 		let status: string;
 
 		if (address1 && address2 && (amount1 || amount2)) {
-			swapData = isCurrentBox1 ? await getSwapTop() : await getSwapBottom();
+			const swapData = isCurrentBox1 ? await getBottomValue() : await getTopValue();
 			status = getStatus();
-			
+
 			if (status !== 'swap') {
 				dispatch('statusUpdate', { status: status });
 				return;
 			}
-			
+
 			dispatch('statusUpdate', { status: status, swapData: swapData });
 			return;
 		}
-		
+
 		status = getStatus();
 
 		if (status === 'swap') {
@@ -147,18 +140,16 @@ import { check } from 'prettier';
 	}
 
 	function checkApproval1() {
-		return addDecimals(amount1, decimals1).lt(allowance1)
+		return addDecimals(amount1, decimals1).lt(allowance1);
 	}
 
-	async function handleInput1() {
-		isApproved = await checkApproval1()
+	function handleInput1() {
+		isApproved = checkApproval1();
 		isCurrentBox1 = true;
-		handleEvent();
 	}
 
 	function handleInput2() {
 		isCurrentBox1 = false;
-		handleEvent();
 	}
 
 	async function handleSelection1(e: CustomEvent) {
@@ -166,7 +157,12 @@ import { check } from 'prettier';
 		decimals1 = e.detail.decimals;
 		address1 = e.detail.address;
 		symbol1 = e.detail.symbol;
-		allowance1 = await getAllowance({tokenAddress: address1, signer: signer, signerAddr: signerAddr, spenderAddr: router.address})
+		allowance1 = await getAllowance({
+			tokenAddress: address1,
+			signer: signer,
+			signerAddr: signerAddr,
+			spenderAddr: router.address
+		});
 
 		if (address2) {
 			route = await getRoute({
@@ -177,7 +173,6 @@ import { check } from 'prettier';
 			});
 		}
 
-		handleEvent();
 	}
 
 	async function handleSelection2(e: CustomEvent) {
@@ -193,42 +188,46 @@ import { check } from 'prettier';
 			});
 		}
 
-		handleEvent();
 	}
 
 	function handleInput(e: CustomEvent) {
 		e.detail.isBox1 ? handleInput1() : handleInput2();
+		handleEvent()
 	}
 
 	function handleSelection(e: CustomEvent) {
 		e.detail.isBox1 ? handleSelection1(e) : handleSelection2(e);
+		handleEvent()
 	}
 
 	function listenApproval(_address: string) {
 		// could also bind function to parent and don't listen
 
 		const token = new Contract(_address, ERC20ABI, signer) as Ierc20;
-		token.on("Approval", () => {
+		token.on('Approval', () => {
 			isApproved = true;
-			handleEvent()
-		})
-
+			handleEvent();
+		});
 	}
 
 	onMount(async () => {
 		if (address1) {
 			decimals1 = await getDecimals(address1, signer);
-			symbol1 = await getSymbol(address1, signer)
-			balance1 = removeDecimals(await getBalance(address1, signer, signerAddr), decimals1)
-			allowance1 = await getAllowance({tokenAddress: address1, signer: signer, signerAddr: signerAddr, spenderAddr: router.address})
+			symbol1 = await getSymbol(address1, signer);
+			balance1 = removeDecimals(await getBalance(address1, signer, signerAddr), decimals1);
+			allowance1 = await getAllowance({
+				tokenAddress: address1,
+				signer: signer,
+				signerAddr: signerAddr,
+				spenderAddr: router.address
+			});
 
-			listenApproval(address1)
+			listenApproval(address1);
 		}
 		if (address2) {
 			decimals2 = await getDecimals(address2, signer);
 		}
 		handleEvent();
-
 	});
 </script>
 

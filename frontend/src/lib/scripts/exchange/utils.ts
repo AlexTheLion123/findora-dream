@@ -10,6 +10,8 @@ export function removeDecimals(bigNum: BigNumber, decimals: number): number {
 }
 
 export function addDecimals(num: number, decimals: number): BigNumber {
+    console.log(num);
+    
     return utils.parseUnits(num.toString(), decimals)
 }
 

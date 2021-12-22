@@ -3,7 +3,6 @@
 		addDecimals,
 		checkAddressExists,
 		formatNumber,
-		getSymbol,
 		removeDecimals
 	} from '$lib/scripts/exchange';
 	import { Contract } from 'ethers';
@@ -16,42 +15,48 @@
 <script lang="ts">
 	import DoubleTokenBox from '../../TokenBox/DoubleTokenBox.svelte';
 	import { getContext } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 
-	export let addLiqData: IAddLiqData;
-	export let status: string;
-
-	// poolinfo props
-	export let share: number;
-	export let rate: number;
 	export let address1: string;
 	export let address2: string;
-
-	let updateCurrent1 = false;
-	let updateCurrent2 = false;
-
-	let amount1: number;
-	let amount2: number;
-	let decimals1: number;
-	let decimals2: number;
-	
-	export let symbol1: string; // TODO delete, listen to event in parent
-	export let symbol2: string;
-
-	let pairCache: {
-		addresses: [string, string];
-		reserves: [number, number];
-	} = {
-		addresses: ['', ''],
-		reserves: [0, 0]
-	};
 
 	// get context
 	const { getFactory, signerObj }: IExchangeContext = getContext('exchange');
 	const factory = getFactory();
 	const signer = signerObj.getSigner();
 
-	function setAddLiqData() {
-		if (!amount1 || !amount2 || !address1 || !address2 || !decimals1 || !decimals2 || !pairCache) {
+	const dispatch = createEventDispatcher();
+
+	let amount1: number;
+	let amount2: number;
+	let decimals1: number;
+	let decimals2: number;
+	let balance1: number;
+	let balance2: number;
+	let symbol1: string;
+	let symbol2: string;
+	let updateCurrentInput = false;
+
+	let isApproved1: boolean;
+	let isApproved2: boolean;
+	let allowance1: BigNumber;
+	let allowance2: BigNumber;
+
+	let pair: {
+		addresses: {
+			address1: string;
+			address2: string;
+			pair: string;
+		};
+		reserves: {
+			reserve1: number;
+			reserve2: number;
+		};
+		rate: number;
+	} | null = null;
+
+	function getLiqData() {
+		if (!amount1 || !amount2 || !address1 || !address2 || !decimals1 || !decimals2 || !pair) {
 			alert('swap data not set, not enough swap info');
 			throw 'not enough swap info';
 		}
@@ -59,94 +64,33 @@
 		const amountIn1 = addDecimals(amount1, decimals1);
 		const amountIn2 = addDecimals(amount2, decimals2);
 
-		addLiqData = {
+		return {
 			amountIn1: amountIn1,
 			amountIn2: amountIn2,
-			address1: address1,
-			address2: address2,
 			decimals1: decimals1,
-			decimals2: decimals2
+			decimals2: decimals2,
+			pair: pair,
+			share: (amount1 / pair.reserves.reserve1) * 100
 		};
 	}
 
-	async function getAll(numCurrent: number) {
-		const pairAddress = await factory.getPair(address1, address2);
-
-		if (!checkAddressExists(pairAddress)) {
-			// Pair does not exist yet
-			console.log('Pair does not exist, you will be the first to create liquidity');
-			updateCurrent1 = false;
-			updateCurrent2 = false;
-			share = 100;
-
-			if (amount1 && amount2) {
-				rate = amount1 / amount2;
-
-				setAddLiqData();
-			}
-		} else {
-			// pair exists
-
-			const [reserve1, reserve2] = await getReserves(pairAddress);
-
-			if (numCurrent === 1) {
-				amount2 = formatNumber((amount1 * reserve1) / reserve2, 5);
-			} else {
-				amount1 = formatNumber((amount2 * reserve2) / reserve1, 5);
-			}
-
-			rate = reserve1 / reserve2;
-			share = (amount1 / reserve1) * 100;
-
-			updateCurrent1 = true;
-			updateCurrent2 = true;
-
-			setAddLiqData();
+	function getTop() {
+		if (!pair) {
+			throw 'pairdne';
 		}
+
+		return formatNumber((amount2 * pair.reserves.reserve2) / pair.reserves.reserve1, 5);
 	}
 
-	async function inputWithAddress(e: CustomEvent) {
-		if (!address1 || !address2) {
-			// nothing to be done
-			return;
+	function getBottom() {
+		if (!pair) {
+			throw 'pairdne';
 		}
-		if (address1 && address2) {
-			getAll(e.detail.num);
-		}
-	}
 
-	async function handleSelection(e: CustomEvent) {
-		if (address1 && address2) {
-			if (e.detail.num === 1) {
-				symbol1 = await getSymbolWrapper(e);
-				getAll(1);
-			} else if(e.detail.num === 2) {
-				symbol2 = await getSymbolWrapper(e);
-				getAll(2);
-			}
-		}
-	}
-
-	async function getSymbolWrapper(e: CustomEvent) {
-		// symbol might not be given with address but address will always be given
-		if (e.detail.symbol) {
-			return e.detail.symbol;
-		}
-		if (e.detail.num === 1) return getSymbol(address1, signer);
-		if (e.detail.num === 2) return getSymbol(address2, signer);
+		return formatNumber((amount1 * pair.reserves.reserve1) / pair.reserves.reserve2, 5);
 	}
 
 	async function getReserves(pairAddress: string): Promise<number[]> {
-		if (
-			address1 &&
-			address2 &&
-			pairCache.addresses.includes(address1) &&
-			pairCache.addresses.includes(address2)
-		) {
-			console.log('using reserves cache');
-			return pairCache.reserves;
-		}
-
 		const tokenInstance = new Contract(pairAddress, UniswapV2PairABI, signer) as UniswapV2Pair;
 
 		let reserves: [BigNumber, BigNumber];
@@ -157,30 +101,132 @@
 			reserves = [result[1], result[0]];
 		}
 
-		const noDecimals = [
+		const reservesNoDecimals = [
 			removeDecimals(reserves[0], decimals1),
 			removeDecimals(reserves[1], decimals2)
 		];
-		console.log('setting pair cache');
-		pairCache.addresses = [address1, address2];
-		pairCache.reserves = [noDecimals[0], noDecimals[1]];
+		return reservesNoDecimals;
+	}
 
-		return noDecimals;
+	function getPairObj(pairAddress: string, reserve1: number, reserve2: number) {
+		return {
+			addresses: {
+				pair: pairAddress,
+				address1: address1,
+				address2: address2
+			},
+			reserves: {
+				reserve1: reserve1,
+				reserve2: reserve2
+			},
+			rate: reserve1 / reserve2
+		};
+	}
+
+	function checkApproval(_amount: number, _allowance: BigNumber, _decimals: number) {
+		return addDecimals(_amount, _decimals).lt(_allowance);
+	}
+
+	function handleInput1() {
+		isApproved1 = checkApproval(amount1, allowance1, decimals1);
+
+		if (address1 && address2 && pair) {
+			amount2 = getBottom();
+		}
+	}
+
+	function handleInput2() {
+		isApproved2 = checkApproval(amount2, allowance2, decimals2);
+
+		if (address1 && address2 && pair) {
+			amount1 = getTop();
+		}
+	}
+
+	function selection1(e: CustomEvent) {
+		balance1 = e.detail.balance;
+		decimals1 = e.detail.decimals;
+		address1 = e.detail.address;
+	}
+
+	function selection2(e: CustomEvent) {
+		balance2 = e.detail.balance;
+		decimals2 = e.detail.decimals;
+		address2 = e.detail.address;
+	}
+
+	function getStatus() {
+		if (!isApproved1) {
+			return `approve ${symbol1} ${address1}`;
+		}
+
+		if (!isApproved2) {
+			return `approve ${symbol2} ${address2}`;
+		}
+
+		if (amount1 > balance1) {
+			return `insufficient ${symbol1}`;
+		}
+
+		if (amount2 > balance2) {
+			return `insufficient ${symbol2}`;
+		}
+
+		if (!pair) {
+			return 'create pair';
+		} else {
+			return 'add liquidity';
+		}
+	}
+
+	function afterEventHook(e: CustomEvent) {
+		const status = getStatus();
+
+		if (status.includes('create') || status.includes('add')) {
+			dispatch('statusUpdate', { ...e.detail, status: status, liqData: getLiqData() });
+			return;
+		}
+
+		dispatch('statusUpdate', { ...e.detail, status: status });
+	}
+
+	async function handleInput(e: CustomEvent) {
+		e.detail.isBox1 ? handleInput1() : handleInput2();
+
+		afterEventHook(e);
+	}
+
+	async function handleSelection(e: CustomEvent) {
+		e.detail.isBox1 ? selection1(e) : selection2(e);
+
+		if (address1 && address2) {
+			const pairAddress = await factory.getPair(address1, address2);
+
+			if (!checkAddressExists(pairAddress)) {
+				updateCurrentInput = false;
+			} else {
+				updateCurrentInput = true;
+				const [reserve1, reserve2] = await getReserves(pairAddress);
+				pair = getPairObj(pairAddress, reserve1, reserve2);
+
+				if (amount1) {
+					amount2 = getBottom();
+				} else if (amount2) {
+					amount1 = getTop();
+				}
+			}
+		}
+
+		afterEventHook(e);
 	}
 </script>
 
 <DoubleTokenBox
-	on:inputWithAddress={inputWithAddress}
-	on:selectionWithTokens={handleSelection}
-	on:selectionWithoutTokens={handleSelection}
-	bind:amount1
 	bind:amount2
-	bind:decimals1
-	bind:decimals2
-	bind:address1
-	bind:address2
-	bind:status
-	approveBoth={true}
-	{updateCurrent1}
-	{updateCurrent2}
+	bind:amount1
+	{address1}
+	{address2}
+	{updateCurrentInput}
+	on:input={handleInput}
+	on:selection={handleSelection}
 />

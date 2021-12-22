@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { approveMax, swapExactInput, removeDecimals } from '$lib/scripts/exchange';
+	import { approveMax, swapExactInput } from '$lib/scripts/exchange';
 	import type { IExchangeContext, ISwapData } from '$lib/typesFrontend';
 </script>
 
@@ -8,7 +8,7 @@
 	import RangeSlider from 'svelte-range-slider-pips';
 	import TradeButton from '$lib/components/Misc/TradeButton.svelte';
 	import { getContext } from 'svelte';
-import { BigNumber } from 'ethers';
+	import { BigNumber } from 'ethers';
 
 	export let address1: string;
 	export let address2: string;
