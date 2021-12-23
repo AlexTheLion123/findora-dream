@@ -1,13 +1,20 @@
 <script lang="ts">
-	import {formatNumber} from '$lib/scripts/exchange'
+	import CreateMessage from './CreateMessage.svelte';
+	import { formatNumber } from '$lib/scripts/exchange';
 
 	export let rate: number = 0;
 	export let share: number = 0;
-	export let symbol1 = "";
-	export let symbol2 = "";
+	export let symbol1 = '';
+	export let symbol2 = '';
+	export let pairExists = true;
 </script>
 
-<div class="box">
+{#if !pairExists}
+	<div class="create-message">
+		<CreateMessage />
+	</div>
+{/if}
+<div class="pool-info">
 	<header>Prices and Pool Share</header>
 	<div class="info">
 		<article>
@@ -25,7 +32,8 @@
 		text-align: center;
 	}
 
-	.box {
+	.pool-info {
+		margin-top: 10px;
 		height: 100%;
 		width: 100%;
 		header {

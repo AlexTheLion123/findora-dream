@@ -30,6 +30,7 @@
 	// poolinfo props
 	let share = 0;
 	let rate = 0;
+	let pairExists: boolean = true;
 
 	function addLiquidity() {
 		if (!liqData) {
@@ -65,7 +66,7 @@
 
 		if (statusIncludes('add') || statusIncludes('create')) {
 			// add liquidity
-			
+
 			tx = await addLiquidity();
 			await tx.wait();
 			return;
@@ -77,7 +78,7 @@
 
 			tx = await _approveMax(address);
 			await tx.wait();
-			approveOnChild(address)
+			approveOnChild(address);
 			return;
 		}
 	}
@@ -91,8 +92,10 @@
 		symbol1 = e.detail.symbol1;
 		symbol2 = e.detail.symbol2;
 		liqData = e.detail.liqData;
-		rate = e.detail?.rate || rate;
-		share = e.detail?.share;
+
+		rate = e.detail.poolinfo.rate;
+		share = e.detail.poolinfo.share;
+		pairExists = e.detail.poolinfo.pairExists;
 
 		updateButtonStatus();
 
@@ -104,18 +107,21 @@
 			}
 		}
 	}
-
-	
 </script>
 
-<LiquidityTokenBox bind:approveFromParent={approveOnChild} {address1} {address2} on:statusUpdate={handleStatus} />
+<LiquidityTokenBox
+	bind:approveFromParent={approveOnChild}
+	{address1}
+	{address2}
+	on:statusUpdate={handleStatus}
+/>
 <div class="pool-info">
-	<PoolInfo {share} {rate} {symbol1} {symbol2} />
+	<PoolInfo {share} {rate} {symbol1} {symbol2} {pairExists}/>
 </div>
 <TradeButton text={status} {disabled} on:click={handleClick} />
 
 <style>
 	.pool-info {
-		margin: 10px 0;
+		margin: 20px 0;
 	}
 </style>
