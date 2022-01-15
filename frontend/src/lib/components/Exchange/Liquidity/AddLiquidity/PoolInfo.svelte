@@ -7,6 +7,7 @@
 	export let symbol1 = '';
 	export let symbol2 = '';
 	export let pairExists = true;
+
 </script>
 
 {#if !pairExists}

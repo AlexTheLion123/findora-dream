@@ -24,6 +24,8 @@
 	function clearAll() {
 		amount1 = 0;
 		amount2 = 0;
+
+		dispatch("clearAll")
 	}
 
 	async function handleSelection(e: CustomEvent) {

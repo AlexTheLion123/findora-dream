@@ -24,8 +24,8 @@
 	let poolinfo = {
 		share: 0,
 		rate: 0,
-		pairExists: true 
-	}
+		pairExists: true
+	};
 
 	// get context
 	const { getFactory, signerObj, getRouter }: IExchangeContext = getContext('exchange');
@@ -63,7 +63,6 @@
 			reserve2: number;
 		};
 	} | null = null;
-
 
 	function getLiqData() {
 		if (!amount1 || !amount2 || !address1 || !address2 || !decimals1 || !decimals2) {
@@ -120,7 +119,7 @@
 	}
 
 	function getPairObj(pairAddress: string, reserve1: number, reserve2: number) {
-		poolinfo.rate = reserve1 / reserve2
+		poolinfo.rate = reserve1 / reserve2;
 
 		return {
 			addresses: {
@@ -131,7 +130,7 @@
 			reserves: {
 				reserve1: reserve1,
 				reserve2: reserve2
-			},
+			}
 		};
 	}
 
@@ -178,11 +177,10 @@
 	function afterEventHook(e?: CustomEvent) {
 		const status = getStatus();
 		let liqData = null;
-		
-		
+
 		if (status.includes('create') || status.includes('add')) {
 			console.log(status);
-			
+
 			liqData = getLiqData();
 		}
 
@@ -199,8 +197,8 @@
 	function handleInput1() {
 		isCurrentBox1 = true;
 
-		if(!decimals1 || !allowance1) {
-			return
+		if (!decimals1 || !allowance1) {
+			return;
 		}
 
 		isApproved1 = checkApproval(amount1, decimals1, allowance1);
@@ -213,6 +211,11 @@
 
 	function handleInput2() {
 		isCurrentBox1 = false;
+
+		if (!decimals2 || !allowance2) {
+			return;
+		}
+
 		isApproved2 = checkApproval(amount2, decimals2, allowance2);
 
 		if (address1 && address2 && pair) {
@@ -227,11 +230,11 @@
 		if (_address === address1) {
 			isApproved1 = true;
 			allowance1 = constants.MaxUint256;
-		} else if(_address === address2) {
+		} else if (_address === address2) {
 			isApproved2 = true;
 			allowance2 = constants.MaxUint256;
 		} else {
-			throw "address does not match address1 or address2"
+			throw 'address does not match address1 or address2';
 		}
 
 		afterEventHook();
@@ -272,8 +275,9 @@
 	function handleInput(e: CustomEvent) {
 		e.detail.isBox1 ? handleInput1() : handleInput2();
 
-		if(!pair && amount1 && amount2) {
+		if (!pair && amount1 && amount2) {
 			poolinfo.rate = amount1 / amount2;
+			poolinfo.share = amount1 && amount2 ? 100 : 0;
 		}
 
 		afterEventHook(e);
@@ -294,23 +298,28 @@
 			const pairAddress = await factory.getPair(address1, address2);
 
 			if (!checkAddressExists(pairAddress)) {
-				console.log('address dne');
-				pair=null;
-				poolinfo.share = 100;
+				pair = null;
+				poolinfo.share = 0;
 				poolinfo.pairExists = false;
 				updateCurrentInput = false;
 			} else {
 				updateCurrentInput = true;
 				const [reserve1, reserve2] = await getReserves(pairAddress);
 				pair = getPairObj(pairAddress, reserve1, reserve2);
-				poolinfo.pairExists = true
-
+				poolinfo.pairExists = true;
 
 				getOther();
 			}
 		}
 
 		afterEventHook(e);
+	}
+
+	function clearAll() {
+		poolinfo.rate = 0;
+		poolinfo.share = 0;
+
+		afterEventHook()
 	}
 </script>
 
@@ -322,4 +331,5 @@
 	{updateCurrentInput}
 	on:input={handleInput}
 	on:selection={handleSelection}
+	on:clearAll={clearAll}
 />
