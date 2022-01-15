@@ -17,6 +17,7 @@
 	import DoubleTokenBox from '../../TokenBox/DoubleTokenBox.svelte';
 	import { getContext } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
+import PoolInfo from '$lib/components/Exchange/Liquidity/AddLiquidity/PoolInfo.svelte';
 
 	export let address1: string;
 	export let address2: string;
@@ -299,7 +300,9 @@
 
 			if (!checkAddressExists(pairAddress)) {
 				pair = null;
-				poolinfo.share = 0;
+
+				poolinfo.share = (amount1 && amount2) ? 100 : 0;
+				poolinfo.rate = (amount1 && amount2) ? amount2/amount1 : 0;
 				poolinfo.pairExists = false;
 				updateCurrentInput = false;
 			} else {
@@ -316,8 +319,11 @@
 	}
 
 	function clearAll() {
-		poolinfo.rate = 0;
 		poolinfo.share = 0;
+
+		if(!poolinfo.pairExists) {
+			poolinfo.rate = 0;
+		}
 
 		afterEventHook()
 	}
