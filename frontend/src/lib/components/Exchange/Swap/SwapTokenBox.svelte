@@ -11,7 +11,7 @@
 
 <script lang="ts">
 	import DoubleTokenBox from '../TokenBox/DoubleTokenBox.svelte';
-	import { getContext, createEventDispatcher, onMount } from 'svelte';
+	import { getContext, createEventDispatcher } from 'svelte';
 
 	export let address1: string;
 	export let address2: string;

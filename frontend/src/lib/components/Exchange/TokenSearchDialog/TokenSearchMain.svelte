@@ -2,7 +2,7 @@
     import TokenSearchDialog from './TokenSearchDialog.svelte';
     import {createEventDispatcher} from 'svelte';
 
-    export let isBox1: boolean; // TODO change to boolean
+    export let isBox1: boolean; 
     export let showSearchDialog = false;
 	export let address1: string;
 	export let address2: string;

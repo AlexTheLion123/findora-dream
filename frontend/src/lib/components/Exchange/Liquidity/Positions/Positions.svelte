@@ -5,7 +5,7 @@
 
 <script lang="ts">
 	import tokens from '$lib/assets/tokens/tokens.json';
-	import Position from './PositionDropDown.svelte';
+	import PositionDropDown from './PositionDropDown.svelte';
 	import { getContext } from 'svelte';
 
 	// get context
@@ -122,7 +122,7 @@
 	{:then _positions}
 		{#each _positions as position, i}
 			<div class="position">
-				<Position
+				<PositionDropDown
 					symbolA={position.tokenA.symbol}
 					symbolB={position.tokenB.symbol}
 					pairBalance={position.pair.balance}

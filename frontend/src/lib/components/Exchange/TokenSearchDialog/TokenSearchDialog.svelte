@@ -57,9 +57,9 @@
 		dispatch('selection', e.detail);
 	}
 
-	function init(address: string) {
+	async function init(address: string) {
 		checkIfDefault(address);
-		getDataAndDispatch(address);
+		await getDataAndDispatch(address);
 
 		function checkIfDefault(address: string) {
 			tokens.map((value, index) => {
@@ -75,7 +75,6 @@
 			const logo = '/src/lib/assets/svg/eth_logo.svg';
 			const decimals = await getDecimals(address, signer);
 			const balance = removeDecimals(await getBalance(address, signer, signerAddr), decimals);
-
 			dispatch('selection', {
 				address: address,
 				symbol: symbol,
@@ -91,12 +90,12 @@
 	onMount(async () => {
 		if (address1) {
 			isBox1 = true;
-			init(address1);
+			await init(address1);
 		}
 
 		if (address2) {
 			isBox1 = false;
-			init(address2);
+			await init(address2);
 		}
 	});
 </script>

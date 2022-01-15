@@ -198,6 +198,11 @@
 
 	function handleInput1() {
 		isCurrentBox1 = true;
+
+		if(!decimals1 || !allowance1) {
+			return
+		}
+
 		isApproved1 = checkApproval(amount1, decimals1, allowance1);
 
 		if (address1 && address2 && pair) {
