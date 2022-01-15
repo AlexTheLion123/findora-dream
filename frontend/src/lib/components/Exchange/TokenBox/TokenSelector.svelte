@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher} from 'svelte';
 
 	export let address: string; // address needed to set default
 	export let editable: boolean; // TODO - don't allow hover on non-editable
-	export let logo: string;
-	export let symbol: string;
+	export let logo: string = "";
+	export let symbol: string = "";
 
 	const dispatch = createEventDispatcher();
 

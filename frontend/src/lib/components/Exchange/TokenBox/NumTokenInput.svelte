@@ -50,6 +50,7 @@
 <input
 	type="number"
 	placeholder="0.00"
+	min="0"
 	bind:value={amount}
 	bind:this={inputElement}
 	on:input={handleInput}
